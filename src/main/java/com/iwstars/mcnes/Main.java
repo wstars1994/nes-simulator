@@ -18,7 +18,7 @@ public class Main {
     public static void main(String[] args) {
         InputStream fileInputStream = null;
         try{
-            fileInputStream = new FileInputStream(new File("C:\\Users\\Administrator\\Desktop\\supermario.nes"));
+            fileInputStream = new FileInputStream(new File("C:\\Users\\王新晨\\Desktop\\1.nes"));
             DataInputStream dataInputStream = new DataInputStream(fileInputStream);
             readHeader(dataInputStream);
             readRom(dataInputStream);
@@ -36,25 +36,12 @@ public class Main {
         }
     }
 
-    private static void printHex(byte b) {
-        System.out.println(Integer.toHexString(b).toUpperCase());
-    }
-
-
     private static void readHeader(DataInputStream dataInputStream) throws IOException {
         System.out.println("-------Header 读取开始(16K)-------");
         System.out.println("1.读取magic");
-        Byte b = dataInputStream.readByte();
-        System.out.print(new String(new byte[]{b}));
-        b = dataInputStream.readByte();
-        System.out.print(new String(new byte[]{b}));
-        b = dataInputStream.readByte();
-        System.out.print(new String(new byte[]{b}));
-        System.out.println("");
-
-        System.out.println("2.读取EOF(0x1A)");
-        b = dataInputStream.readByte();
-        printHex(b);
+        byte[] magic = new byte[4];
+        dataInputStream.read(magic,0,4);
+        System.out.println(new String(magic));
 
         System.out.println("3.读取程序镜像(ROM)数量");
         romNumber = dataInputStream.readByte();
@@ -64,29 +51,16 @@ public class Main {
         vromNumber = dataInputStream.readByte();
         System.out.println(vromNumber);
 
-        System.out.println("5.读取8位附加信息(二进制)");
-        b = dataInputStream.readByte();
-        System.out.println(Integer.toBinaryString(b));
+        System.out.println("5.读取8位附加信息(其中后四位为ROM Mapper的低4位)");
+        byte b = dataInputStream.readByte();
+        System.out.println(binaryStrto8(Integer.toString(b&0xFF,2)));
 
-        System.out.println("6.读取8位附加信息(二进制)");
+        System.out.println("6.读取8位附加信息(副4位Mapper号 + ROM Mapper的高4位)");
         b = dataInputStream.readByte();
-        System.out.println(Integer.toBinaryString(b));
+        System.out.println(binaryStrto8(Integer.toString(b&0xFF,2)));
 
-        System.out.println("7.读取程序RAM大小");
-        b = dataInputStream.readByte();
-        System.out.println(Integer.toBinaryString(b));
-
-        System.out.println("8.读取8位附加信息(二进制)");
-        b = dataInputStream.readByte();
-        System.out.println(Integer.toBinaryString(b));
-
-        System.out.println("9.读取8位附加信息(二进制)");
-        b = dataInputStream.readByte();
-        System.out.println(Integer.toBinaryString(b));
-
-        System.out.println("10.读取Header数据最后保留5字节");
-        int unknow1 = dataInputStream.readInt();
-        b = dataInputStream.readByte();
+        System.out.println("7.读取8字节附加信息(保留0)");
+        dataInputStream.readLong();
         System.out.println("-------Header 读取结束(16K)-------");
         System.out.println("");
     }
@@ -100,68 +74,63 @@ public class Main {
     }
 
     private static void readVRom(DataInputStream dataInputStream) throws IOException {
-
-        int imageWidth = 200;
-        int imageHeight = 200;
-        BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics graphics = image.getGraphics();
+        //256x240
         int romDataSize = 8 * vromNumber;
         System.out.println("-------VROM读取开始(8K*VROM数量 = 8k x "+vromNumber+"="+romDataSize+"k)-------");
         System.out.println("字模点阵读取");
-//        for (int y = 0; y < 16;y++){
-//            for(int x = 0; x < 32; x++){
-//                draw(x,y,dataInputStream,graphics);
-//            }
-//        }
-        draw(1,1,dataInputStream,graphics);
-        ImageIO.write(image, "PNG", new File("C:\\Users\\Administrator\\Desktop\\2.png"));
+        System.out.println(dataInputStream.available());
+        BufferedImage bufferedImage = new BufferedImage(256,128,BufferedImage.TYPE_INT_RGB);
+        Graphics graphics = bufferedImage.getGraphics();
+        for (int y = 0; y <16;y++){
+            for(int x = 0; x < 32; x++){
+                draw(x,y,dataInputStream,graphics);
+            }
+        }
+        ImageIO.write(bufferedImage,"png",new File("D:\\1.png"));
         graphics.dispose();
         System.out.println("-------VROM程序主体读取结束(8K*VROM数量 = 8k x "+vromNumber+"="+romDataSize+"k)-------");
     }
 
-    private static void draw(int x,int y,DataInputStream dataInputStream,Graphics graphics) throws IOException {
-        int[] high = new int[8];
-        int[] low = new int[8];
-        for(int j=0;j<2;j++){
-            for(int i=0;i<8;i++){
-                byte b = dataInputStream.readByte();
-                if(j==0) {
-                    high[i] = b;
-                    String s = Integer.toString(b & 0xff, 2);
-                    String s1 = binaryStrto8(s);
-                    System.out.println(s1);
-                    char[] chars = s1.toCharArray();
-                    for(int cc=0;cc<8;cc++) {
-                        int c =Integer.parseInt(chars[cc]+"");
-                        if(c==0) {
-                            graphics.setColor(Color.white);
-                        }else {
-                            graphics.setColor(new Color(255,0,0));
-                        }
-                        graphics.drawRect(cc,i,1,1);
-                    }
-                }else{
-                    low[i]=b;
+    private static void draw(int x, int y, DataInputStream dataInputStream, Graphics graphics) throws IOException {
+        //低8byte
+        byte [] lowTile = getTile(dataInputStream);
+        //高8byte
+        byte [] highTile = getTile(dataInputStream);
+        for(int t=0;t<8;t++) {
+            byte low = lowTile[t];
+            byte high = highTile[t];
+            for(int i=0;i<8;i++) {
+                //组合 高低位
+                int highBit = ((high >> (7-i)) & 1)<<1;
+                int lowBit = (low >> (7-i)) & 1;
+                //调色板颜色 组成4位颜色中的低两位,高两位在属性表中获得
+                int color = highBit | lowBit;
+                if(color == 0) {
+                    graphics.setColor(Color.LIGHT_GRAY);
+                }else if(color == 1){
+                    graphics.setColor(Color.RED);
+                }else if(color == 2){
+                    graphics.setColor(Color.orange);
+                }else if(color == 3){
+                    graphics.setColor(new Color(123,161,6));
                 }
+                graphics.drawRect((x*8)+i,(y*8)+t,1,1);
             }
-//            if(j%2==1) {
-//                for(int m=0;m<8;m++){
-//                    int highData = (high[m] >> (7 - m) << 1 ) & 2;
-//                    int lowData = (low[m] >> (7 - m)) & 1;
-//                    int d = highData | lowData;
-//                    if(d==1) {
-//                        graphics.setColor(new Color(255,0,0));
-//                    }else if (d==2) {
-//                        graphics.setColor(new Color(0,255,0));
-//                    }else if(d==3) {
-//                        graphics.setColor(new Color(0,0,255));
-//                    }else{
-//                        graphics.setColor(Color.BLACK);
-//                    }
-//                    graphics.drawRect(x,y,1,1);
-//                }
-//            }
         }
+    }
+
+    /**
+     * 读取8Byte tile 从左至右
+     * @param dataInputStream
+     * @return
+     * @throws IOException
+     */
+    private static byte[] getTile(DataInputStream dataInputStream) throws IOException {
+        byte[] data = new byte[8];
+        for(int i=0;i<8;i++) {
+            data[i] = dataInputStream.readByte();
+        }
+        return data;
     }
 
     private static String binaryStrto8(String binStr){
