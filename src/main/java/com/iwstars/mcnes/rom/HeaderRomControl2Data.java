@@ -1,4 +1,4 @@
-package com.iwstars.mcnes.nesrom;
+package com.iwstars.mcnes.rom;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.iwstars.mcnes.nesrom;
+package com.iwstars.mcnes.rom;
 
 import lombok.Data;
 
@@ -10,9 +10,18 @@ import lombok.Data;
 @Data
 public class RomData {
 
+    /**
+     * 头信息
+     */
     private HeaderData headerData;
 
+    /**
+     * 程序数据 size =  16k *  headerData.romPRGSize
+     */
     private byte[] romPRG;
 
+    /**
+     * 图案数据 size =  8k *  headerData.romCHRSize
+     */
     private byte[] romCHR;
 }

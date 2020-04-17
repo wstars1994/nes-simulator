@@ -1,4 +1,4 @@
-package com.iwstars.mcnes.nesrom;
+package com.iwstars.mcnes.rom;
 
 import lombok.Data;
 
@@ -15,7 +15,7 @@ public class HeaderRomControl1Data {
      * 0 : Horizontal
      * 1 : Vertical
      */
-    private byte mirrorType;
+    private int mirrorType;
 
     /**
      * 1bit
@@ -23,15 +23,15 @@ public class HeaderRomControl1Data {
      * 1有存档功能
      * 0没有
      */
-    private byte SRAMEnabled;
+    private int SRAMEnabled;
 
     /**
      * 1bit
-     * 是否有Trainer
+     * 是否有512byte Trainer
      * 1有
      * 0没有
      */
-    private byte trainerPresent;
+    private int trainerPresent;
 
     /**
      * 1bit
@@ -39,7 +39,7 @@ public class HeaderRomControl1Data {
      * 1是
      * 0否
      */
-    private byte vram4;
+    private int vram4;
 
     /**
      * 4bit

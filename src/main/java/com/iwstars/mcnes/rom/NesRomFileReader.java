@@ -1,4 +1,4 @@
-package com.iwstars.mcnes.nesrom;
+package com.iwstars.mcnes.rom;
 
 /**
  * @description: 读取文件数据
