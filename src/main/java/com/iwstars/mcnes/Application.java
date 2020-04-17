@@ -1,7 +1,7 @@
 package com.iwstars.mcnes;
 
 import com.iwstars.mcnes.rom.HeaderData;
-import com.iwstars.mcnes.rom.RomData;
+import com.iwstars.mcnes.rom.NESRomData;
 import com.iwstars.mcnes.util.RomReaderUtil;
 import lombok.Cleanup;
 
@@ -17,8 +17,8 @@ import java.io.InputStream;
  */
 public class Application {
 
-    public RomData loadData(File nesFile) {
-        RomData romData = new RomData();
+    public NESRomData loadData(File nesFile) {
+        NESRomData romData = new NESRomData();
         try {
             @Cleanup InputStream fileInputStream = new FileInputStream(nesFile);
             @Cleanup DataInputStream dataInputStream = new DataInputStream(fileInputStream);
@@ -37,7 +37,8 @@ public class Application {
     public static void main(String[] args) {
         Application application = new Application();
         String filePath = "C:\\Users\\王新晨\\Desktop\\1.nes";
-        RomData romData = application.loadData(new File(filePath));
+        //读取.nes文件数据
+        NESRomData romData = application.loadData(new File(filePath));
         System.out.println(romData);
     }
 }

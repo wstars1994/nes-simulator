@@ -8,7 +8,7 @@ import lombok.Data;
  * @date: 2020-04-16 15:15
  */
 @Data
-public class RomData {
+public class NESRomData {
 
     /**
      * 头信息
