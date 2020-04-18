@@ -1,5 +1,7 @@
 package com.iwstars.mcnes;
 
+import com.iwstars.mcnes.core.PPU;
+import com.iwstars.mcnes.core.PPUData;
 import com.iwstars.mcnes.rom.HeaderData;
 import com.iwstars.mcnes.rom.NESRomData;
 import com.iwstars.mcnes.util.RomReaderUtil;
@@ -36,9 +38,13 @@ public class Application {
 
     public static void main(String[] args) {
         Application application = new Application();
-        String filePath = "C:\\Users\\王新晨\\Desktop\\1.nes";
+        String filePath = "1.nes";
         //读取.nes文件数据
         NESRomData romData = application.loadData(new File(filePath));
-        System.out.println(romData);
+        PPU ppu = new PPU(romData.getRomCHR());
+        PPUData ppuData = ppu.getPpuData();
+        byte[] pattern_0 = ppuData.getPattern_0();
+        byte[] pattern_1 = ppuData.getPattern_1();
+        System.out.println(pattern_0.length +" "+pattern_1.length);
     }
 }

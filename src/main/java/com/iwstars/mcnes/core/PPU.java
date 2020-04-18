@@ -1,5 +1,7 @@
 package com.iwstars.mcnes.core;
 
+import lombok.Data;
+
 /**
  * 图形处理单元
  * 16KB space
@@ -23,16 +25,47 @@ package com.iwstars.mcnes.core;
  * @author WStars
  * @date 2020/4/18 13:46
  */
+@Data
 public class PPU {
 
-    private PPUData ppuData = null;
+    private PPUData ppuData = new PPUData();
 
-    private PPU(PPUData ppuData){
-        this.ppuData = ppuData;
+    /**
+     * 初始化PPU 必须设置从nes文件读取到的CHR数据
+     * @param patternData 图案表数据
+     */
+    public PPU(byte[] patternData){
+
+        byte[] patternData0 = new byte[4 * 1024];
+        byte[] patternData1 = new byte[0];
+        System.arraycopy(patternData,0,patternData0,0,patternData0.length);
+        if(patternData.length > 4 * 1024) {
+            patternData1 = new byte[patternData.length - 4 * 1024];
+            System.arraycopy(patternData,4 * 1024,patternData1,0,patternData1.length);
+        }
+        ppuData.setPattern_0(patternData0);
+        ppuData.setPattern_1(patternData1);
     }
 
-    public void setNameTable(){
-
+    /**
+     * 设置命名表
+     * @param index 序号
+     * @param data 数据
+     */
+    public void setNameTable(int index,byte[] data){
+        if(index == 0) {
+            ppuData.setNameTable_0(data);
+        }else if(index == 1) {
+            ppuData.setNameTable_1(data);
+        }else if(index == 2) {
+            ppuData.setNameTable_2(data);
+        }else if(index == 3) {
+            ppuData.setNameTable_3(data);
+        }else{
+            throw new RuntimeException("此序号命名表不存在");
+        }
     }
+
+
 
 }
