@@ -48,11 +48,11 @@ public class PPU {
     }
 
     /**
-     * 设置命名表
+     * 渲染命名表
      * @param index 序号
      * @param data 数据
      */
-    public void setNameTable(int index,byte[] data){
+    private void render(int index,byte[] data){
         if(index == 0) {
             ppuData.setNameTable_0(data);
         }else if(index == 1) {
@@ -66,6 +66,21 @@ public class PPU {
         }
     }
 
+    public void renderNameTable(byte[] nameTableData) {
+        byte PPUCTRL = nameTableData[0];
+        byte PPUMASK = nameTableData[1];
+        byte PPUSTATUS = nameTableData[2];
+        byte OAMADDR = nameTableData[3];
+        byte OAMDATA = nameTableData[4];
+        byte PPUSCROLL = nameTableData[5];
+        byte PPUADDR = nameTableData[6];
+        byte PPUDATA = nameTableData[7];
+
+        int nameTableAddressIndex = PPUCTRL & 0x3;
+        int addressIncrementVRAMType  = (PPUCTRL>>2) & 0x1;
+        int spritePatternTableType  = (PPUCTRL>>3) & 0x1;
 
 
+        System.out.println(nameTableAddressIndex);
+    }
 }

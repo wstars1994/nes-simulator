@@ -1,7 +1,6 @@
 package com.iwstars.mcnes;
 
 import com.iwstars.mcnes.core.PPU;
-import com.iwstars.mcnes.core.PPUData;
 import com.iwstars.mcnes.rom.HeaderData;
 import com.iwstars.mcnes.rom.NESRomData;
 import com.iwstars.mcnes.util.RomReaderUtil;
@@ -41,10 +40,15 @@ public class Application {
         String filePath = "1.nes";
         //读取.nes文件数据
         NESRomData romData = application.loadData(new File(filePath));
+        //创建PPU
         PPU ppu = new PPU(romData.getRomCHR());
-        PPUData ppuData = ppu.getPpuData();
-        byte[] pattern_0 = ppuData.getPattern_0();
-        byte[] pattern_1 = ppuData.getPattern_1();
-        System.out.println(pattern_0.length +" "+pattern_1.length);
+        //读取程序数据
+        byte[] romPRG = romData.getRomPRG();
+        //每8位渲染
+        byte[] nameTableData = new byte[8];
+        for (int i=0;i<8;i++) {
+            nameTableData[i] = romPRG[i];
+        }
+        ppu.renderNameTable(nameTableData);
     }
 }
