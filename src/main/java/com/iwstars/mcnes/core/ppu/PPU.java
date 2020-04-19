@@ -82,6 +82,8 @@ public class PPU {
 
         int OAMDATA = nameTableData[3]&0xFF;
         System.out.println("OAMDATA = "+Integer.toBinaryString(OAMDATA));
+        ppuData.getSprRam()[OAMADDR] = OAMDATA;
+
         int PPUSCROLL = nameTableData[4]&0xFF;
         System.out.println("PPUSCROLL = "+Integer.toBinaryString(PPUSCROLL));
         int PPUADDR = nameTableData[5]&0xFF;
@@ -93,7 +95,6 @@ public class PPU {
         System.out.println("------------------------------------");
         this.getPpuMask(PPUMASK);
         System.out.println("------------------------------------");
-        this.getOam(PPUADDR);
         System.out.println("------------------------------------");
     }
 
@@ -168,14 +169,4 @@ public class PPU {
         int blue = (ppumask>>7) & 0x1;
         System.out.println("blue : " + blue);
     }
-
-    /**
-     * 对象属性内存
-     * Object Attribute Memory
-     * @param ppuaddr
-     */
-    private void getOam(int ppuaddr) {
-
-    }
-
 }

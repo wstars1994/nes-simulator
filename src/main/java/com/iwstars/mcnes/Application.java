@@ -47,6 +47,7 @@ public class Application {
         //每8位渲染
         byte[] nameTableData = new byte[8];
         for (int i=0;i<8;i++) {
+            System.out.println(romPRG[i]&0xFF);
             nameTableData[i] = romPRG[i];
         }
         ppu.renderNameTable(nameTableData);

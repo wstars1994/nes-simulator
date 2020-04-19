@@ -55,4 +55,9 @@ public class PPUData {
      */
     private byte[] paletteMirrors = new byte[0x00E0];
 
+    /**
+     * 子画面 256byte
+     */
+    private int[] sprRam = new int[0x100];
+
 }
