@@ -1,4 +1,4 @@
-package com.iwstars.mcnes.core;
+package com.iwstars.mcnes.core.cpu;
 
 /**
  * @description: 模拟6502cpu

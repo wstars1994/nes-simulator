@@ -1,6 +1,6 @@
 package com.iwstars.mcnes;
 
-import com.iwstars.mcnes.core.PPU;
+import com.iwstars.mcnes.core.ppu.PPU;
 import com.iwstars.mcnes.rom.HeaderData;
 import com.iwstars.mcnes.rom.NESRomData;
 import com.iwstars.mcnes.util.RomReaderUtil;

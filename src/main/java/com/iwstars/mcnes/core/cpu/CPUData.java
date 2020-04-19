@@ -1,4 +1,4 @@
-package com.iwstars.mcnes.core;
+package com.iwstars.mcnes.core.cpu;
 
 /**
  * CPU数据
