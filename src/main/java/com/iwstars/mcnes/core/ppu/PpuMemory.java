@@ -26,16 +26,15 @@ import lombok.Data;
  * @date 2020/4/18 13:46
  */
 @Data
-public class PPUData {
+public class PpuMemory {
 
     /**
-     * 图案表
+     * 图案表$0000-$1FFF
      */
     private byte[] pattern_0 = new byte[0x1000];
     private byte[] pattern_1 = new byte[0x1000];
-
     /**
-     * 命名表
+     * 命名表$2000-$2FFF
      */
     private byte[] nameTable_0 = new byte[0x0400];
     private byte[] nameTable_1 = new byte[0x0400];

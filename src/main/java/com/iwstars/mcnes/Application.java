@@ -1,6 +1,8 @@
 package com.iwstars.mcnes;
 
-import com.iwstars.mcnes.core.ppu.PPU;
+import com.iwstars.mcnes.core.NesMobo;
+import com.iwstars.mcnes.core.cpu.Cpu6502;
+import com.iwstars.mcnes.core.ppu.Ppu;
 import com.iwstars.mcnes.rom.HeaderData;
 import com.iwstars.mcnes.rom.NESRomData;
 import com.iwstars.mcnes.util.RomReaderUtil;
@@ -41,15 +43,14 @@ public class Application {
         //读取.nes文件数据
         NESRomData romData = application.loadData(new File(filePath));
         //创建PPU
-        PPU ppu = new PPU(romData.getRomCHR());
-        //读取程序数据
-        byte[] romPRG = romData.getRomPRG();
-        //每8位渲染
-        byte[] nameTableData = new byte[8];
-        for (int i=0;i<8;i++) {
-            System.out.println(romPRG[i]&0xFF);
-            nameTableData[i] = romPRG[i];
-        }
-        ppu.renderNameTable(nameTableData);
+        Ppu ppu = new Ppu(romData.getRomCHR());
+        //创建CPU
+        Cpu6502 cpu6502 = new Cpu6502(romData.getRomPRG());
+        //主板
+        NesMobo nesMobo = new NesMobo();
+        nesMobo.setPpu(ppu);
+        nesMobo.setCpu6502(cpu6502);
+        //上电启动
+        nesMobo.powerUp();
     }
 }
