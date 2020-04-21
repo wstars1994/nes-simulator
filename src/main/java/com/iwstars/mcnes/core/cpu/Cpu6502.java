@@ -52,7 +52,7 @@ public class Cpu6502{
                     System.out.println("TXS");
                     CpuReg.TXS();
                     break;
-                //LDA
+                //LDA Absolute
                 case 0xAD:
                     System.out.println("LDA_ABS");
                     CpuReg.LDA_ABS(iterator.next(),iterator.next());
