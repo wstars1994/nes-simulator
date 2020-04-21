@@ -38,7 +38,7 @@ public class CpuMemory implements Iterable<Byte> {
         return new Iterator<Byte>() {
 
             public boolean hasNext() {
-                return index < 20;
+                return index < 50;
             }
 
             public Byte next() {

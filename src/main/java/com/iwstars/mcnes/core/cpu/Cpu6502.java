@@ -26,21 +26,21 @@ public class Cpu6502{
             switch(insCode&0xff) {
                 //SEI
                 case 0x78:
-                    System.out.println("SEI ");
+                    System.out.println("SEI");
                     break;
                 //CLD
                 case 0xD8:
-                    System.out.println("CLD ");
+                    System.out.println("CLD");
                     break;
                 //LDA 将数据存入累加器A
                 case 0xA9:
-                    System.out.println("LDA ");
+                    System.out.println("LDA");
                     CpuReg.LDA(iterator.next());
                     break;
                 //STA 将累加器A的数据存入CPU内存
                 case 0x8D:
-                    System.out.println("STA2Byte");
-                    CpuReg.STA_2Byte(cpuMemory,iterator.next(),iterator.next());
+                    System.out.println("STA_ABS");
+                    CpuReg.STA_ABS(cpuMemory,iterator.next(),iterator.next());
                     break;
                 //LDX 将数据存入X索引寄存器
                 case 0xA2:
@@ -54,8 +54,13 @@ public class Cpu6502{
                     break;
                 //LDA
                 case 0xAD:
-                    System.out.println("LDA2Byte");
-                    CpuReg.LDA_2Byte(iterator.next(),iterator.next());
+                    System.out.println("LDA_ABS");
+                    CpuReg.LDA_ABS(iterator.next(),iterator.next());
+                    break;
+                //BPL
+                case 0x10:
+                    System.out.println("BPL");
+                    CpuReg.LDX(iterator.next());
                     break;
                 default:
                     System.out.println(insCode&0xff);

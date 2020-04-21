@@ -45,7 +45,7 @@ public class CpuReg {
      * @param low 低8位
      * @param high 高8位
      */
-    public static void STA_2Byte(CpuMemory cpuMemory, byte low, byte high) {
+    public static void STA_ABS(CpuMemory cpuMemory, byte low, byte high) {
         //16位 short
         cpuMemory.write(CpuReg.getShort(low,high),CpuReg.REG_A);
     }
@@ -70,9 +70,21 @@ public class CpuReg {
      * @param low 低8位
      * @param high 高8位
      */
-    public static void LDA_2Byte(byte low, byte high) {
-        System.out.println(getShort(low,high));
-//        CpuReg.LDA(getShort(low,high));
+    public static void LDA_ABS(byte low, byte high) {
+        short addr = getShort(low, high);
+        byte readData = 0;
+        //PPU寄存器
+        if(addr>=0x2000 && addr<0x2008) {
+            switch (addr) {
+                //读PPUSTATUS状态寄存器
+                case 0x2002:
+
+                    break;
+                default:
+                    readData = 0;
+            }
+        }
+        CpuReg.LDA(readData);
     }
 
     /**

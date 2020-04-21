@@ -28,6 +28,8 @@ import lombok.Data;
 @Data
 public class PpuMemory {
 
+    private byte[] ppuData;
+
     /**
      * 图案表$0000-$1FFF
      */
