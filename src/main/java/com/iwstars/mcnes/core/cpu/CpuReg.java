@@ -21,10 +21,6 @@ public class CpuReg {
      */
     private static byte REG_Y;
     /**
-     * 指令计数器 16位
-     */
-    private static short REG_PC;
-    /**
      * 栈指针
      */
     private static int REG_SP;
@@ -47,6 +43,7 @@ public class CpuReg {
      */
     public static void STA_ABS(CpuMemory cpuMemory, byte low, byte high) {
         //16位 short
+        System.out.println("---------" + CpuReg.REG_A);
         cpuMemory.write(MemUtil.getShort(low,high),CpuReg.REG_A);
     }
 
@@ -74,15 +71,13 @@ public class CpuReg {
      */
     public static void LDA_ABS(byte low, byte high) {
         short addr = MemUtil.getShort(low, high);
-        byte readData = 0;
+        byte readData = 1;
         //PPU寄存器
         if(addr>=0x2000 && addr<0x2008) {
             switch (addr) {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:
                     break;
-                default:
-                    readData = 0;
             }
         }
         CpuReg.LDA(readData);
@@ -123,9 +118,11 @@ public class CpuReg {
      *
      * @param data
      */
-    public static void BPL(byte data) {
-        if(CpuRegStatus.getN()== 0 ) {
-
+    public static int BPL(byte data) {
+        System.out.println("BPL:"+data);
+        if(CpuRegStatus.getN() == 0) {
+            return data;
         }
+        return 0;
     }
 }
