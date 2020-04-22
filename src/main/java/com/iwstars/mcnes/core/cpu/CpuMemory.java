@@ -7,42 +7,50 @@ import java.util.Iterator;
 
 /**
  * CPU数据
- *
- * Address range	Size	Device
- * $0000-$07FF	   $0800	2KB internal RAM
- * $0800-$0FFF	   $0800	Mirrors of $0000-$07FF
- * $1000-$17FF	   $0800    Mirrors of $0000-$07FF
- * $1800-$1FFF	   $0800    Mirrors of $0000-$07FF
- * $2000-$2007	   $0008	NES Ppu registers PPU寄存器
- * $2008-$3FFF	   $1FF8	Mirrors of $2000-2007 (repeats every 8 bytes) 镜像 每8个字节
- * $4000-$4017	   $0018	NES APU and I/O registers
- * $4018-$401F	   $0008	APU and I/O functionality that is normally disabled. See CPU Test Mode.
- * $4020-$FFFF	   $BFE0	Cartridge space: PRG ROM, PRG RAM, and mapper registers
- *
+ * +---------+-------+-------+-----------------------+
+ * | 地址    | 大小  | 标记  |         描述          |
+ * +---------+-------+-------+-----------------------+
+ * | $0000   | $800  |       | RAM                   |
+ * | $0800   | $800  | M     | RAM                   |
+ * | $1000   | $800  | M     | RAM                   |
+ * | $1800   | $800  | M     | RAM                   |
+ * | $2000   | 8     |       | Registers             |
+ * | $2008   | $1FF8 |  R    | Registers             |
+ * | $4000   | $20   |       | Registers             |
+ * | $4020   | $1FDF |       | Expansion ROM         |
+ * | $6000   | $2000 |       | SRAM                  |
+ * | $8000   | $4000 |       | PRG-ROM               |
+ * | $C000   | $4000 |       | PRG-ROM               |
+ * +---------+-------+-------+-----------------------+
  * @author WStars
  * @date 2020/4/18 15:25
  */
 @Setter
 @Getter
-public class CpuMemory implements Iterable<Byte> {
+public class CpuMemory {
 
-    int index = 0;
-
-    private byte[] prgData;
+    /**
+     * PRG程序计数器
+     */
+    private int prgPc = 0x8000;
     /**
      * cpu内存
      */
-    private byte[] data = new byte[0xFFFF];
+    private byte[] data = new byte[0xFFFF+1];
 
-    public Iterator<Byte> iterator() {
+    /**
+     * PRG数据迭代器
+     * @return
+     */
+    public Iterator<Byte> iteratorPrgData() {
         return new Iterator<Byte>() {
 
             public boolean hasNext() {
-                return index < 50;
+                return prgPc < data.length;
             }
 
             public Byte next() {
-                return prgData[index++];
+                return data[prgPc++];
             }
 
             public void remove() {
@@ -55,8 +63,17 @@ public class CpuMemory implements Iterable<Byte> {
      * @param addr
      * @param data
      */
-    public void write(short addr,byte data){
+    public void write(int addr,byte data){
         this.data[addr] = data;
+    }
+
+    /**
+     * 写块数据
+     * @param addr
+     * @param prgData
+     */
+    public void write(int addr,byte[] prgData){
+        System.arraycopy(prgData,0,data,addr,prgData.length);
     }
 
     /**
@@ -64,7 +81,7 @@ public class CpuMemory implements Iterable<Byte> {
      * @param addr
      * @return
      */
-    public byte read(short addr){
+    public byte read(int addr){
         return this.data[addr];
     }
 }

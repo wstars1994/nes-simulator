@@ -1,9 +1,11 @@
 package com.iwstars.mcnes.core.cpu;
 
+import com.iwstars.mcnes.util.MemUtil;
+
 /**
  * @description: CPU寄存器
  * @author: WStars
- * @date: 2020-04-21 10:48
+ * @date: 2020-04-19 10:48
  */
 public class CpuReg {
     /**
@@ -19,10 +21,6 @@ public class CpuReg {
      */
     private static byte REG_Y;
     /**
-     * 状态寄存器
-     */
-    private static byte REG_S;
-    /**
      * 指令计数器 16位
      */
     private static short REG_PC;
@@ -37,6 +35,8 @@ public class CpuReg {
      */
     public static void LDA(byte data) {
         CpuReg.REG_A = data;
+        CpuRegStatus.setN(CpuReg.REG_A);
+        CpuRegStatus.setZ(CpuReg.REG_A);
     }
 
     /**
@@ -47,7 +47,7 @@ public class CpuReg {
      */
     public static void STA_ABS(CpuMemory cpuMemory, byte low, byte high) {
         //16位 short
-        cpuMemory.write(CpuReg.getShort(low,high),CpuReg.REG_A);
+        cpuMemory.write(MemUtil.getShort(low,high),CpuReg.REG_A);
     }
 
     /**
@@ -56,6 +56,8 @@ public class CpuReg {
      */
     public static void LDX(byte data) {
         CpuReg.REG_X = data;
+        CpuRegStatus.setN(CpuReg.REG_X);
+        CpuRegStatus.setZ(CpuReg.REG_X);
     }
 
     /**
@@ -71,14 +73,13 @@ public class CpuReg {
      * @param high 高8位
      */
     public static void LDA_ABS(byte low, byte high) {
-        short addr = getShort(low, high);
+        short addr = MemUtil.getShort(low, high);
         byte readData = 0;
         //PPU寄存器
         if(addr>=0x2000 && addr<0x2008) {
             switch (addr) {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:
-
                     break;
                 default:
                     readData = 0;
@@ -86,14 +87,45 @@ public class CpuReg {
         }
         CpuReg.LDA(readData);
     }
+    /**
+     * data -> REG_Y
+     * @param data
+     */
+    public static void LDY(byte data) {
+        CpuReg.REG_Y = data;
+    }
 
     /**
-     * 两个byte组成的short
-     * @param low
-     * @param high
-     * @return
+     * LDA绝对X变址
+     * @param d1
+     * @param d2
      */
-    private static short getShort(byte low, byte high){
-        return (short) ((low & 0xFF) | ((high & 0xFF) << 8));
+    public static void LDA_ABS_X(byte d1, byte d2) {
+
+        System.out.println(d1&0xFF);
+    }
+
+    /**
+     * 禁止中断
+     */
+    public static void SEI() {
+        CpuRegStatus.setI((byte) 1);
+    }
+
+    /**
+     * Clear decimal mode
+     */
+    public static void CLD() {
+        CpuRegStatus.setD((byte) 0);
+    }
+
+    /**
+     *
+     * @param data
+     */
+    public static void BPL(byte data) {
+        if(CpuRegStatus.getN()== 0 ) {
+
+        }
     }
 }
