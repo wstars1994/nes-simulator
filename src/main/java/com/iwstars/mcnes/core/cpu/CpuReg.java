@@ -43,7 +43,6 @@ public class CpuReg {
      */
     public static void STA_ABS(CpuMemory cpuMemory, byte low, byte high) {
         //16位 short
-        System.out.println("---------" + CpuReg.REG_A);
         cpuMemory.write(MemUtil.getShort(low,high),CpuReg.REG_A);
     }
 
@@ -77,6 +76,7 @@ public class CpuReg {
             switch (addr) {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:
+                    System.out.println("读PPUSTATUS状态寄存器");
                     break;
             }
         }
@@ -119,7 +119,6 @@ public class CpuReg {
      * @param data
      */
     public static int BPL(byte data) {
-        System.out.println("BPL:"+data);
         if(CpuRegStatus.getN() == 0) {
             return data;
         }
