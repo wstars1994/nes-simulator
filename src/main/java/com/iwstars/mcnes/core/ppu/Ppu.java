@@ -70,4 +70,12 @@ public class Ppu {
         }
     }
 
+    /**
+     * 开始绘制
+     */
+    public void startRender() {
+
+
+
+    }
 }

@@ -16,4 +16,17 @@ public class MemUtil {
     public static short getShort(byte low, byte high){
         return (short) ((low & 0xFF) | ((high & 0xFF) << 8));
     }
+
+    /**
+     * from right to left
+     * @param data
+     * @return
+     */
+    public static byte[] toBits(byte data){
+        byte[] bytes = new byte[8];
+        for(int i=0;i<8;i++) {
+            bytes[i] = (byte) ((data>>i)&1);
+        }
+        return bytes;
+    }
 }

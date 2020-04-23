@@ -45,6 +45,12 @@ public class CpuReg {
     public static int STA_ABS(CpuMemory cpuMemory, byte low, byte high) {
         //16位 short
         cpuMemory.write(MemUtil.getShort(low,high),CpuReg.REG_A);
+        switch (MemUtil.getShort(low,high)) {
+            case 0x2000:
+                System.out.println("写入寄存器$2000<-"+CpuReg.REG_A);
+                CpuPpuReg.pcr_2000 = MemUtil.toBits(CpuReg.REG_A);
+                break;
+        }
         return 4;
     }
 
@@ -128,10 +134,11 @@ public class CpuReg {
      * @param data
      */
     public static int BPL(CpuMemory cpuMemory, byte data) {
+        System.out.println(REG_A&0xff);
         if(CpuRegStatus.getN() == 0) {
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return 3;
         }
-        return 0;
+        return 3;
     }
 }

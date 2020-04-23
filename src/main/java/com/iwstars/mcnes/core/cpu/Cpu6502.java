@@ -21,17 +21,13 @@ public class Cpu6502{
      */
     protected CpuMemory cpuMemory = new CpuMemory();
 
-    public Cpu6502(){}
-
     public Cpu6502(byte[] prgData){
         cpuMemory.write(0x8000,prgData);
     }
+
     public void go(){
-        for (int i = 0; i < 240; i++) {
-            System.out.println("----line---- :" + i);
-            this.runProgram();
-            this.resetCpuCycle();
-        }
+        this.runProgram();
+        this.cpuCycle = 113;
     }
     /**
      * 运行程序
@@ -100,11 +96,5 @@ public class Cpu6502{
                     break;
             }
         }
-    }
-    /**
-     * 重置CPU扫描线周期
-     */
-    private void resetCpuCycle(){
-        this.cpuCycle = 113;
     }
 }

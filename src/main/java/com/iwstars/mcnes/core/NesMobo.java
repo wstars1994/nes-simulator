@@ -26,7 +26,19 @@ public class NesMobo {
      * 主板通电
      */
     public void powerUp(){
-        this.cpu6502.go();
+        while (true)  {
+            ppu.startRender();
+            //256x240 分辨率
+            for (int i = 0; i < 240; i++) {
+                //HBlank start
+
+                this.cpu6502.go();
+            }
+            //VBlank start
+            for(int i=240;i<262;i++) {
+
+            }
+        }
     }
 
     /**

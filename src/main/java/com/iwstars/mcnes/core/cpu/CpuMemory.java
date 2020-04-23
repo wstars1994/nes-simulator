@@ -53,8 +53,7 @@ public class CpuMemory {
                 return data[prgPc++];
             }
 
-            public void remove() {
-            }
+            public void remove() {}
         };
     }
 
