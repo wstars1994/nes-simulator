@@ -25,12 +25,17 @@ public class CpuReg {
      */
     private static int REG_SP;
 
+
+    /**
+     * 获取寄存器A值
+     * @return
+     */
     public static int getReg_A(){
         return REG_A;
     }
 
     /**
-     * data -> REG_A
+     * 将数据放入寄存器A
      * @param data
      */
     public static int LDA(byte data) {
@@ -47,6 +52,7 @@ public class CpuReg {
      * @param high 高8位
      */
     public static int STA_ABS(CpuMemory cpuMemory, byte low, byte high) {
+        System.out.print(" -->Write");
         //16位 short
         cpuMemory.write(MemUtil.getShort(low,high),CpuReg.REG_A);
         switch (MemUtil.getShort(low,high)) {
@@ -109,10 +115,13 @@ public class CpuReg {
 
     /**
      * LDA绝对X变址
-     * @param d1
-     * @param d2
+     * @param low
+     * @param high
      */
-    public static int LDA_ABS_X(byte d1, byte d2) {
+    public static int LDA_ABS_X(CpuMemory cpuMemory,byte low, byte high) {
+        short aShort = MemUtil.getShort(low, high);
+        int addr = aShort + (CpuReg.REG_X & 0xff);
+        CpuReg.LDA(cpuMemory.read(addr));
         return 4;
     }
 
@@ -133,15 +142,71 @@ public class CpuReg {
     }
 
     /**
-     *
+     * REG_S_N == 0 切换
      * @param cpuMemory
      * @param data
      */
     public static int BPL(CpuMemory cpuMemory, byte data) {
         if(CpuRegStatus.getN() == 0) {
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
-            return 3;
         }
         return 3;
+    }
+
+    /**
+     * CMP Compare memory and accumulator
+     * @param data
+     * @return
+     */
+    public static int CMP(byte data) {
+        byte regA = CpuReg.REG_A;
+        byte cmpData = (byte) (regA - data);
+        CpuRegStatus.setN(cmpData);
+        CpuRegStatus.setZ(cmpData);
+        CpuRegStatus.setC(cmpData);
+        return 2;
+    }
+
+    /**
+     *
+     * @param data
+     * @return
+     */
+    public static int BNE(CpuMemory cpuMemory,byte data) {
+        if(CpuRegStatus.getZ() == 0) {
+            cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
+        }
+        return 3;
+    }
+
+    public static int BCS(CpuMemory cpuMemory,byte data) {
+        if(CpuRegStatus.getC() != 0) {
+            cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
+        }
+        return 3;
+    }
+
+    public static int DEX() {
+        CpuReg.REG_X = (byte) (CpuReg.REG_X - 1);
+        CpuRegStatus.setN(CpuReg.REG_X);
+        CpuRegStatus.setZ(CpuReg.REG_X);
+        return 2;
+    }
+
+    public static int JSR(CpuMemory cpuMemory,Byte low, Byte high) {
+//        short aShort = (INT) (MemUtil.getShort(low, high)&0xFFFFFFFF);
+//        cpuMemory.setPrgPc(aShort);
+//        push((cpuMemory.getPrgPc() >> 8) & 0xff);
+//        push((cpuMemory.getPrgPc() >> 8) & 0xff);
+        return 6;
+    }
+
+//    public static int CMP_ABS(byte low, byte high) {
+//        short aShort = MemUtil.getShort(low, high);
+//        return 4;
+//    }
+
+    public static void main(String[] args) {
+        System.out.println(((short)-28468)&0xFFFFFFFF);
     }
 }

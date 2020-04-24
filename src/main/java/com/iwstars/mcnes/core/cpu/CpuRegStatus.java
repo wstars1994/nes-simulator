@@ -56,4 +56,16 @@ public class CpuRegStatus {
     public static void setD(byte data) {
         CpuRegStatus.REG_S_D = data;
     }
+
+    public static void setC(byte data) {
+        CpuRegStatus.REG_S_C = (byte) ((data&0xfff) < 0x100 ? 1: 0);
+    }
+
+    public static byte getZ() {
+        return CpuRegStatus.REG_S_Z;
+    }
+
+    public static byte getC() {
+        return CpuRegStatus.REG_S_C;
+    }
 }
