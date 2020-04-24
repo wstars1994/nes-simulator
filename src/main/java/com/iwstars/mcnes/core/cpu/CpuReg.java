@@ -88,7 +88,7 @@ public class CpuReg {
      * @param high 高8位
      */
     public static int LDA_ABS(byte low, byte high) {
-        short addr = MemUtil.getShort(low, high);
+        int addr = MemUtil.getShort(low, high);
         byte readData = 1;
         //PPU寄存器
         if(addr>=0x2000 && addr<0x2008) {
@@ -96,7 +96,7 @@ public class CpuReg {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:
                     //当CPU读取$2002后vblank标志设置为0
-                    readData = MemUtil.bytesToByte(CpuPpuReg.psr_2002);
+                    readData = MemUtil.bitsToByte(CpuPpuReg.psr_2002);
                     CpuPpuReg.psr_2002[7] = 0;
                     break;
             }
@@ -119,7 +119,7 @@ public class CpuReg {
      * @param high
      */
     public static int LDA_ABS_X(CpuMemory cpuMemory,byte low, byte high) {
-        short aShort = MemUtil.getShort(low, high);
+        int aShort = MemUtil.getShort(low, high);
         int addr = aShort + (CpuReg.REG_X & 0xff);
         CpuReg.LDA(cpuMemory.read(addr));
         return 4;
@@ -194,11 +194,54 @@ public class CpuReg {
     }
 
     public static int JSR(CpuMemory cpuMemory,Byte low, Byte high) {
-        short aShort = MemUtil.getShort(low, high);
+        int aShort = MemUtil.getShort(low, high);
         cpuMemory.setPrgPc(aShort);
 //        push((cpuMemory.getPrgPc() >> 8) & 0xff);
 //        push((cpuMemory.getPrgPc() >> 8) & 0xff);
         return 6;
+    }
+
+    public static int STA_ZERO(CpuMemory cpuMemory, byte addr) {
+        System.out.print(" -->Write");
+        cpuMemory.write(addr,CpuReg.REG_A);
+        return 3;
+    }
+
+    public static int STX_ZERO(CpuMemory cpuMemory, byte addr) {
+        System.out.print(" -->Write");
+        cpuMemory.write(addr,CpuReg.REG_X);
+        return 3;
+    }
+
+    public static int CPX( byte data) {
+        byte regX = CpuReg.REG_X;
+        byte cmpData = (byte) (regX - data);
+        CpuRegStatus.setN(cmpData);
+        CpuRegStatus.setZ(cmpData);
+        CpuRegStatus.setC(cmpData);
+        return 2;
+    }
+
+    public static int STA_INDIRECT_Y(CpuMemory cpuMemory, byte addr) {
+        int memAddress = cpuMemory.read(addr) + (CpuReg.REG_Y&0xFF);
+        cpuMemory.write(memAddress,CpuReg.REG_A);
+        return 6;
+    }
+
+    public static int DEY() {
+        CpuReg.REG_Y = (byte) (CpuReg.REG_X-1);
+        CpuRegStatus.setN(CpuReg.REG_Y);
+        CpuRegStatus.setZ(CpuReg.REG_Y);
+        return 2;
+    }
+
+    public static int CPY(byte data) {
+        byte regY = CpuReg.REG_Y;
+        byte cmpData = (byte) (regY - data);
+        CpuRegStatus.setN(cmpData);
+        CpuRegStatus.setZ(cmpData);
+        CpuRegStatus.setC(cmpData);
+        return 2;
     }
 
 //    public static int CMP_ABS(byte low, byte high) {

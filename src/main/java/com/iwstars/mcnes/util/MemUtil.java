@@ -13,8 +13,8 @@ public class MemUtil {
      * @param high
      * @return
      */
-    public static short getShort(byte low, byte high){
-        return (short) ((low & 0xFF) | ((high & 0xFF) << 8));
+    public static int getShort(byte low, byte high){
+        return (low & 0xFF) | ((high & 0xFF) << 8);
     }
 
     /**
@@ -35,18 +35,11 @@ public class MemUtil {
      * @param data
      * @return
      */
-    public static byte bytesToByte(byte[] data) {
+    public static byte bitsToByte(byte[] data) {
         byte res = 0;
         for (int i = 7; i >=0; i--) {
             res|=(data[i]<<i) | res;
         }
         return (byte) (res&0xff);
-    }
-
-
-//    52 112
-    public static void main(String[] args) {
-        System.out.println(-52&0xff);
-        System.out.println(-112&0xff);
     }
 }

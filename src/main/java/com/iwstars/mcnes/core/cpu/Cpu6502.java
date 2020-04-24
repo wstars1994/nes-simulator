@@ -122,6 +122,36 @@ public class Cpu6502{
                     System.out.print("JSR");
                     cpuCycle-=CpuReg.JSR(cpuMemory,iterator.next(),iterator.next());
                     break;
+                //STA 将累加器A的数据存入CPU内存
+                case 0x85:
+                    System.out.print("STA_ZERO");
+                    cpuCycle-=CpuReg.STA_ZERO(cpuMemory,iterator.next());
+                    break;
+                //STX 将寄存器X的数据存入CPU内存
+                case 0x86:
+                    System.out.print("STX_ZERO");
+                    cpuCycle-=CpuReg.STX_ZERO(cpuMemory,iterator.next());
+                    break;
+                //CPX
+                case 0xE0:
+                    System.out.print("CPX");
+                    cpuCycle-=CpuReg.CPX(iterator.next());
+                    break;
+                //STA_INDIRECT_Y
+                case 0x91:
+                    System.out.print("STA_INDIRECT_Y");
+                    cpuCycle-=CpuReg.STA_INDIRECT_Y(cpuMemory,iterator.next());
+                    break;
+                //DEY
+                case 0x88:
+                    System.out.print("DEY");
+                    cpuCycle-=CpuReg.DEY();
+                    break;
+                //CPY
+                case 0xC0:
+                    System.out.print("CPY");
+                    cpuCycle-=CpuReg.CPY(iterator.next());
+                    break;
                 default:
                     System.out.println(insCode&0xff);
                     break;
