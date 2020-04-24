@@ -39,7 +39,9 @@ public class NesMobo {
             //VBlank start
             for(int i=240;i<262;i++) {
                 //设置vblank true
-                CpuPpuReg.psr_2002[7] = 1;
+                if(i==241) {
+                    CpuPpuReg.psr_2002[7] = 1;
+                }
                 this.cpu6502.go();
             }
         }

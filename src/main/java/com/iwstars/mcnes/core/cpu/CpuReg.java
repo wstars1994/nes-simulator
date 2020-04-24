@@ -89,8 +89,8 @@ public class CpuReg {
             switch (addr) {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:
-                    readData = MemUtil.bytesToByte(CpuPpuReg.psr_2002);
                     //当CPU读取$2002后vblank标志设置为0
+                    readData = MemUtil.bytesToByte(CpuPpuReg.psr_2002);
                     CpuPpuReg.psr_2002[7] = 0;
                     break;
             }
