@@ -194,8 +194,8 @@ public class CpuReg {
     }
 
     public static int JSR(CpuMemory cpuMemory,Byte low, Byte high) {
-//        short aShort = (INT) (MemUtil.getShort(low, high)&0xFFFFFFFF);
-//        cpuMemory.setPrgPc(aShort);
+        short aShort = MemUtil.getShort(low, high);
+        cpuMemory.setPrgPc(aShort);
 //        push((cpuMemory.getPrgPc() >> 8) & 0xff);
 //        push((cpuMemory.getPrgPc() >> 8) & 0xff);
         return 6;
@@ -205,8 +205,4 @@ public class CpuReg {
 //        short aShort = MemUtil.getShort(low, high);
 //        return 4;
 //    }
-
-    public static void main(String[] args) {
-        System.out.println(((short)-28468)&0xFFFFFFFF);
-    }
 }

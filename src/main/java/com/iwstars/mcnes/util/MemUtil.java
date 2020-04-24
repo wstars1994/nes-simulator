@@ -42,4 +42,11 @@ public class MemUtil {
         }
         return (byte) (res&0xff);
     }
+
+
+//    52 112
+    public static void main(String[] args) {
+        System.out.println(-52&0xff);
+        System.out.println(-112&0xff);
+    }
 }
