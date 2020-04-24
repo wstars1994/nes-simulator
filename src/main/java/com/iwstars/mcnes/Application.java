@@ -20,6 +20,8 @@ import java.io.InputStream;
  */
 public class Application {
 
+    public static boolean debug = false;
+
     public NESRomData loadData(File nesFile) {
         NESRomData romData = new NESRomData();
         try {
@@ -38,6 +40,7 @@ public class Application {
     }
 
     public static void main(String[] args) {
+        debug = true;
         Application application = new Application();
         String filePath = "1.nes";
         //读取.nes文件数据

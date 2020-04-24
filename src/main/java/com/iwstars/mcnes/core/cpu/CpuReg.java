@@ -25,6 +25,10 @@ public class CpuReg {
      */
     private static int REG_SP;
 
+    public static int getReg_A(){
+        return REG_A;
+    }
+
     /**
      * data -> REG_A
      * @param data
@@ -47,7 +51,6 @@ public class CpuReg {
         cpuMemory.write(MemUtil.getShort(low,high),CpuReg.REG_A);
         switch (MemUtil.getShort(low,high)) {
             case 0x2000:
-                System.out.println("写入寄存器$2000<-"+CpuReg.REG_A);
                 CpuPpuReg.pcr_2000 = MemUtil.toBits(CpuReg.REG_A);
                 break;
         }
@@ -86,7 +89,9 @@ public class CpuReg {
             switch (addr) {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:
-                    System.out.println("读PPUSTATUS状态寄存器");
+                    readData = MemUtil.bytesToByte(CpuPpuReg.psr_2002);
+                    //当CPU读取$2002后vblank标志设置为0
+                    CpuPpuReg.psr_2002[7] = 0;
                     break;
             }
         }
@@ -108,7 +113,6 @@ public class CpuReg {
      * @param d2
      */
     public static int LDA_ABS_X(byte d1, byte d2) {
-        System.out.println(d1&0xFF);
         return 4;
     }
 
@@ -134,7 +138,6 @@ public class CpuReg {
      * @param data
      */
     public static int BPL(CpuMemory cpuMemory, byte data) {
-        System.out.println(REG_A&0xff);
         if(CpuRegStatus.getN() == 0) {
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return 3;

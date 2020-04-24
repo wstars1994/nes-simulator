@@ -29,4 +29,17 @@ public class MemUtil {
         }
         return bytes;
     }
+
+    /**
+     * byte 0 1数组转为byte
+     * @param data
+     * @return
+     */
+    public static byte bytesToByte(byte[] data) {
+        byte res = 0;
+        for (int i = 7; i >=0; i--) {
+            res|=(data[i]<<i) | res;
+        }
+        return (byte) (res&0xff);
+    }
 }
