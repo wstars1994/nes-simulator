@@ -16,10 +16,14 @@ public class Cpu6502{
      * 1.79*Math.pow(10,6)/60/262 = 113
      */
     private int cpuCycle = 113;
+
+    private static int runCycleNum = 1;
+
     /**
      * CPU内存数据
      */
     protected CpuMemory cpuMemory = new CpuMemory();
+
 
     public Cpu6502(byte[] prgData){
         cpuMemory.write(0x8000,prgData);
@@ -29,9 +33,6 @@ public class Cpu6502{
         this.runProgram();
         this.cpuCycle = 113;
     }
-
-
-    private static int runCycleNum = 1;
     /**
      * 运行程序
      */
@@ -152,8 +153,23 @@ public class Cpu6502{
                     System.out.print("CPY");
                     cpuCycle-=CpuReg.CPY(iterator.next());
                     break;
+                //RTS
+                case 0x60:
+                    System.out.print("RTS");
+                    cpuCycle-=CpuReg.RTS(cpuMemory);
+                    break;
+                //BIT
+                case 0x2C:
+                    System.out.print("BIT_ABS");
+                    cpuCycle-=CpuReg.BIT_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //BIT
+                case 0x99:
+                    System.out.print("STA_ABS_Y");
+                    cpuCycle-=CpuReg.STA_ABS_Y(cpuMemory,iterator.next(),iterator.next());
+                    break;
                 default:
-                    System.out.println(insCode&0xff);
+                    System.out.print(insCode&0xff);
                     break;
             }
         }

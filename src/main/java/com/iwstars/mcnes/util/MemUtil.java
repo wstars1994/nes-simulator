@@ -13,7 +13,7 @@ public class MemUtil {
      * @param high
      * @return
      */
-    public static int getShort(byte low, byte high){
+    public static int concatByte(byte low, byte high){
         return (low & 0xFF) | ((high & 0xFF) << 8);
     }
 

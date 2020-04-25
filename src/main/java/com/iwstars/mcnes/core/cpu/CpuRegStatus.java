@@ -3,7 +3,7 @@ package com.iwstars.mcnes.core.cpu;
 /**
  * @description: 状态为寄存器
  * @author: WStars
- * @date: 2020-04-22 13:30
+ * @date: 2020-04-19 13:30
  */
 public class CpuRegStatus {
 
@@ -38,7 +38,7 @@ public class CpuRegStatus {
 
 
     public static void setZ(byte data) {
-        CpuRegStatus.REG_S_Z = (byte) ((data== 0)?1:0);
+        CpuRegStatus.REG_S_Z = (byte) ((data == 0)?1:0);
     }
 
     public static void setN(byte data) {
@@ -67,5 +67,9 @@ public class CpuRegStatus {
 
     public static byte getC() {
         return CpuRegStatus.REG_S_C;
+    }
+
+    public static void setV(byte data) {
+        CpuRegStatus.REG_S_V = data;
     }
 }

@@ -30,13 +30,23 @@ import java.util.Iterator;
 public class CpuMemory {
 
     /**
-     * PRG程序计数器
+     * PRG程序计数器指针
      */
     private int prgPc = 0x8000;
+
+    /**
+     * 栈指针
+     */
+    private int sp = 0x0;
+
     /**
      * cpu内存
      */
     private byte[] data = new byte[0xFFFF+1];
+    /**
+     * 栈
+     */
+    private int[] stack = new int[0x800];
 
     /**
      * PRG数据迭代器
@@ -63,6 +73,7 @@ public class CpuMemory {
      * @param data
      */
     public void write(int addr,byte data){
+        System.out.printf(" -->Write $%02X", addr);
         this.data[addr] = data;
     }
 
@@ -82,5 +93,24 @@ public class CpuMemory {
      */
     public byte read(int addr){
         return this.data[addr];
+    }
+
+    /**
+     * 入栈
+     * @param data
+     */
+    public void pushStack(int data){
+        this.stack[sp++] = data;
+    }
+
+    /**
+     * 出栈
+     */
+    public int popStack(){
+        return this.stack[--sp];
+    }
+
+    public static void main(String[] args) {
+        System.out.println(-32721&0xFFFF);
     }
 }

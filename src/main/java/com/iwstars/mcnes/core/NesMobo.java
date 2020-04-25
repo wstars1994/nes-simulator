@@ -31,7 +31,7 @@ public class NesMobo {
             ppu.startRender();
             //256x240 分辨率
             //设置vblank false
-            CpuPpuReg.psr_2002[7] = 0;
+            CpuPpuReg.p_2002[7] = 0;
             for (int i = 0; i < 240; i++) {
                 //HBlank start
                 this.cpu6502.go();
@@ -40,7 +40,7 @@ public class NesMobo {
             for(int i=240;i<262;i++) {
                 //设置vblank true
                 if(i==241) {
-                    CpuPpuReg.psr_2002[7] = 1;
+                    CpuPpuReg.p_2002[7] = 1;
                 }
                 this.cpu6502.go();
             }
