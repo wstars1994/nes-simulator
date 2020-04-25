@@ -16,7 +16,7 @@ public class CpuRegStatus {
      */
     private static byte REG_S_V;
     /**
-     * 状态寄存器 Sign Flag
+     * 当一个软件中断 (BRK 指令)被执行的时候，这个标记被设置.
      */
     private static byte REG_S_B;
     /**
@@ -71,5 +71,9 @@ public class CpuRegStatus {
 
     public static void setV(byte data) {
         CpuRegStatus.REG_S_V = data;
+    }
+
+    public static void setB(byte data) {
+        CpuRegStatus.REG_S_B = data;
     }
 }

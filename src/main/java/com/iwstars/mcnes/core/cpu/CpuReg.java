@@ -221,8 +221,11 @@ public class CpuReg {
      */
     public static int JSR(CpuMemory cpuMemory,byte low, byte high) {
         int aShort = MemUtil.concatByte(low, high);
-        int pc = cpuMemory.getPrgPc() - 1;
-        cpuMemory.pushStack(pc);
+        int pc = cpuMemory.getPrgPc();
+        cpuMemory.pushStack((byte) (pc&0xFF));
+        cpuMemory.pushStack((byte) ((pc>>8)&0xFF));
+        cpuMemory.pushStack((byte) ((pc>>16)&0xFF));
+        cpuMemory.pushStack((byte) ((pc>>24)&0xFF));
         cpuMemory.setPrgPc(aShort);
         return 6;
     }
@@ -290,8 +293,12 @@ public class CpuReg {
      * @return
      */
     public static int RTS(CpuMemory cpuMemory) {
-        int pc = cpuMemory.popStack();
-        cpuMemory.setPrgPc(pc + 1);
+        byte pcHigh32 = cpuMemory.popStack();
+        int pcHigh24 = cpuMemory.popStack();
+        int pcLow16 = cpuMemory.popStack();
+        int pcLow8 = cpuMemory.popStack();
+        int pc = (pcHigh32 << 24) | (pcHigh24 << 16) | (pcLow16 << 8) | pcLow8;
+        cpuMemory.setPrgPc(pc);
         return 6;
     }
 
@@ -324,6 +331,20 @@ public class CpuReg {
         cpuMemory.write(memAddress,CpuReg.REG_A);
         return 5;
     }
+
+    /**
+     * 强制中断
+     * @param cpuMemory
+     * @return
+     */
+    public static int BRK(CpuMemory cpuMemory) {
+        int pc = cpuMemory.getPrgPc() + 2;
+        CpuReg.pushIntStack(cpuMemory,pc);
+        CpuReg.pushIntStack(cpuMemory,cpuMemory.getSp());
+        CpuRegStatus.setB((byte) 1);
+        cpuMemory.setPrgPc(cpuMemory.read(0xFFFE) | (cpuMemory.read(0xFFFF) << 8));
+        return 7;
+    }
 //    SET_SIGN(src);
 //    SET_OVERFLOW(0x40 & src);    /* Copy bit 6 to OVERFLOW flag. */
 //    SET_ZERO(src & AC);
@@ -332,4 +353,11 @@ public class CpuReg {
 //        short aShort = MemUtil.getShort(low, high);
 //        return 4;
 //    }
+
+    private static void pushIntStack(CpuMemory cpuMemory,int data){
+        cpuMemory.pushStack((byte) (data&0xFF));
+        cpuMemory.pushStack((byte) ((data>>8)&0xFF));
+        cpuMemory.pushStack((byte) ((data>>16)&0xFF));
+        cpuMemory.pushStack((byte) ((data>>24)&0xFF));
+    }
 }

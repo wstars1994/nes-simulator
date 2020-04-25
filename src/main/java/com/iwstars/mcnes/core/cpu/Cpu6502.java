@@ -158,6 +158,11 @@ public class Cpu6502{
                     System.out.print("RTS");
                     cpuCycle-=CpuReg.RTS(cpuMemory);
                     break;
+                //BRK
+                case 0x00:
+                    System.out.print("BRK");
+                    cpuCycle-=CpuReg.BRK(cpuMemory);
+                    break;
                 //BIT
                 case 0x2C:
                     System.out.print("BIT_ABS");

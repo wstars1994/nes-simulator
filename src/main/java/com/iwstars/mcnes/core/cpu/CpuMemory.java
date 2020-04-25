@@ -43,10 +43,6 @@ public class CpuMemory {
      * cpu内存
      */
     private byte[] data = new byte[0xFFFF+1];
-    /**
-     * 栈
-     */
-    private int[] stack = new int[0x800];
 
     /**
      * PRG数据迭代器
@@ -73,7 +69,7 @@ public class CpuMemory {
      * @param data
      */
     public void write(int addr,byte data){
-        System.out.printf(" -->Write $%02X", addr);
+        System.out.printf(" --> Write to memory:addr=$%02X(index=%d),val=%d", addr,addr,data);
         this.data[addr] = data;
     }
 
@@ -99,18 +95,14 @@ public class CpuMemory {
      * 入栈
      * @param data
      */
-    public void pushStack(int data){
-        this.stack[sp++] = data;
+    public void pushStack(byte data){
+        this.data[sp++] = data;
     }
 
     /**
      * 出栈
      */
-    public int popStack(){
-        return this.stack[--sp];
-    }
-
-    public static void main(String[] args) {
-        System.out.println(-32721&0xFFFF);
+    public byte popStack(){
+        return this.data[--sp];
     }
 }
