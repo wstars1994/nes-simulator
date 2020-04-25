@@ -32,17 +32,17 @@ public class NesMobo {
             //256x240 分辨率
             //设置vblank false
             CpuPpuReg.p_2002[7] = 0;
-            for (int i = 0; i < 240; i++) {
+            for (int i = 0; i < 262; i++) {
                 //HBlank start
                 this.cpu6502.go();
-            }
-            //VBlank start
-            for(int i=240;i<262;i++) {
-                //设置vblank true
                 if(i==241) {
                     CpuPpuReg.p_2002[7] = 1;
                 }
-                this.cpu6502.go();
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

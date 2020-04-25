@@ -157,9 +157,11 @@ public class CpuReg {
      */
     public static int BPL(CpuMemory cpuMemory, byte data) {
         if(CpuRegStatus.getN() == 0) {
+            int cycle =  2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
+            return cycle;
         }
-        return 3;
+        return 2;
     }
 
     /**
@@ -183,9 +185,11 @@ public class CpuReg {
      */
     public static int BNE(CpuMemory cpuMemory,byte data) {
         if(CpuRegStatus.getZ() == 0) {
+            int clk = 2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
+            return clk;
         }
-        return 3;
+        return 2;
     }
 
     /**
@@ -196,9 +200,11 @@ public class CpuReg {
      */
     public static int BCS(CpuMemory cpuMemory,byte data) {
         if(CpuRegStatus.getC() != 0) {
+            int clk = 2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
+            return clk;
         }
-        return 3;
+        return 2;
     }
 
     /**
@@ -344,6 +350,7 @@ public class CpuReg {
         CpuRegStatus.setB((byte) 1);
 
         int high = cpuMemory.read(0xFFFE);
+        System.out.println(high);
         cpuMemory.setPrgPc(high);
         return 7;
     }
@@ -366,5 +373,17 @@ public class CpuReg {
 
     public static void main(String[] args) {
         System.out.println(-16&0xFF);
+    }
+
+    public static int getReg_X(){
+        return REG_X;
+    }
+
+    public static int getReg_S() {
+        return REG_SP;
+    }
+
+    public static int getReg_Y() {
+        return REG_Y;
     }
 }
