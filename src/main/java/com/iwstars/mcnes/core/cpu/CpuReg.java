@@ -342,7 +342,9 @@ public class CpuReg {
         CpuReg.pushIntStack(cpuMemory,pc);
         CpuReg.pushIntStack(cpuMemory,cpuMemory.getSp());
         CpuRegStatus.setB((byte) 1);
-        cpuMemory.setPrgPc(cpuMemory.read(0xFFFE) | (cpuMemory.read(0xFFFF) << 8));
+
+        int high = cpuMemory.read(0xFFFE);
+        cpuMemory.setPrgPc(high);
         return 7;
     }
 //    SET_SIGN(src);
@@ -359,5 +361,10 @@ public class CpuReg {
         cpuMemory.pushStack((byte) ((data>>8)&0xFF));
         cpuMemory.pushStack((byte) ((data>>16)&0xFF));
         cpuMemory.pushStack((byte) ((data>>24)&0xFF));
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println(-16&0xFF);
     }
 }
