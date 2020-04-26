@@ -83,6 +83,7 @@ public class CpuReg {
                 break;
             case 0x2007:
                 CpuPpuReg.p_2007 = MemUtil.toBits(CpuReg.REG_A);
+                CpuPpuReg.p_2006_data+=(CpuPpuReg.p_2000[2]==0?1:32);
                 break;
              //OAM DMA register (high byte)
             case 0x4014:
