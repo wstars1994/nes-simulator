@@ -28,19 +28,23 @@ public class NesMobo {
      */
     public void powerUp(){
         while (true)  {
-            ppu.startRender();
             //256x240 分辨率
             //设置vblank false
             CpuPpuReg.p_2002[7] = 0;
             for (int i = 0; i < 262; i++) {
                 //HBlank start
+                if(i<240) {
+                    System.out.println("");
+                    System.out.println("");
+                    ppu.startRender();
+                }
                 this.cpu6502.go();
                 if(i==241) {
                     CpuPpuReg.p_2002[7] = 1;
                 }
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

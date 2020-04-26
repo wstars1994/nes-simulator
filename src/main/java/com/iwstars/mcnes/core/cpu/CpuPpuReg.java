@@ -37,11 +37,11 @@ public class CpuPpuReg {
      */
     public static byte[] p_2005 = new byte[8];
 
+    public static boolean p_2006_flag = false;
     /**
      *  PPU Address Register
      */
-    public static byte[] p_2006 = new byte[8];
-
+    public static short p_2006_data;
     /**
      *  PPU Data Port
      */
@@ -51,5 +51,6 @@ public class CpuPpuReg {
      *  OAM DMA register (high byte)
      */
     public static byte[] p_4014 = new byte[8];
+
 
 }

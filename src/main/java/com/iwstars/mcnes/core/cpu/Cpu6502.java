@@ -13,7 +13,7 @@ public class Cpu6502{
      * 1.79 = CPU频率约1.79MHz
      * 60 = NTSC制式 262条扫描线
      * 计算出每条扫描数所需要的CPU周期
-     * 1.79*Math.pow(10,6)/60/262 = 113
+     * 1.79*Math.pow(10,6)/60/262 ≈ 113
      */
     private int cpuCycle = 113;
 
@@ -169,6 +169,36 @@ public class Cpu6502{
                 case 0x99:
                     System.out.print("STA_ABS_Y");
                     cpuCycle-=CpuReg.STA_ABS_Y(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //INY
+                case 0xC8:
+                    System.out.print("INY");
+                    cpuCycle-=CpuReg.INY();
+                    break;
+                //ORA
+                case 0x09:
+                    System.out.print("ORA");
+                    cpuCycle-=CpuReg.ORA(iterator.next());
+                    break;
+                //AND
+                case 0x29:
+                    System.out.print("AND");
+                    cpuCycle-=CpuReg.AND(iterator.next());
+                    break;
+                //TXA
+                case 0x8A:
+                    System.out.print("TXA");
+                    cpuCycle-=CpuReg.TXA();
+                    break;
+                //JMP_ABS
+                case 0x4C:
+                    System.out.print("JMP_ABS");
+                    cpuCycle-=CpuReg.JMP_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //INC_ABS
+                case 0xEE:
+                    System.out.print("INC_ABS");
+                    cpuCycle-=CpuReg.INC_ABS(cpuMemory,iterator.next(),iterator.next());
                     break;
                 default:
                     System.out.print(insCode&0xff);

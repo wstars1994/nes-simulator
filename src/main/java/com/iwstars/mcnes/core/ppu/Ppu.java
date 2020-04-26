@@ -1,5 +1,7 @@
 package com.iwstars.mcnes.core.ppu;
 
+import com.iwstars.mcnes.core.cpu.CpuPpuReg;
+import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -52,30 +54,17 @@ public class Ppu {
     }
 
     /**
-     * 渲染命名表
-     * @param index 序号
-     * @param data 数据
-     */
-    private void render(int index,byte[] data){
-        if(index == 0) {
-            ppuMemory.setNameTable_0(data);
-        }else if(index == 1) {
-            ppuMemory.setNameTable_1(data);
-        }else if(index == 2) {
-            ppuMemory.setNameTable_2(data);
-        }else if(index == 3) {
-            ppuMemory.setNameTable_3(data);
-        }else{
-            throw new RuntimeException("此序号命名表不存在");
-        }
-    }
-
-    /**
      * 开始绘制
      */
     public void startRender() {
+        System.out.println("--------------------Render begin--------------------");
 
+        byte[] p_2000 = CpuPpuReg.p_2000;
+        byte[] p_2007 = CpuPpuReg.p_2007;
 
+        byte b2000 = MemUtil.bitsToByte(p_2000);
+        byte b2007 = MemUtil.bitsToByte(p_2007);
 
+        System.out.println("--------------------Render end--------------------");
     }
 }

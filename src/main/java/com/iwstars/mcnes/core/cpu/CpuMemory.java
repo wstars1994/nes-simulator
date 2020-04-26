@@ -35,11 +35,6 @@ public class CpuMemory {
     private int prgPc = 0x8000;
 
     /**
-     * 栈指针
-     */
-    private int sp = 0x0;
-
-    /**
      * cpu内存
      */
     private byte[] data = new byte[0xFFFF+1];
@@ -83,6 +78,16 @@ public class CpuMemory {
     }
 
     /**
+     * 入栈
+     * @param data
+     */
+    public void pushStack(byte data){
+        int sp = CpuReg.getReg_S();
+        this.data[0x0100 + (sp&0xFF)] = data;
+        CpuReg.setReg_S(sp-1);
+    }
+
+    /**
      * 读数据
      * @param addr
      * @return
@@ -92,17 +97,11 @@ public class CpuMemory {
     }
 
     /**
-     * 入栈
-     * @param data
-     */
-    public void pushStack(byte data){
-        this.data[sp++] = data;
-    }
-
-    /**
      * 出栈
      */
     public byte popStack(){
-        return this.data[--sp];
+        int sp = CpuReg.getReg_S();
+        CpuReg.setReg_S(sp+1);
+        return this.data[0x0100 + ((sp + 1)&0xFF)];
     }
 }
