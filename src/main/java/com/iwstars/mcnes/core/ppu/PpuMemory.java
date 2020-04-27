@@ -1,7 +1,5 @@
 package com.iwstars.mcnes.core.ppu;
 
-import lombok.Data;
-
 /**
  * 图形处理单元
  * 16KB space
@@ -25,40 +23,21 @@ import lombok.Data;
  * @author WStars
  * @date 2020/4/18 13:46
  */
-@Data
 public class PpuMemory {
 
-    private byte[] ppuData;
+    private static byte[] ppuData = new byte[16 * 1024];
+
+    public static void write(short addr, byte data) {
+        if(addr>=0x2000 && addr<=0x2FFF) {
+            ppuData[addr] = data;
+        }
+    }
 
     /**
-     * 图案表$0000-$1FFF
+     * 写入图案表
+     * @param data
      */
-    private byte[] pattern_0 = new byte[0x1000];
-    private byte[] pattern_1 = new byte[0x1000];
-    /**
-     * 命名表$2000-$2FFF
-     */
-    private byte[] nameTable_0 = new byte[0x0400];
-    private byte[] nameTable_1 = new byte[0x0400];
-    private byte[] nameTable_2 = new byte[0x0400];
-    private byte[] nameTable_3 = new byte[0x0400];
-
-    /**
-     * 命名表镜像 $2000-$2EFF
-     */
-    private byte[] nameTableMirrors = new byte[0x0F00];
-    /**
-     * 调色板(任天堂官方文档 http://nesdev.com/NESDoc.pdf 第45页 或者 http://wiki.nesdev.com/w/index.php/PPU_palettes)
-     */
-    private byte[] palette = new byte[0x0020];
-    /**
-     * 调色板镜像(任天堂官方固定)
-     */
-    private byte[] paletteMirrors = new byte[0x00E0];
-
-    /**
-     * 子画面 256byte
-     */
-    private int[] sprRam = new int[0x100];
-
+    public static void writePattern(byte[] data) {
+        System.arraycopy(data,0,ppuData,0,data.length);
+    }
 }

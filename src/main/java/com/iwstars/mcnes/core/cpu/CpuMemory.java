@@ -1,5 +1,7 @@
 package com.iwstars.mcnes.core.cpu;
 
+import com.iwstars.mcnes.core.DataBus;
+import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -66,6 +68,43 @@ public class CpuMemory {
     public void write(int addr,byte data){
         System.out.printf(" --> Write to memory:addr=$%02X(index=%d),val=%d", addr,addr,data);
         this.data[addr] = data;
+        switch (addr) {
+            case 0x2000:
+                DataBus.p_2000 = MemUtil.toBits(data);
+                break;
+            case 0x2001:
+                DataBus.p_2001 = MemUtil.toBits(data);
+                break;
+            case 0x2003:
+                DataBus.p_2003 = MemUtil.toBits(data);
+                break;
+            case 0x2004:
+                DataBus.p_2004 = MemUtil.toBits(data);
+                break;
+            case 0x2005:
+                DataBus.p_2005 = MemUtil.toBits(data);
+                break;
+            case 0x2006:
+                if(!DataBus.p_2006_flag) {
+                    //第一次写将写入高8位;
+                    DataBus.p_2006_data = (short) ((data&0xFF) << 8);
+                }else {
+                    //第二次写将写入低6位
+                    DataBus.p_2006_data|=(data&0x3F);
+                }
+                DataBus.p_2006_flag = !DataBus.p_2006_flag;
+                break;
+            case 0x2007:
+                DataBus.p_2007 = MemUtil.toBits(data);
+                DataBus.writePpuNameTable(DataBus.p_2006_data,data);
+                DataBus.p_2006_data+=(DataBus.p_2000[2]==0?1:32);
+                break;
+            //OAM DMA register (high byte)
+            case 0x4014:
+//                DataBus.pcr_2000 = MemUtil.toBits(CpuRegister.REG_A);
+                System.out.print(" OAM DMA register (high byte)");
+                break;
+        }
     }
 
     /**
@@ -82,9 +121,18 @@ public class CpuMemory {
      * @param data
      */
     public void pushStack(byte data){
-        int sp = CpuReg.getReg_S();
+        int sp = CpuRegister.getReg_S();
         this.data[0x0100 + (sp&0xFF)] = data;
-        CpuReg.setReg_S(sp-1);
+        CpuRegister.setReg_S(sp-1);
+    }
+
+    /**
+     * 出栈
+     */
+    public byte popStack(){
+        int sp = CpuRegister.getReg_S();
+        CpuRegister.setReg_S(sp+1);
+        return this.data[0x0100 + ((sp + 1)&0xFF)];
     }
 
     /**
@@ -93,15 +141,20 @@ public class CpuMemory {
      * @return
      */
     public byte read(int addr){
+        if(addr == 0x2002 || addr == 0x2007) {
+            System.out.printf(" read addr = %02X",addr);
+            switch (addr) {
+                //读PPUSTATUS状态寄存器
+                case 0x2002:
+                    //当CPU读取$2002后vblank标志设置为0
+                    byte readData = MemUtil.bitsToByte(DataBus.p_2002);
+                    DataBus.p_2002[7] = 0;
+                    return readData;
+                case 0x2007:
+                    System.out.println("2007");
+                    break;
+            }
+        }
         return this.data[addr];
-    }
-
-    /**
-     * 出栈
-     */
-    public byte popStack(){
-        int sp = CpuReg.getReg_S();
-        CpuReg.setReg_S(sp+1);
-        return this.data[0x0100 + ((sp + 1)&0xFF)];
     }
 }

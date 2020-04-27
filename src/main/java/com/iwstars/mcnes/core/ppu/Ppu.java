@@ -1,7 +1,6 @@
 package com.iwstars.mcnes.core.ppu;
 
-import com.iwstars.mcnes.core.cpu.CpuPpuReg;
-import com.iwstars.mcnes.util.MemUtil;
+import com.iwstars.mcnes.core.DataBus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,38 +32,41 @@ import lombok.Setter;
 public class Ppu {
 
     /**
-     * PPU内存结构
-     */
-    private PpuMemory ppuMemory = new PpuMemory();
-
-    /**
      * 初始化PPU 必须设置,从nes文件读取到的CHR数据
      * @param patternData 图案表数据
      */
     public Ppu(byte[] patternData){
-        byte[] patternData0 = new byte[4 * 1024];
-        byte[] patternData1 = new byte[0];
-        System.arraycopy(patternData,0,patternData0,0,patternData0.length);
-        if(patternData.length > 4 * 1024) {
-            patternData1 = new byte[patternData.length - 4 * 1024];
-            System.arraycopy(patternData,4 * 1024,patternData1,0,patternData1.length);
-        }
-        ppuMemory.setPattern_0(patternData0);
-        ppuMemory.setPattern_1(patternData1);
+        PpuMemory.writePattern(patternData);
     }
 
     /**
      * 开始绘制
      */
     public void startRender() {
-        System.out.println("--------------------Render begin--------------------");
+        byte[] b2000 = DataBus.p_2000;
+        byte[] b2001 = DataBus.p_2001;
+        if(b2001[3] == 1) {
+            byte addr = b2000[0];
+            short nameTableAddr = 0;
+            if(addr == 0x00) {
+                nameTableAddr = 0x2000;
+            }else if (addr == 0x01){
+                nameTableAddr = 0x2400;
+            }else if (addr == 0x10){
+                nameTableAddr = 0x2800;
+            }else if (addr == 0x11){
+                nameTableAddr = 0x2C00;
+            }
+            if(nameTableAddr!=0) {
+                renderNameTable(nameTableAddr);
+            }
+        }
+        if(b2001[4] == 1) {
 
-        byte[] p_2000 = CpuPpuReg.p_2000;
-        byte[] p_2007 = CpuPpuReg.p_2007;
-
-        byte b2000 = MemUtil.bitsToByte(p_2000);
-        byte b2007 = MemUtil.bitsToByte(p_2007);
-
+        }
         System.out.println("--------------------Render end--------------------");
+    }
+    private void renderNameTable(short addr) {
+        System.out.println(addr);
     }
 }

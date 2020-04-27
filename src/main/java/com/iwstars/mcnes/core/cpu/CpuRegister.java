@@ -7,7 +7,7 @@ import com.iwstars.mcnes.util.MemUtil;
  * @author: WStars
  * @date: 2020-04-19 10:48
  */
-public class CpuReg {
+public class CpuRegister {
     /**
      * 累加器
      */
@@ -25,23 +25,43 @@ public class CpuReg {
      */
     private static int REG_SP = 0xFF;
 
-
     /**
-     * 获取寄存器A值
-     * @return
+     * 状态寄存器 Sign Flag 如果操作结果为负，则设置此项(1)；如果为正，则清除此项(0)
      */
-    public static int getReg_A(){
-        return REG_A;
-    }
+    private static byte REG_S_N;
+    /**
+     * 状态寄存器 Sign Flag
+     */
+    private static byte REG_S_V;
+    /**
+     * 当一个软件中断 (BRK 指令)被执行的时候，这个标记被设置.
+     */
+    private static byte REG_S_B;
+    /**
+     * 状态寄存器 Sign Flag
+     */
+    private static byte REG_S_D;
+    /**
+     * 状态寄存器 Sign Flag
+     */
+    private static byte REG_S_I;
+    /**
+     * 状态寄存器 Sign Flag
+     */
+    private static byte REG_S_Z;
+    /**
+     * 状态寄存器 Sign Flag
+     */
+    private static byte REG_S_C;
 
     /**
      * 将数据放入寄存器A
      * @param data
      */
     public static int LDA(byte data) {
-        CpuReg.REG_A = data;
-        CpuRegStatus.setN(CpuReg.REG_A);
-        CpuRegStatus.setZ(CpuReg.REG_A);
+        CpuRegister.REG_A = data;
+        CpuRegister.setN(CpuRegister.REG_A);
+        CpuRegister.setZ(CpuRegister.REG_A);
         return 2;
     }
 
@@ -54,62 +74,32 @@ public class CpuReg {
     public static int STA_ABS(CpuMemory cpuMemory, byte low, byte high) {
         //16位 short
         int addr = MemUtil.concatByte(low, high);
-        cpuMemory.write(addr,CpuReg.REG_A);
-        switch (addr) {
-            case 0x2000:
-                CpuPpuReg.p_2000 = MemUtil.toBits(CpuReg.REG_A);
-                break;
-            case 0x2001:
-                CpuPpuReg.p_2001 = MemUtil.toBits(CpuReg.REG_A);
-                break;
-            case 0x2003:
-                CpuPpuReg.p_2003 = MemUtil.toBits(CpuReg.REG_A);
-                break;
-            case 0x2004:
-                CpuPpuReg.p_2004 = MemUtil.toBits(CpuReg.REG_A);
-                break;
-            case 0x2005:
-                CpuPpuReg.p_2005 = MemUtil.toBits(CpuReg.REG_A);
-                break;
-            case 0x2006:
-                if(!CpuPpuReg.p_2006_flag) {
-                    //第一次写将写入高8位;
-                    CpuPpuReg.p_2006_data = (short) ((CpuReg.REG_A&0xFF) << 8);
-                }else {
-                    //第二次写将写入低6位
-                    CpuPpuReg.p_2006_data|=(CpuReg.REG_A&0x3F);
-                }
-                CpuPpuReg.p_2006_flag = !CpuPpuReg.p_2006_flag;
-                break;
-            case 0x2007:
-                CpuPpuReg.p_2007 = MemUtil.toBits(CpuReg.REG_A);
-                CpuPpuReg.p_2006_data+=(CpuPpuReg.p_2000[2]==0?1:32);
-                break;
-             //OAM DMA register (high byte)
-            case 0x4014:
-//                CpuPpuReg.pcr_2000 = MemUtil.toBits(CpuReg.REG_A);
-                System.out.println("OAM DMA register (high byte)");
-                break;
-        }
+        cpuMemory.write(addr, CpuRegister.REG_A);
         return 4;
     }
 
+    /**
+     * 获取寄存器A值
+     * @return
+     */
+    public static int getReg_A(){
+        return REG_A;
+    }
     /**
      * data->REG_X
      * @param data
      */
     public static int LDX(byte data) {
-        CpuReg.REG_X = data;
-        CpuRegStatus.setN(CpuReg.REG_X);
-        CpuRegStatus.setZ(CpuReg.REG_X);
+        CpuRegister.REG_X = data;
+        CpuRegister.setN(data);
+        CpuRegister.setZ(data);
         return 2;
     }
-
     /**
      * 将X索引寄存器的数据存入栈指针SP寄存器
      */
     public static int TXS() {
-        CpuReg.REG_SP = CpuReg.REG_X;
+        CpuRegister.REG_SP = CpuRegister.REG_X;
         return 2;
     }
 
@@ -118,32 +108,75 @@ public class CpuReg {
      * @param low 低8位
      * @param high 高8位
      */
-    public static int LDA_ABS(byte low, byte high) {
+    public static int LDA_ABS(CpuMemory cpuMemory,byte low, byte high) {
         int addr = MemUtil.concatByte(low, high);
-        byte readData = 1;
-        //PPU寄存器
-        if(addr>=0x2000 && addr<0x2008) {
-            switch (addr) {
-                //读PPUSTATUS状态寄存器
-                case 0x2002:
-                    //当CPU读取$2002后vblank标志设置为0
-                    readData = MemUtil.bitsToByte(CpuPpuReg.p_2002);
-                    CpuPpuReg.p_2002[7] = 0;
-                    break;
-                case 0x2007:
-                    System.out.println("2007");
-                    break;
-            }
-        }
-        CpuReg.LDA(readData);
+        byte readData = cpuMemory.read(addr);
+        CpuRegister.LDA(readData);
         return 4;
     }
+
+    public static int getReg_X(){
+        return REG_X;
+    }
+
+    public static int getReg_S() {
+        return REG_SP;
+    }
+    public static void setReg_S(int sp) {
+        REG_SP = sp;
+    }
+
+    public static int getReg_Y() {
+        return REG_Y;
+    }
+    public static void setZ(byte data) {
+        CpuRegister.REG_S_Z = (byte) ((data == 0)?1:0);
+    }
+
+    public static void setN(byte data) {
+        //负数=1 正数=0
+        CpuRegister.REG_S_N = (byte) ((data >> 7) & 1);
+    }
+    public static byte getN() {
+        return CpuRegister.REG_S_N;
+    }
+
+    public static void setI(byte data) {
+        CpuRegister.REG_S_I = data;
+    }
+
+    public static void setD(byte data) {
+        CpuRegister.REG_S_D = data;
+    }
+
+    public static void setC(byte data) {
+        CpuRegister.REG_S_C = (byte) ((data&0xfff) < 0x100 ? 1: 0);
+    }
+
+    public static byte getZ() {
+        return CpuRegister.REG_S_Z;
+    }
+
+    public static byte getC() {
+        return CpuRegister.REG_S_C;
+    }
+
+    public static void setV(byte data) {
+        CpuRegister.REG_S_V = data;
+    }
+
+    public static void setB(byte data) {
+        CpuRegister.REG_S_B = data;
+    }
+
     /**
      * data -> REG_Y
      * @param data
      */
     public static int LDY(byte data) {
-        CpuReg.REG_Y = data;
+        CpuRegister.REG_Y = data;
+        CpuRegister.setN(data);
+        CpuRegister.setZ(data);
         return 2;
     }
 
@@ -154,8 +187,8 @@ public class CpuReg {
      */
     public static int LDA_ABS_X(CpuMemory cpuMemory,byte low, byte high) {
         int aShort = MemUtil.concatByte(low, high);
-        int addr = aShort + (CpuReg.REG_X & 0xff);
-        CpuReg.LDA(cpuMemory.read(addr));
+        int addr = aShort + (CpuRegister.REG_X & 0xff);
+        CpuRegister.LDA(cpuMemory.read(addr));
         return 4;
     }
 
@@ -163,7 +196,7 @@ public class CpuReg {
      * 禁止中断
      */
     public static int SEI() {
-        CpuRegStatus.setI((byte) 1);
+        CpuRegister.setI((byte) 1);
         return 2;
     }
 
@@ -171,7 +204,7 @@ public class CpuReg {
      * Clear decimal mode
      */
     public static int CLD() {
-        CpuRegStatus.setD((byte) 0);
+        CpuRegister.setD((byte) 0);
         return 2;
     }
 
@@ -181,7 +214,7 @@ public class CpuReg {
      * @param data
      */
     public static int BPL(CpuMemory cpuMemory, byte data) {
-        if(CpuRegStatus.getN() == 0) {
+        if(CpuRegister.getN() == 0) {
             int cycle =  2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return cycle;
@@ -195,11 +228,11 @@ public class CpuReg {
      * @return
      */
     public static int CMP(byte data) {
-        byte regA = CpuReg.REG_A;
+        byte regA = CpuRegister.REG_A;
         byte cmpData = (byte) (regA - data);
-        CpuRegStatus.setN(cmpData);
-        CpuRegStatus.setZ(cmpData);
-        CpuRegStatus.setC(cmpData);
+        CpuRegister.setN(cmpData);
+        CpuRegister.setZ(cmpData);
+        CpuRegister.setC(cmpData);
         return 2;
     }
 
@@ -209,7 +242,7 @@ public class CpuReg {
      * @return
      */
     public static int BNE(CpuMemory cpuMemory,byte data) {
-        if(CpuRegStatus.getZ() == 0) {
+        if(CpuRegister.getZ() == 0) {
             int clk = 2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return clk;
@@ -224,7 +257,7 @@ public class CpuReg {
      * @return
      */
     public static int BCS(CpuMemory cpuMemory,byte data) {
-        if(CpuRegStatus.getC() != 0) {
+        if(CpuRegister.getC() != 0) {
             int clk = 2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return clk;
@@ -237,9 +270,9 @@ public class CpuReg {
      * @return
      */
     public static int DEX() {
-        CpuReg.REG_X = (byte) (CpuReg.REG_X - 1);
-        CpuRegStatus.setN(CpuReg.REG_X);
-        CpuRegStatus.setZ(CpuReg.REG_X);
+        CpuRegister.REG_X = (byte) (CpuRegister.REG_X - 1);
+        CpuRegister.setN(CpuRegister.REG_X);
+        CpuRegister.setZ(CpuRegister.REG_X);
         return 2;
     }
 
@@ -262,58 +295,59 @@ public class CpuReg {
     }
 
     public static int STA_ZERO(CpuMemory cpuMemory, byte addr) {
-        cpuMemory.write(addr,CpuReg.REG_A);
+        cpuMemory.write(addr, CpuRegister.REG_A);
         return 3;
     }
 
     public static int STX_ZERO(CpuMemory cpuMemory, byte addr) {
-        cpuMemory.write(addr,CpuReg.REG_X);
+        cpuMemory.write(addr, CpuRegister.REG_X);
         return 3;
     }
 
     public static int CPX( byte data) {
-        byte regX = CpuReg.REG_X;
+        byte regX = CpuRegister.REG_X;
         byte cmpData = (byte) (regX - data);
-        CpuRegStatus.setN(cmpData);
-        CpuRegStatus.setZ(cmpData);
-        CpuRegStatus.setC(cmpData);
+        CpuRegister.setN(cmpData);
+        CpuRegister.setZ(cmpData);
+        CpuRegister.setC(cmpData);
         return 2;
     }
 
     /**
      * A -> M
      * @param cpuMemory
-     * @param addr
+     * @param data
      * @return
      */
-    public static int STA_INDIRECT_Y(CpuMemory cpuMemory, byte addr) {
-        int memAddress = cpuMemory.read(addr) + (CpuReg.REG_Y&0xFF);
-        cpuMemory.write(memAddress,CpuReg.REG_A);
+    public static int STA_INDIRECT_Y(CpuMemory cpuMemory, byte data) {
+        int addr = MemUtil.concatByte(cpuMemory.read(data), cpuMemory.read((data + 1)));
+        int memAddress = addr + (CpuRegister.REG_Y&0xFF);
+        cpuMemory.write(memAddress, CpuRegister.REG_A);
         return 6;
     }
 
     public static int DEY() {
-        CpuReg.REG_Y = (byte) (CpuReg.REG_Y-1);
-        CpuRegStatus.setN(CpuReg.REG_Y);
-        CpuRegStatus.setZ(CpuReg.REG_Y);
+        CpuRegister.REG_Y = (byte) (CpuRegister.REG_Y-1);
+        CpuRegister.setN(CpuRegister.REG_Y);
+        CpuRegister.setZ(CpuRegister.REG_Y);
         return 2;
     }
 
     public static int CPY(byte data) {
-        byte regY = CpuReg.REG_Y;
+        byte regY = CpuRegister.REG_Y;
         byte cmpData = (byte) (regY - data);
-        CpuRegStatus.setN(cmpData);
-        CpuRegStatus.setZ(cmpData);
-        CpuRegStatus.setC(cmpData);
+        CpuRegister.setN(cmpData);
+        CpuRegister.setZ(cmpData);
+        CpuRegister.setC(cmpData);
         return 2;
     }
 
     public static int ADC_ABS(CpuMemory cpuMemory, byte low, byte high) {
 
-//        CpuRegStatus.setN(cmpData);
-//        CpuRegStatus.setZ(cmpData);
-//        CpuRegStatus.setC(cmpData);
-//        CpuRegStatus.setV(cmpData);
+//        CpuRegister.setN(cmpData);
+//        CpuRegister.setZ(cmpData);
+//        CpuRegister.setC(cmpData);
+//        CpuRegister.setV(cmpData);
         return 4;
     }
 
@@ -329,7 +363,7 @@ public class CpuReg {
         short pcLow16 = (short) (cpuMemory.popStack()&0xFF);
         short pcLow8 = (short) (cpuMemory.popStack()&0xFF);
         int pc = (pcHigh32 << 24) | (pcHigh24 << 16) | (pcLow16 << 8) | pcLow8;
-        cpuMemory.setPrgPc(pc);
+        cpuMemory.setPrgPc(pc + 1);
         return 6;
     }
 
@@ -343,9 +377,9 @@ public class CpuReg {
     public static int BIT_ABS(CpuMemory cpuMemory ,byte low, byte high) {
         int addr = MemUtil.concatByte(low, high);
         byte data = cpuMemory.read(addr);
-        CpuRegStatus.setN(data);
-        CpuRegStatus.setV((byte) ((data>>6)&1));
-        CpuRegStatus.setZ((byte) (CpuReg.REG_A & data));
+        CpuRegister.setN(data);
+        CpuRegister.setV((byte) ((data>>6)&1));
+        CpuRegister.setZ((byte) (CpuRegister.REG_A & data));
         return 4;
     }
 
@@ -358,8 +392,8 @@ public class CpuReg {
      */
     public static int STA_ABS_Y(CpuMemory cpuMemory, byte low, byte high) {
         int addr = MemUtil.concatByte(low, high);
-        int memAddress = cpuMemory.read(addr) + (CpuReg.REG_Y&0xFF);
-        cpuMemory.write(memAddress,CpuReg.REG_A);
+        int memAddress = cpuMemory.read(addr) + (CpuRegister.REG_Y&0xFF);
+        cpuMemory.write(memAddress, CpuRegister.REG_A);
         return 5;
     }
 
@@ -370,23 +404,15 @@ public class CpuReg {
      */
     public static int BRK(CpuMemory cpuMemory) {
         int pc = cpuMemory.getPrgPc() + 2;
-        CpuReg.pushIntStack(cpuMemory,pc);
-//        CpuReg.pushIntStack(cpuMemory,cpuMemory.getSp());
-        CpuRegStatus.setB((byte) 1);
-
-        int high = cpuMemory.read(0xFFFE);
-        System.out.println(high);
+        CpuRegister.pushIntStack(cpuMemory,pc);
+//        return (byte) ((CpuRegister.getN() << 7) | (CpuRegister.getN() << 6) | 0x20 | (bFlag << 4)
+//                | (dFlag << 3) | (iFlag << 2) | (zFlag << 1) | cFlag);
+        CpuRegister.pushIntStack(cpuMemory,CpuRegister.REG_SP);
+        CpuRegister.setB((byte) 1);
+        short high = cpuMemory.read(0xFFFE);
         cpuMemory.setPrgPc(high);
         return 7;
     }
-//    SET_SIGN(src);
-//    SET_OVERFLOW(0x40 & src);    /* Copy bit 6 to OVERFLOW flag. */
-//    SET_ZERO(src & AC);
-
-//    public static int CMP_ABS(byte low, byte high) {
-//        short aShort = MemUtil.getShort(low, high);
-//        return 4;
-//    }
 
     private static void pushIntStack(CpuMemory cpuMemory,int data){
         cpuMemory.pushStack((byte) (data&0xFF));
@@ -395,51 +421,31 @@ public class CpuReg {
         cpuMemory.pushStack((byte) ((data>>24)&0xFF));
     }
 
-
-    public static void main(String[] args) {
-        System.out.println(-16&0xFF);
-    }
-
-    public static int getReg_X(){
-        return REG_X;
-    }
-
-    public static int getReg_S() {
-        return REG_SP;
-    }
-    public static void setReg_S(int sp) {
-        REG_SP = sp;
-    }
-
-    public static int getReg_Y() {
-        return REG_Y;
-    }
-
     public static int INY() {
-        CpuReg.REG_Y = (byte) (CpuReg.REG_Y + 1);
-        CpuRegStatus.setN(CpuReg.REG_Y);
-        CpuRegStatus.setZ(CpuReg.REG_Y);
+        CpuRegister.REG_Y = (byte) (CpuRegister.REG_Y + 1);
+        CpuRegister.setN(CpuRegister.REG_Y);
+        CpuRegister.setZ(CpuRegister.REG_Y);
         return 2;
     }
 
     public static int ORA(byte data) {
-        CpuReg.REG_A |= data;
-        CpuRegStatus.setN(CpuReg.REG_A);
-        CpuRegStatus.setZ(CpuReg.REG_A);
+        CpuRegister.REG_A |= data;
+        CpuRegister.setN(CpuRegister.REG_A);
+        CpuRegister.setZ(CpuRegister.REG_A);
         return 2;
     }
 
     public static int AND(byte data) {
-        CpuReg.REG_A &= data;
-        CpuRegStatus.setN(CpuReg.REG_A);
-        CpuRegStatus.setZ(CpuReg.REG_A);
+        CpuRegister.REG_A &= data;
+        CpuRegister.setN(CpuRegister.REG_A);
+        CpuRegister.setZ(CpuRegister.REG_A);
         return 2;
     }
 
     public static int TXA() {
-        CpuReg.REG_A = CpuReg.REG_X;
-        CpuRegStatus.setN(CpuReg.REG_A);
-        CpuRegStatus.setZ(CpuReg.REG_A);
+        CpuRegister.REG_A = CpuRegister.REG_X;
+        CpuRegister.setN(CpuRegister.REG_A);
+        CpuRegister.setZ(CpuRegister.REG_A);
         return 2;
     }
 
@@ -453,8 +459,45 @@ public class CpuReg {
         int aShort = MemUtil.concatByte(low, high);
         byte data = (byte) (cpuMemory.read(aShort) + 1);
         cpuMemory.write(aShort, data);
-        CpuRegStatus.setN(data);
-        CpuRegStatus.setZ(data);
+        CpuRegister.setN(data);
+        CpuRegister.setZ(data);
         return 6;
+    }
+
+    /**
+     * nmi中断
+     */
+    public static void NMI(CpuMemory cpuMemory) {
+        CpuRegister.pushIntStack(cpuMemory,cpuMemory.getPrgPc());
+        CpuRegister.setB((byte) 1);
+        int high = (cpuMemory.read(0xFFFA) & 0xff) | ((cpuMemory.read(0xFFFA + 1) & 0xff) << 8);
+        cpuMemory.setPrgPc(high);
+    }
+
+    public static int LDY_ABS(CpuMemory cpuMemory, byte low, byte high) {
+        int readData = MemUtil.concatByte(low, high);
+        byte data = cpuMemory.read(readData);
+        CpuRegister.LDY(data);
+        return 4;
+    }
+
+    public static int LDX_ABS(CpuMemory cpuMemory, byte low, byte high) {
+        int readData = MemUtil.concatByte(low, high);
+        byte data = cpuMemory.read(readData);
+        CpuRegister.LDX(data);
+        return 4;
+    }
+
+    public static int LDA_INDIRECT_Y(CpuMemory cpuMemory, byte data) {
+        int addr = MemUtil.concatByte(cpuMemory.read(data), cpuMemory.read((data + 1)));
+        int memAddress = addr + (CpuRegister.REG_Y&0xFF);
+        byte read = cpuMemory.read(memAddress);
+        CpuRegister.LDA(read);
+        return 5;
+    }
+
+    public static int SED() {
+        CpuRegister.setD((byte) 1);
+        return 2;
     }
 }

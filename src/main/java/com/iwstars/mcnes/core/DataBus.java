@@ -1,11 +1,13 @@
-package com.iwstars.mcnes.core.cpu;
+package com.iwstars.mcnes.core;
+
+import com.iwstars.mcnes.core.ppu.PpuMemory;
 
 /**
  * @description: cpu与ppu通信
  * @author: WStars
  * @date: 2020-04-23 10:36
  */
-public class CpuPpuReg {
+public class DataBus {
 
     /**
      * PPU Control Register
@@ -53,4 +55,7 @@ public class CpuPpuReg {
     public static byte[] p_4014 = new byte[8];
 
 
+    public static void writePpuNameTable(short addr, byte data) {
+        PpuMemory.write(addr,data);
+    }
 }

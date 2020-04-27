@@ -1,7 +1,7 @@
 package com.iwstars.mcnes.core;
 
 import com.iwstars.mcnes.core.cpu.Cpu6502;
-import com.iwstars.mcnes.core.cpu.CpuPpuReg;
+import com.iwstars.mcnes.core.cpu.CpuRegister;
 import com.iwstars.mcnes.core.ppu.Ppu;
 import lombok.Setter;
 
@@ -30,7 +30,7 @@ public class NesMobo {
         while (true)  {
             //256x240 分辨率
             //设置vblank false
-            CpuPpuReg.p_2002[7] = 0;
+            DataBus.p_2002[7] = 0;
             for (int i = 0; i < 262; i++) {
                 //HBlank start
                 if(i<240) {
@@ -39,8 +39,12 @@ public class NesMobo {
                     ppu.startRender();
                 }
                 this.cpu6502.go();
+                //VBlank
                 if(i==241) {
-                    CpuPpuReg.p_2002[7] = 1;
+                    DataBus.p_2002[7] = 1;
+                    if(DataBus.p_2000[7] == 1) {
+                        CpuRegister.NMI(cpu6502.getCpuMemory());
+                    }
                 }
             }
             try {
@@ -63,5 +67,9 @@ public class NesMobo {
      */
     public void reset(){
 
+    }
+
+    public static void main(String[] args) {
+        System.out.println(-127&0xff);
     }
 }
