@@ -28,6 +28,7 @@ public class NesMobo {
      */
     public void powerUp(){
         while (true)  {
+            long start = System.nanoTime();
             //256x240 分辨率
             //设置vblank false
             DataBus.p_2002[7] = 0;
@@ -38,7 +39,6 @@ public class NesMobo {
                     System.out.println("");
                     ppu.startRender();
                 }
-                this.cpu6502.go();
                 //VBlank
                 if(i==241) {
                     DataBus.p_2002[7] = 1;
@@ -46,11 +46,15 @@ public class NesMobo {
                         CpuRegister.NMI(cpu6502.getCpuMemory());
                     }
                 }
+                this.cpu6502.go();
             }
+            long elapsed = System.nanoTime() - start;
+            long wait = (long) (1.0 / 60 - elapsed / 1e-9);
             try {
-                Thread.sleep(1);
+                if (wait > 0) {
+                    Thread.sleep(wait);
+                }
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
     }

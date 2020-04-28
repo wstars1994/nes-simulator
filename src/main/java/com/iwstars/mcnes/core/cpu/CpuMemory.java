@@ -33,6 +33,7 @@ public class CpuMemory {
 
     /**
      * PRG程序计数器指针
+     * 2字节指针
      */
     private int prgPc = 0x8000;
 
@@ -121,9 +122,9 @@ public class CpuMemory {
      * @param data
      */
     public void pushStack(byte data){
-        int sp = CpuRegister.getReg_S();
+        byte sp = CpuRegister.getReg_S();
         this.data[0x0100 + (sp&0xFF)] = data;
-        CpuRegister.setReg_S(sp-1);
+        CpuRegister.setReg_S((byte) (sp-1));
     }
 
     /**
@@ -131,7 +132,7 @@ public class CpuMemory {
      */
     public byte popStack(){
         int sp = CpuRegister.getReg_S();
-        CpuRegister.setReg_S(sp+1);
+        CpuRegister.setReg_S((byte) (sp+1));
         return this.data[0x0100 + ((sp + 1)&0xFF)];
     }
 

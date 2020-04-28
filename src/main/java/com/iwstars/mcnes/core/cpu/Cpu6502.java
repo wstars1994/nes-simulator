@@ -42,7 +42,7 @@ public class Cpu6502{
             System.out.println("");
             int prgPc = cpuMemory.getPrgPc();
             byte insCode = iterator.next();
-            System.out.printf("insNum=%06d cycle=%03d A=$%02X,X=$%02X,Y=$%02X pc=$%02X ",runCycleNum++,cpuCycle, CpuRegister.getReg_A()&0xFF, CpuRegister.getReg_X()&0xFF, CpuRegister.getReg_Y()&0xFF,prgPc&0xFFFF);
+            System.out.printf("insNum=%06d cycle=%03d A=$%02X,X=$%02X,Y=$%02X,S=$%02X pc=$%02X ",runCycleNum++,cpuCycle, CpuRegister.getReg_A()&0xFF, CpuRegister.getReg_X()&0xFF, CpuRegister.getReg_Y()&0xFF, CpuRegister.getReg_S()&0xFF,prgPc&0xFFFF);
             //执行程序(超级玛丽的执行顺序)
             switch(insCode&0xff) {
                 //SEI 禁止中断
@@ -220,8 +220,58 @@ public class Cpu6502{
                     System.out.print("LDA_INDIRECT_Y");
                     cpuCycle-= CpuRegister.LDA_INDIRECT_Y(cpuMemory,iterator.next());
                     break;
+                //LDX_ABS_Y
+                case 0xBE:
+                    System.out.print("LDX_ABS_Y");
+                    cpuCycle-= CpuRegister.LDX_ABS_Y(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //STA_ABS_X
+                case 0x9D:
+                    System.out.print("STA_ABS_X");
+                    cpuCycle-= CpuRegister.STA_ABS_X(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //LSR
+                case 0x4A:
+                    System.out.print("LSR");
+                    cpuCycle-= CpuRegister.LSR();
+                    break;
+                //TAX
+                case 0xAA:
+                    System.out.print("TAX");
+                    cpuCycle-= CpuRegister.TAX();
+                    break;
+                //PHA
+                case 0x48:
+                    System.out.print("PHA");
+                    cpuCycle-= CpuRegister.PHA(cpuMemory);
+                    break;
+                //ORA_ZERO
+                case 0x05:
+                    System.out.print("ORA_ZERO");
+                    cpuCycle-= CpuRegister.ORA_ZERO(cpuMemory,iterator.next());
+                    break;
+                //PLA
+                case 0x68:
+                    System.out.print("PLA");
+                    cpuCycle-= CpuRegister.PLA(cpuMemory);
+                    break;
+                //ROL
+                case 0x2A:
+                    System.out.print("ROL");
+                    cpuCycle-= CpuRegister.ROL();
+                    break;
+                //AND_ABS
+                case 0x3D:
+                    System.out.print("AND_ABS");
+                    cpuCycle-= CpuRegister.AND_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //BEQ
+                case 0xF0:
+                    System.out.print("BEQ");
+                    cpuCycle-= CpuRegister.BEQ(cpuMemory,iterator.next());
+                    break;
                 default:
-                    System.out.print(insCode&0xff);
+                    System.out.printf("%02X",insCode);
                     break;
             }
             if(cpuCycle <= 0) {
