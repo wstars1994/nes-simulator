@@ -137,6 +137,15 @@ public class CpuMemory {
     }
 
     /**
+     * 出栈
+     */
+    public int pop16Stack(){
+        short pcLow16 = (short) (popStack()&0xFF);
+        short pcLow8 = (short) (popStack()&0xFF);
+        return  (pcLow16 << 8) | pcLow8;
+    }
+
+    /**
      * 读数据
      * @param addr
      * @return

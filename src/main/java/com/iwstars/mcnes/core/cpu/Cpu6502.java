@@ -270,6 +270,46 @@ public class Cpu6502{
                     System.out.print("BEQ");
                     cpuCycle-= CpuRegister.BEQ(cpuMemory,iterator.next());
                     break;
+                //INX
+                case 0xE8:
+                    System.out.print("INX");
+                    cpuCycle-= CpuRegister.INX();
+                    break;
+                //INX
+                case 0x38:
+                    System.out.print("SEC");
+                    cpuCycle-= CpuRegister.SEC();
+                    break;
+                //SBC
+                case 0xF9:
+                    System.out.print("SBC");
+                    cpuCycle-= CpuRegister.SBC_ABS_Y(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //BCC
+                case 0x90:
+                    System.out.print("BCC");
+                    cpuCycle-= CpuRegister.BCC(cpuMemory,iterator.next());
+                    break;
+                //EOR_ZERO
+                case 0x45:
+                    System.out.print("EOR_ZERO");
+                    cpuCycle-= CpuRegister.EOR_ZERO(cpuMemory,iterator.next());
+                    break;
+                //CLC
+                case 0x18:
+                    System.out.print("CLC");
+                    cpuCycle-= CpuRegister.CLC();
+                    break;
+                //ROR_ABS_X
+                case 0x7E:
+                    System.out.print("ROR_ABS_X");
+                    cpuCycle-= CpuRegister.ROR_ABS_X(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //RTI
+                case 0x40:
+                    System.out.print("RTI");
+                    cpuCycle-= CpuRegister.RTI(cpuMemory);
+                    break;
                 default:
                     System.out.printf("%02X",insCode);
                     break;
