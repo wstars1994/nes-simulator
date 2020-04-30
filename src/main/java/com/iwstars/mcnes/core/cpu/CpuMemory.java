@@ -126,6 +126,13 @@ public class CpuMemory {
         this.data[0x0100 + (sp&0xFF)] = data;
         CpuRegister.setReg_S((byte) (sp-1));
     }
+    /**
+     * 入栈16位
+     */
+    public void push16Stack(short data){
+        pushStack((byte) (data&0xFF));
+        pushStack((byte) ((data>>8)&0xFF));
+    }
 
     /**
      * 出栈
@@ -140,8 +147,8 @@ public class CpuMemory {
      * 出栈
      */
     public int pop16Stack(){
-        short pcLow16 = (short) (popStack()&0xFF);
-        short pcLow8 = (short) (popStack()&0xFF);
+        byte pcLow16 =  popStack();
+        byte pcLow8 = (byte) (popStack()&0xFF);
         return  (pcLow16 << 8) | pcLow8;
     }
 
