@@ -123,7 +123,7 @@ public class CpuMemory {
      */
     public void pushStack(byte data){
         byte sp = CpuRegister.getReg_S();
-        this.data[0x0100 + (sp&0xFF)] = data;
+        this.data[0x0100 | (sp&0xFF)] = data;
         CpuRegister.setReg_S((byte) (sp-1));
     }
     /**
@@ -140,15 +140,15 @@ public class CpuMemory {
     public byte popStack(){
         int sp = CpuRegister.getReg_S();
         CpuRegister.setReg_S((byte) (sp+1));
-        return this.data[0x0100 + ((sp + 1)&0xFF)];
+        return this.data[0x0100 | ((sp + 1)&0xFF)];
     }
 
     /**
      * 出栈
      */
     public int pop16Stack(){
-        byte pcLow16 =  popStack();
-        byte pcLow8 = (byte) (popStack()&0xFF);
+        short pcLow16 = (short) (popStack()&0xFF);
+        short pcLow8 = (short) (popStack()&0xFF);
         return  (pcLow16 << 8) | pcLow8;
     }
 

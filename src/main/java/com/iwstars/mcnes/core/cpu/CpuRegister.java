@@ -197,9 +197,8 @@ public class CpuRegister {
      * @param high
      */
     public static int LDA_ABS_X(CpuMemory cpuMemory,byte low, byte high) {
-        int aShort = MemUtil.concatByte(low, high);
-        int addr = aShort + (CpuRegister.REG_X & 0xff);
-        CpuRegister.LDA(cpuMemory.read(addr));
+        int aShort = MemUtil.concatByte(low, high) + (CpuRegister.REG_X & 0xff);
+        CpuRegister.LDA(cpuMemory.read(aShort));
         return 4;
     }
 
@@ -312,7 +311,7 @@ public class CpuRegister {
         return 3;
     }
 
-    public static int CPX( byte data) {
+    public static int CPX(byte data) {
         byte regX = CpuRegister.REG_X;
         byte cmpData = (byte) (regX - data);
         CpuRegister.setN(cmpData);
@@ -357,15 +356,6 @@ public class CpuRegister {
         CpuRegister.REG_S_N = data;
     }
 
-    public static int ADC_ABS(CpuMemory cpuMemory, byte low, byte high) {
-
-//        CpuRegister.setN(cmpData);
-//        CpuRegister.setZ(cmpData);
-//        CpuRegister.setC(cmpData);
-//        CpuRegister.setV(cmpData);
-        return 4;
-    }
-
     /**
      * 从栈中读取PC,然后PC=PC+1
      * PC fromS, PC + 1 -> PC
@@ -404,9 +394,8 @@ public class CpuRegister {
      * @return
      */
     public static int STA_ABS_Y(CpuMemory cpuMemory, byte low, byte high) {
-        int addr = MemUtil.concatByte(low, high);
-        int memAddress = addr + (CpuRegister.REG_Y&0xFF);
-        cpuMemory.write(memAddress, CpuRegister.REG_A);
+        int addr = MemUtil.concatByte(low, high) + (CpuRegister.REG_Y&0xFF);
+        cpuMemory.write(addr, CpuRegister.REG_A);
         return 5;
     }
 
@@ -496,6 +485,7 @@ public class CpuRegister {
      */
     public static void NMI(CpuMemory cpuMemory) {
         cpuMemory.push16Stack((short) cpuMemory.getPrgPc());
+        cpuMemory.pushStack(CpuRegister.REG_S_MERGE());
         CpuRegister.setB((byte) 1);
         int high = (cpuMemory.read(0xFFFA) & 0xff) | ((cpuMemory.read(0xFFFA + 1) & 0xff) << 8);
         cpuMemory.setPrgPc(high);
@@ -516,7 +506,7 @@ public class CpuRegister {
     }
 
     public static int LDA_INDIRECT_Y(CpuMemory cpuMemory, byte data) {
-        int addr = MemUtil.concatByte(cpuMemory.read(data), cpuMemory.read((data + 1))) + (CpuRegister.REG_Y&0xFF);;
+        int addr = MemUtil.concatByte(cpuMemory.read(data), cpuMemory.read(data + 1)) + (CpuRegister.REG_Y&0xFF);
         byte read = cpuMemory.read(addr);
         CpuRegister.LDA(read);
         return 5;
