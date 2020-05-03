@@ -27,10 +27,10 @@ public class PpuMemory {
 
     private static byte[] ppuData = new byte[16 * 1024];
 
+    private static byte[] sprRam = new byte[256];
+
     public static void write(short addr, byte data) {
-        if(addr>=0x2000 && addr<=0x2FFF) {
-            ppuData[addr] = data;
-        }
+        ppuData[addr] = data;
     }
 
     /**
@@ -39,5 +39,18 @@ public class PpuMemory {
      */
     public static void writePattern(byte[] data) {
         System.arraycopy(data,0,ppuData,0,data.length);
+    }
+
+    /**
+     * 写入精灵数据
+     * @param addr
+     * @param data
+     */
+    public static void writeSprRam(byte addr, byte data) {
+        PpuMemory.sprRam[addr&0xFF] = data;
+    }
+
+    public static byte read(int addr) {
+        return ppuData[addr];
     }
 }

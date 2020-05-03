@@ -1,6 +1,7 @@
 package com.iwstars.mcnes.core.ppu;
 
 import com.iwstars.mcnes.core.DataBus;
+import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,31 +43,66 @@ public class Ppu {
     /**
      * 开始绘制
      */
-    public void startRender() {
+    public void startRender(int line) {
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
         if(b2001[3] == 1) {
-            byte addr = b2000[0];
+            byte ntAddr = b2000[0];
+            byte bgAddr = b2000[4];
             short nameTableAddr = 0;
-            if(addr == 0x00) {
+            short patternAddr = 0;
+            if(ntAddr == 0x00) {
                 nameTableAddr = 0x2000;
-            }else if (addr == 0x01){
+            }else if (ntAddr == 0x01){
                 nameTableAddr = 0x2400;
-            }else if (addr == 0x10){
+            }else if (ntAddr == 0x10){
                 nameTableAddr = 0x2800;
-            }else if (addr == 0x11){
+            }else if (ntAddr == 0x11){
                 nameTableAddr = 0x2C00;
             }
-            if(nameTableAddr!=0) {
-                renderNameTable(nameTableAddr);
+            if(bgAddr == 1) {
+                patternAddr = 0x1000;
             }
+            this.renderNameTable(line,nameTableAddr,patternAddr);
         }
         if(b2001[4] == 1) {
 
         }
         System.out.println("--------------------Render end--------------------");
     }
-    private void renderNameTable(short addr) {
-        System.out.println(addr);
+
+    /**
+     * 绘制命名表
+     * @param line 扫描线
+     * @param ntStartAddr 命名表起始地址
+     * @param patternStartAddr 图案表起始地址
+     */
+    private void renderNameTable(int line,short ntStartAddr,short patternStartAddr) {
+        //32*30个Tile = (256*240 像素)
+        for (int i=0;i<32;i++) {
+            byte data = PpuMemory.read(ntStartAddr + i);
+            int patternAddr = patternStartAddr + (data*16);
+            int patternColor = patternAddr + 8;
+
+            byte patternData = PpuMemory.read(patternAddr);
+            byte colorData = PpuMemory.read(patternColor);
+
+            byte patternColorData = getPatternColorData(patternData,colorData);
+
+            System.out.print(Integer.toBinaryString(patternColorData)+" ");
+        }
+        System.out.println("");
+
+    }
+
+    private byte getPatternColorData(byte patternData, byte colorData) {
+        byte[] patternDatas = MemUtil.toBits((byte) (patternData&0xFF));
+        byte[] colorDatas = MemUtil.toBits((byte) (colorData&0xFF));
+
+        byte patternColorData[] = new byte[8];
+        for(int i=7;i>0;i--) {
+            patternColorData[i] = (byte) ((colorDatas[i]<<1) | (patternDatas[i]));
+        }
+        return MemUtil.bitsToByte(patternColorData);
     }
 }

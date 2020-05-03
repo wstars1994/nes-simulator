@@ -1,5 +1,7 @@
 package com.iwstars.mcnes.core.cpu;
 
+import com.iwstars.mcnes.util.MemUtil;
+
 import java.util.Iterator;
 
 /**
@@ -15,7 +17,7 @@ public class Cpu6502{
      * 计算出每条扫描数所需要的CPU周期
      * 1.79*Math.pow(10,6)/60/262 ≈ 113
      */
-    private int cpuCycle = 113;
+    private int cpuCycle = 114;
 
     private static int runCycleNum = 1;
 
@@ -42,7 +44,14 @@ public class Cpu6502{
             System.out.println("");
             int prgPc = cpuMemory.getPrgPc();
             byte insCode = iterator.next();
-            System.out.printf("insNum=%06d cycle=%03d A=$%02X,X=$%02X,Y=$%02X,S=$%02X pc=$%02X ",runCycleNum++,cpuCycle, CpuRegister.getReg_A()&0xFF, CpuRegister.getReg_X()&0xFF, CpuRegister.getReg_Y()&0xFF, CpuRegister.getReg_S()&0xFF,prgPc&0xFFFF);
+            System.out.printf("insNum=%06d cycle=%03d A=$%02X,X=$%02X,Y=$%02X,S=$%02X pc=$%02X P:%c%c%c%c%c%c%c ",
+                    runCycleNum++,cpuCycle, CpuRegister.getReg_A()&0xFF, CpuRegister.getReg_X()&0xFF, CpuRegister.getReg_Y()&0xFF, CpuRegister.getReg_S()&0xFF,prgPc&0xFFFF
+            ,CpuRegister.getN() != 0 ? 'N'
+                            : 'n', CpuRegister.getV() != 0 ? 'V' : 'v', CpuRegister.getB() != 0 ? 'B'
+                            : 'b', CpuRegister.getD() != 0 ? 'D' : 'd', CpuRegister.getI() != 0 ? 'I'
+                            : 'i', CpuRegister.getZ() != 0 ? 'Z' : 'z', CpuRegister.getC() != 0 ? 'C'
+                            : 'c'
+            );
             //执行程序(超级玛丽的执行顺序)
             switch(insCode&0xff) {
                 //SEI 禁止中断
@@ -309,6 +318,166 @@ public class Cpu6502{
                 case 0x40:
                     System.out.print("RTI");
                     cpuCycle-= CpuRegister.RTI(cpuMemory);
+                    break;
+                //DEC_ABS
+                case 0xCE:
+                    System.out.print("DEC_ABS");
+                    cpuCycle-= CpuRegister.DEC_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //INC_ZERO
+                case 0xE6:
+                    System.out.print("INC_ZERO");
+                    cpuCycle-= CpuRegister.INC_ZERO(cpuMemory,iterator.next());
+                    break;
+                //ASL
+                case 0x0A:
+                    System.out.print("ASL");
+                    cpuCycle-= CpuRegister.ASL();
+                    break;
+                //TAY
+                case 0xA8:
+                    System.out.print("TAY");
+                    cpuCycle-= CpuRegister.TAY();
+                    break;
+                //JMP_INDIRECT
+                case 0x6C:
+                    System.out.print("JMP_INDIRECT");
+                    cpuCycle-= CpuRegister.JMP_INDIRECT(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //LDA_ABS_Y
+                case 0xB9:
+                    System.out.print("LDA_ABS_Y");
+                    cpuCycle-= CpuRegister.LDA_ABS_Y(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //ADC_ABS
+                case 0x6D:
+                    System.out.print("ADC_ABS");
+                    cpuCycle-= CpuRegister.ADC_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //ADC
+                case 0x69:
+                    System.out.print("ADC");
+                    cpuCycle-= CpuRegister.ADC(iterator.next());
+                    break;
+                //STY_ABS
+                case 0x8C:
+                    System.out.print("STY_ABS");
+                    cpuCycle-= CpuRegister.STY_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //LDA_ZERO
+                case 0xA5:
+                    System.out.print("LDA_ZERO");
+                    cpuCycle-= CpuRegister.LDA_ZERO(cpuMemory,iterator.next());
+                    break;
+                //DEC_ZERO
+                case 0xC6:
+                    System.out.print("DEC_ZERO");
+                    cpuCycle-= CpuRegister.DEC_ZERO(cpuMemory,iterator.next());
+                    break;
+                //TYA
+                case 0x98:
+                    System.out.print("TYA");
+                    cpuCycle-= CpuRegister.TYA();
+                    break;
+                //ADC_ZERO
+                case 0x65:
+                    System.out.print("ADC_ZERO");
+                    cpuCycle-= CpuRegister.ADC_ZERO(cpuMemory,iterator.next());
+                    break;
+                //LDX_ZERO
+                case 0xA6:
+                    System.out.print("LDX_ZERO");
+                    cpuCycle-= CpuRegister.LDX_ZERO(cpuMemory,iterator.next());
+                    break;
+                //STX_ABS
+                case 0x8E:
+                    System.out.print("STX_ABS");
+                    cpuCycle-= CpuRegister.STX_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //BMI
+                case 0x30:
+                    System.out.print("BMI");
+                    cpuCycle-= CpuRegister.BMI(cpuMemory,iterator.next());
+                    break;
+                //ADC_ABS_Y
+                case 0x79:
+                    System.out.print("ADC_ABS_Y");
+                    cpuCycle-= CpuRegister.ADC_ABS_Y(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //SBC
+                case 0xE9:
+                    System.out.print("SBC");
+                    cpuCycle-= CpuRegister.SBC(iterator.next());
+                    break;
+                //STY_ZERO
+                case 0x84:
+                    System.out.print("STY_ZERO");
+                    cpuCycle-= CpuRegister.STY_ZERO(cpuMemory,iterator.next());
+                    break;
+                //BIT_ZERO
+                case 0x24:
+                    System.out.print("BIT_ZERO");
+                    cpuCycle-= CpuRegister.BIT_ZERO(cpuMemory,iterator.next());
+                    break;
+                //LDY_ZERO
+                case 0xA4:
+                    System.out.print("LDY_ZERO");
+                    cpuCycle-= CpuRegister.LDY_ZERO(cpuMemory,iterator.next());
+                    break;
+                //CMP_ABS
+                case 0xCD:
+                    System.out.print("CMP_ABS");
+                    cpuCycle-= CpuRegister.CMP_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //CMP_ABS_Y
+                case 0xD9:
+                    System.out.print("CMP_ABS_Y");
+                    cpuCycle-= CpuRegister.CMP_ABS_Y(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //EOR
+                case 0x49:
+                    System.out.print("EOR");
+                    cpuCycle-= CpuRegister.EOR_A(iterator.next());
+                    break;
+                //ROL_ZERO
+                case 0x26:
+                    System.out.print("ROL_ZERO");
+                    cpuCycle-= CpuRegister.ROL_ZERO(cpuMemory,iterator.next());
+                    break;
+                //LSR_ZERO
+                case 0x46:
+                    System.out.print("LSR_ZERO");
+                    cpuCycle-= CpuRegister.LSR_ZERO(cpuMemory,iterator.next());
+                    break;
+                //DEC_ABS_X
+                case 0xDE:
+                    System.out.print("DEC_ABS_X");
+                    cpuCycle-= CpuRegister.DEC_ABS_X(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //LSR_ABS
+                case 0x4E:
+                    System.out.print("LSR_ABS");
+                    cpuCycle-= CpuRegister.LSR_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //ROR_A
+                case 0x6A:
+                    System.out.print("ROR_A");
+                    cpuCycle-= CpuRegister.ROR_A();
+                    break;
+                //ROL_ABS
+                case 0x2E:
+                    System.out.print("ROL_ABS");
+                    cpuCycle-= CpuRegister.ROL_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //CMP_ZERO
+                case 0xC5:
+                    System.out.print("CMP_ZERO");
+                    cpuCycle-= CpuRegister.CMP_ZERO(cpuMemory,iterator.next());
+                    break;
+                //LDY_ABS_X
+                case 0xBC:
+                    System.out.print("LDY_ABS_X");
+                    cpuCycle-= CpuRegister.LDY_ABS_X(cpuMemory,iterator.next(),iterator.next());
                     break;
                 default:
                     System.out.printf("%02X",insCode);

@@ -1,6 +1,7 @@
 package com.iwstars.mcnes.core.cpu;
 
 import com.iwstars.mcnes.core.DataBus;
+import com.iwstars.mcnes.core.ppu.PpuMemory;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -68,7 +69,7 @@ public class CpuMemory {
      */
     public void write(int addr,byte data){
         System.out.printf(" --> Write to memory:addr=$%02X(index=%d),val=%d", addr,addr,data);
-        this.data[addr] = data;
+        this.data[addr&0xFFFF] = data;
         switch (addr) {
             case 0x2000:
                 DataBus.p_2000 = MemUtil.toBits(data);
@@ -102,8 +103,11 @@ public class CpuMemory {
                 break;
             //OAM DMA register (high byte)
             case 0x4014:
-//                DataBus.pcr_2000 = MemUtil.toBits(CpuRegister.REG_A);
-                System.out.print(" OAM DMA register (high byte)");
+                short start = (short) (data*0x100);
+                for(int i=0;i<256;i++) {
+                    byte read = read(start++);
+                    PpuMemory.writeSprRam((byte) i,read);
+                }
                 break;
         }
     }
@@ -124,14 +128,15 @@ public class CpuMemory {
     public void pushStack(byte data){
         byte sp = CpuRegister.getReg_S();
         this.data[0x0100 | (sp&0xFF)] = data;
+        System.out.printf(" --> push stack:addr=$%02X(index=%d),val=%d", 0x0100 | (sp&0xFF),0x0100 | (sp&0xFF),data);
         CpuRegister.setReg_S((byte) (sp-1));
     }
     /**
      * 入栈16位
      */
     public void push16Stack(short data){
-        pushStack((byte) (data&0xFF));
         pushStack((byte) ((data>>8)&0xFF));
+        pushStack((byte) (data&0xFF));
     }
 
     /**
@@ -140,15 +145,17 @@ public class CpuMemory {
     public byte popStack(){
         int sp = CpuRegister.getReg_S();
         CpuRegister.setReg_S((byte) (sp+1));
-        return this.data[0x0100 | ((sp + 1)&0xFF)];
+        byte data = this.data[0x0100 | ((sp + 1) & 0xFF)];
+        System.out.printf(" --> pop stack:addr=$%02X(index=%d),val=%d",0x0100 | ((sp + 1)&0xFF),0x0100 | ((sp + 1)&0xFF),data);
+        return data;
     }
 
     /**
      * 出栈
      */
     public int pop16Stack(){
-        short pcLow16 = (short) (popStack()&0xFF);
         short pcLow8 = (short) (popStack()&0xFF);
+        short pcLow16 = (short) (popStack()&0xFF);
         return  (pcLow16 << 8) | pcLow8;
     }
 
@@ -166,6 +173,7 @@ public class CpuMemory {
                     //当CPU读取$2002后vblank标志设置为0
                     byte readData = MemUtil.bitsToByte(DataBus.p_2002);
                     DataBus.p_2002[7] = 0;
+                    DataBus.p_2006_flag = false;
                     return readData;
                 case 0x2007:
                     System.out.println("2007");

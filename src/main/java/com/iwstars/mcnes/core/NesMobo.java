@@ -37,7 +37,7 @@ public class NesMobo {
                 if(i<240) {
                     System.out.println("");
                     System.out.println("");
-                    ppu.startRender();
+                    ppu.startRender(i);
                 }
                 //VBlank
                 if(i==241) {
@@ -71,9 +71,5 @@ public class NesMobo {
      */
     public void reset(){
 
-    }
-
-    public static void main(String[] args) {
-        System.out.println(-127&0xff);
     }
 }
