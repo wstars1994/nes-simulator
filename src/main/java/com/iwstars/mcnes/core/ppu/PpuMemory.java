@@ -30,6 +30,7 @@ public class PpuMemory {
     private static byte[] sprRam = new byte[256];
 
     public static void write(short addr, byte data) {
+        System.out.printf(" write ppu memory addr=%02X[%d],val=%d",addr,addr,data);
         ppuData[addr] = data;
     }
 

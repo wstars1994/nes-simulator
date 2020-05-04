@@ -3,6 +3,7 @@ package com.iwstars.mcnes.core;
 import com.iwstars.mcnes.core.cpu.Cpu6502;
 import com.iwstars.mcnes.core.cpu.CpuRegister;
 import com.iwstars.mcnes.core.ppu.Ppu;
+import com.iwstars.mcnes.util.LogUtil;
 import lombok.Setter;
 
 /**
@@ -35,8 +36,8 @@ public class NesMobo {
             for (int i = 0; i < 262; i++) {
                 //HBlank start
                 if(i<240) {
-                    System.out.println("");
-                    System.out.println("");
+                    LogUtil.logLn("");
+                    LogUtil.logLn("");
                     ppu.startRender(i);
                 }
                 //VBlank

@@ -2,6 +2,7 @@ package com.iwstars.mcnes.core.cpu;
 
 import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.core.ppu.PpuMemory;
+import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -68,7 +69,7 @@ public class CpuMemory {
      * @param data
      */
     public void write(int addr,byte data){
-        System.out.printf(" --> Write to memory:addr=$%02X(index=%d),val=%d", addr,addr,data);
+        LogUtil.logf(" --> Write to memory:addr=$%02X(index=%d),val=%d", addr,addr,data);
         this.data[addr&0xFFFF] = data;
         switch (addr) {
             case 0x2000:
@@ -128,7 +129,7 @@ public class CpuMemory {
     public void pushStack(byte data){
         byte sp = CpuRegister.getReg_S();
         this.data[0x0100 | (sp&0xFF)] = data;
-        System.out.printf(" --> push stack:addr=$%02X(index=%d),val=%d", 0x0100 | (sp&0xFF),0x0100 | (sp&0xFF),data);
+        LogUtil.logf(" --> push stack:addr=$%02X(index=%d),val=%d", 0x0100 | (sp&0xFF),0x0100 | (sp&0xFF),data);
         CpuRegister.setReg_S((byte) (sp-1));
     }
     /**
@@ -146,7 +147,7 @@ public class CpuMemory {
         int sp = CpuRegister.getReg_S();
         CpuRegister.setReg_S((byte) (sp+1));
         byte data = this.data[0x0100 | ((sp + 1) & 0xFF)];
-        System.out.printf(" --> pop stack:addr=$%02X(index=%d),val=%d",0x0100 | ((sp + 1)&0xFF),0x0100 | ((sp + 1)&0xFF),data);
+        LogUtil.logf(" --> pop stack:addr=$%02X(index=%d),val=%d",0x0100 | ((sp + 1)&0xFF),0x0100 | ((sp + 1)&0xFF),data);
         return data;
     }
 
@@ -166,7 +167,7 @@ public class CpuMemory {
      */
     public byte read(int addr){
         if(addr == 0x2002 || addr == 0x2007) {
-            System.out.printf(" read addr = %02X",addr);
+            LogUtil.logf(" read addr = %02X",addr);
             switch (addr) {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:
@@ -176,7 +177,7 @@ public class CpuMemory {
                     DataBus.p_2006_flag = false;
                     return readData;
                 case 0x2007:
-                    System.out.println("2007");
+//                    System.out.println("2007");
                     break;
             }
         }

@@ -109,7 +109,6 @@ public class CpuRegister {
      * @param high 高8位
      */
     public static int LDA_ABS(CpuMemory cpuMemory,byte low, byte high) {
-        System.out.println("LDA_ABS" + MemUtil.concatByte(low, high));
         int addr = MemUtil.concatByte(low, high);
         byte readData = cpuMemory.read(addr);
         LDA(readData);

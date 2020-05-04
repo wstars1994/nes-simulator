@@ -1,6 +1,7 @@
 package com.iwstars.mcnes.core.ppu;
 
 import com.iwstars.mcnes.core.DataBus;
+import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,6 +45,7 @@ public class Ppu {
      * 开始绘制
      */
     public void startRender(int line) {
+        LogUtil.logLn("--------------------Render begin--------------------");
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
         if(b2001[3] == 1) {
@@ -68,34 +70,53 @@ public class Ppu {
         if(b2001[4] == 1) {
 
         }
-        System.out.println("--------------------Render end--------------------");
+        LogUtil.logLn("--------------------Render end--------------------");
     }
 
     /**
      * 绘制命名表
      * @param line 扫描线
-     * @param ntStartAddr 命名表起始地址
+     * @param nametableStartAddr 命名表起始地址
      * @param patternStartAddr 图案表起始地址
      */
-    private void renderNameTable(int line,short ntStartAddr,short patternStartAddr) {
+    private void renderNameTable(int line,short nametableStartAddr,short patternStartAddr) {
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<32;i++) {
-            byte data = PpuMemory.read(ntStartAddr + i);
-            int patternAddr = patternStartAddr + (data*16);
+            int patternAddr = patternStartAddr + (PpuMemory.read(nametableStartAddr + i + (line*32)) * 16);
             int patternColor = patternAddr + 8;
-
+            //图案表数据
             byte patternData = PpuMemory.read(patternAddr);
+            //图案表颜色数据
             byte colorData = PpuMemory.read(patternColor);
+            //合并取低两位颜色
+            byte[] patternColorData = getPatternColorData(patternData,colorData);
+            //取属性表数据 (颜色高两位)
+            byte attributeData = PpuMemory.read(nametableStartAddr + 0x3C0 + (i/4));
+            byte[] attributeDatas = MemUtil.toBits(attributeData);
+            int ii = i % 4;
+            int ll = line % 4;
+            int high2 = 0;
+            if(ll<2) {
+                if(ii<2) {
+                    high2 = (attributeDatas[0]) + (attributeDatas[1] & 2);
+                }else {
+                    high2 = (attributeDatas[2]) + (attributeDatas[3] & 2);
+                }
+            }else {
+                if(ii<2) {
+                    high2 = (attributeDatas[4]) + (attributeDatas[5] & 2);
+                }else {
+                    high2 = (attributeDatas[6]) + (attributeDatas[7] & 2);
+                }
+            }
 
-            byte patternColorData = getPatternColorData(patternData,colorData);
-
-            System.out.print(Integer.toBinaryString(patternColorData)+" ");
+//            print8(MemUtil.bitsToByte(patternColorData));
         }
-        System.out.println("");
+//        System.out.println("");
 
     }
 
-    private byte getPatternColorData(byte patternData, byte colorData) {
+    private byte[] getPatternColorData(byte patternData, byte colorData) {
         byte[] patternDatas = MemUtil.toBits((byte) (patternData&0xFF));
         byte[] colorDatas = MemUtil.toBits((byte) (colorData&0xFF));
 
@@ -103,6 +124,14 @@ public class Ppu {
         for(int i=7;i>0;i--) {
             patternColorData[i] = (byte) ((colorDatas[i]<<1) | (patternDatas[i]));
         }
-        return MemUtil.bitsToByte(patternColorData);
+        return patternColorData;
+    }
+
+    private void print8(byte data){
+        String s = Integer.toBinaryString(data & 0xFF);
+        while (s.length()<8) {
+            s="0"+s;
+        }
+        System.out.print(s);
     }
 }
