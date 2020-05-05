@@ -7,7 +7,7 @@ package com.iwstars.mcnes.util;
  */
 public class LogUtil {
 
-    private static boolean logFlag = true;
+    private static boolean logFlag = false;
 
     public static void logLn(String info) {
         if(logFlag) {

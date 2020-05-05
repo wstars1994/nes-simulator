@@ -10,7 +10,6 @@ import com.iwstars.mcnes.util.MemUtil;
 public class Test {
 
     public static void main(String[] args) {
-
-        System.out.println(-8&0xFF);
+        System.out.println(Integer.toBinaryString(-86&0xFF));
     }
 }

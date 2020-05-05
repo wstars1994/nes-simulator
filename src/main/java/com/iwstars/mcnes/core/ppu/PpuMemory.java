@@ -1,5 +1,7 @@
 package com.iwstars.mcnes.core.ppu;
 
+import com.iwstars.mcnes.util.LogUtil;
+
 /**
  * 图形处理单元
  * 16KB space
@@ -25,12 +27,12 @@ package com.iwstars.mcnes.core.ppu;
  */
 public class PpuMemory {
 
-    private static byte[] ppuData = new byte[16 * 1024];
+    private static byte[] ppuData = new byte[65535];
 
     private static byte[] sprRam = new byte[256];
 
-    public static void write(short addr, byte data) {
-        System.out.printf(" write ppu memory addr=%02X[%d],val=%d",addr,addr,data);
+    public static void write(int addr, byte data) {
+        LogUtil.logf(" write PPU memory addr=%02X[%d],val=%d",addr,addr,data);
         ppuData[addr] = data;
     }
 

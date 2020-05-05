@@ -80,9 +80,16 @@ public class Ppu {
      * @param patternStartAddr 图案表起始地址
      */
     private void renderNameTable(int line,short nametableStartAddr,short patternStartAddr) {
+        //计算每条扫描线 起始的命名表地址
+        //line/8 每8条扫描线命名表地址 ++32(每8条扫描线后才读取完32个8*8tile)
+        nametableStartAddr = (short) (nametableStartAddr + (line/8) * 32);
+
         //32*30个Tile = (256*240 像素)
-        for (int i=0;i<32;i++) {
-            int patternAddr = patternStartAddr + (PpuMemory.read(nametableStartAddr + i + (line*32)) * 16);
+        for (int i=0;i<33;i++) {
+            //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
+            int nameTableData = PpuMemory.read(nametableStartAddr + i) * 16;
+            //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
+            int patternAddr = patternStartAddr + nameTableData + (line%8);
             int patternColor = patternAddr + 8;
             //图案表数据
             byte patternData = PpuMemory.read(patternAddr);
@@ -91,7 +98,7 @@ public class Ppu {
             //合并取低两位颜色
             byte[] patternColorData = getPatternColorData(patternData,colorData);
             //取属性表数据 (颜色高两位)
-            byte attributeData = PpuMemory.read(nametableStartAddr + 0x3C0 + (i/4));
+            byte attributeData = (byte) (PpuMemory.read(nametableStartAddr + 0x3C0 + (i/4))&0xFF);
             byte[] attributeDatas = MemUtil.toBits(attributeData);
             int ii = i % 4;
             int ll = line % 4;
@@ -109,10 +116,9 @@ public class Ppu {
                     high2 = (attributeDatas[6]) + (attributeDatas[7] & 2);
                 }
             }
-
-//            print8(MemUtil.bitsToByte(patternColorData));
+            print8(patternData);
         }
-//        System.out.println("");
+        System.out.println("");
 
     }
 

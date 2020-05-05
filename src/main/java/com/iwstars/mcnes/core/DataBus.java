@@ -43,11 +43,11 @@ public class DataBus {
     /**
      *  PPU Address Register
      */
-    public static short p_2006_data;
+    public static int p_2006_data;
     /**
      *  PPU Data Port
      */
-    public static byte[] p_2007 = new byte[8];
+    public static byte p_2007_read = 0;
 
     /**
      *  OAM DMA register (high byte)
@@ -55,7 +55,7 @@ public class DataBus {
     public static byte[] p_4014 = new byte[8];
 
 
-    public static void writePpuNameTable(short addr, byte data) {
+    public static void writePpuNameTable(int addr, byte data) {
         PpuMemory.write(addr,data);
     }
 }

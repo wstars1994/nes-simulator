@@ -89,16 +89,15 @@ public class CpuMemory {
                 break;
             case 0x2006:
                 if(!DataBus.p_2006_flag) {
-                    //第一次写将写入高8位;
-                    DataBus.p_2006_data = (short) ((data&0xFF) << 8);
+                    //第一次写将写入高6位;
+                    DataBus.p_2006_data = (short) ((data&0x3F) << 8);
                 }else {
-                    //第二次写将写入低6位
-                    DataBus.p_2006_data|=(data&0x3F);
+                    //第二次写将写入低8位
+                    DataBus.p_2006_data|=(data&0xFF);
                 }
                 DataBus.p_2006_flag = !DataBus.p_2006_flag;
                 break;
             case 0x2007:
-                DataBus.p_2007 = MemUtil.toBits(data);
                 DataBus.writePpuNameTable(DataBus.p_2006_data,data);
                 DataBus.p_2006_data+=(DataBus.p_2000[2]==0?1:32);
                 break;
@@ -177,7 +176,16 @@ public class CpuMemory {
                     DataBus.p_2006_flag = false;
                     return readData;
                 case 0x2007:
-//                    System.out.println("2007");
+                    int p2006 = DataBus.p_2006_data;
+                    DataBus.p_2006_data += (DataBus.p_2000[2]==0?1:32);
+                    if(addr <= 0x3EFF) {
+                        //读取PPU
+                        byte res = DataBus.p_2007_read;
+                        DataBus.p_2007_read = PpuMemory.read(p2006);
+                        return res;
+                    }else if(addr <= 0x3FFF) {
+                        //读取调色板
+                    }
                     break;
             }
         }
