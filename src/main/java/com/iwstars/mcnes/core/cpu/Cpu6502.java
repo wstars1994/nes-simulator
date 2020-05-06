@@ -329,10 +329,10 @@ public class Cpu6502{
                     LogUtil.log("INC_ZERO");
                     cpuCycle-= CpuRegister.INC_ZERO(cpuMemory,iterator.next());
                     break;
-                //ASL
+                //ASL_A
                 case 0x0A:
-                    LogUtil.log("ASL");
-                    cpuCycle-= CpuRegister.ASL();
+                    LogUtil.log("ASL_A");
+                    cpuCycle-= CpuRegister.ASL_A();
                     break;
                 //TAY
                 case 0xA8:
@@ -478,6 +478,66 @@ public class Cpu6502{
                 case 0xBC:
                     LogUtil.log("LDY_ABS_X");
                     cpuCycle-= CpuRegister.LDY_ABS_X(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //STA_ZERO_X
+                case 0x95:
+                    LogUtil.log("STA_ZERO_X");
+                    cpuCycle-= CpuRegister.STA_ZERO_X(cpuMemory,iterator.next());
+                    break;
+                //CMP_ABS_X
+                case 0xDD:
+                    LogUtil.log("CMP_ABS_X");
+                    cpuCycle-= CpuRegister.CMP_ABS_X(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //PHP
+                case 0x08:
+                    LogUtil.log("PHP");
+                    cpuCycle-= CpuRegister.PHP(cpuMemory);
+                    break;
+                //CPX_ZERO
+                case 0xE4:
+                    LogUtil.log("CPX_ZERO");
+                    cpuCycle-= CpuRegister.CPX_ZERO(cpuMemory,iterator.next());
+                    break;
+                //ROR_ZERO
+                case 0x66:
+                    LogUtil.log("ROR_ZERO");
+                    cpuCycle-= CpuRegister.ROR_ZERO(cpuMemory,iterator.next());
+                    break;
+                //LDA_ZERO_X
+                case 0xB5:
+                    LogUtil.log("LDA_ZERO_X");
+                    cpuCycle-= CpuRegister.LDA_ZERO_X(cpuMemory,iterator.next());
+                    break;
+                //AND_ZERO
+                case 0x25:
+                    LogUtil.log("AND_ZERO");
+                    cpuCycle-= CpuRegister.AND_ZERO(cpuMemory,iterator.next());
+                    break;
+                //PLP
+                case 0x28:
+                    LogUtil.log("PLP");
+                    cpuCycle-= CpuRegister.PLP(cpuMemory);
+                    break;
+                //ASL_ZERO
+                case 0x06:
+                    LogUtil.log("ASL_ZERO");
+                    cpuCycle-= CpuRegister.ASL_ZERO(cpuMemory,iterator.next());
+                    break;
+                //AND_INDIRECT_Y
+                case 0x31:
+                    LogUtil.log("AND_INDIRECT_Y");
+                    cpuCycle-= CpuRegister.AND_INDIRECT_Y(cpuMemory,iterator.next());
+                    break;
+                //SBC_ZERO
+                case 0xE5:
+                    LogUtil.log("SBC_ZERO");
+                    cpuCycle-= CpuRegister.SBC_ZERO(cpuMemory,iterator.next());
+                    break;
+                //LDY_ZERO_X
+                case 0xB4:
+                    LogUtil.log("LDY_ZERO_X");
+                    cpuCycle-= CpuRegister.LDY_ZERO_X(cpuMemory,iterator.next());
                     break;
                 default:
                     LogUtil.logf("%02X",insCode);

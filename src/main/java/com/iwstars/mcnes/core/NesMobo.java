@@ -1,9 +1,11 @@
 package com.iwstars.mcnes.core;
 
 import com.iwstars.mcnes.core.cpu.Cpu6502;
+import com.iwstars.mcnes.core.cpu.CpuMemory;
 import com.iwstars.mcnes.core.cpu.CpuRegister;
 import com.iwstars.mcnes.core.ppu.Ppu;
 import com.iwstars.mcnes.util.LogUtil;
+import com.iwstars.mcnes.util.MemUtil;
 import lombok.Setter;
 
 /**
@@ -42,7 +44,9 @@ public class NesMobo {
                 }
                 //VBlank
                 if(i==241) {
+                    //设置vblanking
                     DataBus.p_2002[7] = 1;
+                    //NMI中断
                     if(DataBus.p_2000[7] == 1) {
                         CpuRegister.NMI(cpu6502.getCpuMemory());
                     }
@@ -71,6 +75,8 @@ public class NesMobo {
      * 复位
      */
     public void reset(){
-
+        CpuMemory cpuMemory = cpu6502.getCpuMemory();
+        int addr = MemUtil.concatByte(cpuMemory.read(0xFFFC), cpuMemory.read(0xFFFD));
+        cpuMemory.setPrgPc(addr);
     }
 }

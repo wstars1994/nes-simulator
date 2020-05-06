@@ -485,7 +485,7 @@ public class CpuRegister {
         cpuMemory.push16Stack((short) cpuMemory.getPrgPc());
         cpuMemory.pushStack(REG_S_MERGE());
         setI((byte) 1);
-        int high = (cpuMemory.read(0xFFFA) & 0xff) | ((cpuMemory.read(0xFFFA + 1) & 0xff) << 8);
+        int high = (cpuMemory.read(0xFFFA) & 0xff) | ((cpuMemory.read(0xFFFB) & 0xff) << 8);
         cpuMemory.setPrgPc(high);
     }
 
@@ -664,7 +664,7 @@ public class CpuRegister {
         return 5;
     }
 
-    public static int ASL() {
+    public static int ASL_A() {
         setC1((byte) ((REG_A >> 7) & 1));
         REG_A <<= 1;
         setN(REG_A);
@@ -882,6 +882,84 @@ public class CpuRegister {
         int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
         byte data = cpuMemory.read(addr);
         LDY(data);
+        return 4;
+    }
+
+    public static int STA_ZERO_X(CpuMemory cpuMemory, byte addr) {
+        byte addr2 = (byte) (cpuMemory.read(addr&0xFF) + (REG_X & 0xff));
+        STA_ZERO(cpuMemory,addr2);
+        return 4;
+    }
+
+    public static int CMP_ABS_X(CpuMemory cpuMemory, byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        CMP(cpuMemory.read(addr));
+        return 4;
+    }
+
+    public static int PHP(CpuMemory cpuMemory) {
+        cpuMemory.pushStack(CpuRegister.REG_S_MERGE());
+        return 3;
+    }
+
+    public static int CPX_ZERO(CpuMemory cpuMemory, byte addr) {
+        CPX(cpuMemory.read(addr&0xFF));
+        return 3;
+    }
+
+    public static int ROR_ZERO(CpuMemory cpuMemory, byte addr) {
+        byte read = cpuMemory.read(addr&0xFF);
+        byte read2 = (byte) (((read & 0xff) >> 1) | (REG_S_C << 7));
+        setC1((byte) (read&1));
+        setN(read2);
+        setZ(read2);
+        cpuMemory.write(addr,read2);
+        return 5;
+    }
+
+    public static int LDA_ZERO_X(CpuMemory cpuMemory, byte addr) {
+        byte data = (byte) (addr + (REG_X & 0xff));
+        LDA(cpuMemory.read(data));
+        return 4;
+    }
+
+    public static int AND_ZERO(CpuMemory cpuMemory, byte addr) {
+        byte data = cpuMemory.read(addr&0xFF);
+        AND(data);
+        return 3;
+    }
+
+    public static int PLP(CpuMemory cpuMemory) {
+        CpuRegister.REG_S_SET(cpuMemory.popStack());
+        return 4;
+    }
+
+    public static int ASL_ZERO(CpuMemory cpuMemory, byte addr) {
+        byte data = cpuMemory.read(addr&0xFF);
+        CpuRegister.setC1((byte) ((data >> 7) & 1));
+        byte data1= (byte) (data << 1);
+        CpuRegister.setN(data1);
+        CpuRegister.setZ(data1);
+        cpuMemory.write(addr, data1);
+        return 5;
+    }
+
+    public static int AND_INDIRECT_Y(CpuMemory cpuMemory, byte data) {
+        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1) )+ (REG_Y&0xFF);
+        byte read = cpuMemory.read(addr);
+        AND(read);
+        return 5;
+    }
+
+    public static int SBC_ZERO(CpuMemory cpuMemory, byte addr) {
+        byte data = cpuMemory.read(addr&0xFF);
+        SBC(data);
+        return 3;
+    }
+
+    public static int LDY_ZERO_X(CpuMemory cpuMemory, byte addr) {
+        byte data = (byte) (addr+ (REG_X & 0xff));
+        LDY(cpuMemory.read(data));
         return 4;
     }
 }

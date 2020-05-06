@@ -170,8 +170,8 @@ public class CpuMemory {
             switch (addr) {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:
-                    //当CPU读取$2002后vblank标志设置为0
                     byte readData = MemUtil.bitsToByte(DataBus.p_2002);
+                    //当CPU读取$2002后vblank标志设置为0
                     DataBus.p_2002[7] = 0;
                     DataBus.p_2006_flag = false;
                     return readData;

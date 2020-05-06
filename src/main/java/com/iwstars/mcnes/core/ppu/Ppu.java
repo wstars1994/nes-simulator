@@ -87,7 +87,7 @@ public class Ppu {
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<33;i++) {
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
-            int nameTableData = PpuMemory.read(nametableStartAddr + i) * 16;
+            int nameTableData = (PpuMemory.read(nametableStartAddr + i)&0xFF) * 16;
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
             int patternAddr = patternStartAddr + nameTableData + (line%8);
             int patternColor = patternAddr + 8;
@@ -135,8 +135,8 @@ public class Ppu {
 
     private void print8(byte data){
         String s = Integer.toBinaryString(data & 0xFF);
-        while (s.length()<8) {
-            s="0"+s;
+        while ( s.length() < 8 ) {
+            s = "0" + s;
         }
         System.out.print(s);
     }

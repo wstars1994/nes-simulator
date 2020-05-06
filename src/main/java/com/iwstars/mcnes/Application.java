@@ -31,6 +31,13 @@ public class Application {
             romData.setHeaderData(headerData);
             //16k PRG-ROM
             romData.setRomPRG(RomReaderUtil.readRomData(dataInputStream,headerData.getRomPRGSize(),16));
+            if(headerData.getRomPRGSize() == 1) {
+                byte[] romPRG = romData.getRomPRG();
+                byte[] full = new byte[romPRG.length * 2];
+                System.arraycopy(romPRG,0,full,0,romPRG.length);
+                System.arraycopy(romPRG,0,full,romPRG.length,romPRG.length);
+                romData.setRomPRG(full);
+            }
             //8k CHR-ROM
             romData.setRomCHR(RomReaderUtil.readRomData(dataInputStream,headerData.getRomCHRSize(),8));
         }catch (Exception e) {
@@ -42,7 +49,7 @@ public class Application {
     public static void main(String[] args) {
         debug = true;
         Application application = new Application();
-        String filePath = "1.nes";
+        String filePath = "2.nes";
         //读取.nes文件数据
         NESRomData romData = application.loadData(new File(filePath));
         //创建PPU
@@ -53,6 +60,7 @@ public class Application {
         NesMobo nesMobo = new NesMobo();
         nesMobo.setPpu(ppu);
         nesMobo.setCpu6502(cpu6502);
+        nesMobo.reset();
         //上电启动
         nesMobo.powerUp();
     }
