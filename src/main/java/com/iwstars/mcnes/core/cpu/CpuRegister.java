@@ -918,8 +918,8 @@ public class CpuRegister {
     }
 
     public static int LDA_ZERO_X(CpuMemory cpuMemory, byte addr) {
-        byte data = (byte) (addr + (REG_X & 0xff));
-        LDA(cpuMemory.read(data));
+        byte data = (byte) ((addr&0xFF) + (REG_X & 0xff));
+        LDA(cpuMemory.read(data&0xFF));
         return 4;
     }
 
@@ -961,5 +961,55 @@ public class CpuRegister {
         byte data = (byte) (addr+ (REG_X & 0xff));
         LDY(cpuMemory.read(data));
         return 4;
+    }
+
+    public static int NOP() {
+        return 2;
+    }
+
+    public static int EOR_ABS(CpuMemory cpuMemory, byte low, byte high) {
+        int data = MemUtil.concatByte(low, high);
+        EOR_A(cpuMemory.read(data));
+        return 4;
+    }
+
+    public static int TSX() {
+        REG_X = REG_SP;
+        CpuRegister.setN(REG_X);
+        CpuRegister.setZ(REG_X);
+        return 2;
+    }
+
+    public static int ASL_ABS(CpuMemory cpuMemory, byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high);
+        byte data = cpuMemory.read(addr);
+        CpuRegister.setC1((byte) ((data >> 7) & 1));
+        byte data1= (byte) (data << 1);
+        CpuRegister.setN(data1);
+        CpuRegister.setZ(data1);
+        cpuMemory.write(addr, data1);
+        return 6;
+    }
+
+    public static int SBC_ABS(CpuMemory cpuMemory, byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high);
+        byte data = cpuMemory.read(addr);
+        SBC(data);
+        return 4;
+    }
+
+    public static int EOR_INDIRECT_Y(CpuMemory cpuMemory, byte data) {
+        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1) )+ (REG_Y&0xFF);
+        EOR_A(cpuMemory.read(addr));
+        return 5;
+    }
+
+    public static int INC_ABS_X(CpuMemory cpuMemory, byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        byte data = (byte) (cpuMemory.read(addr) + 1);
+        cpuMemory.write(addr, data);
+        setN(data);
+        setZ(data);
+        return 7;
     }
 }

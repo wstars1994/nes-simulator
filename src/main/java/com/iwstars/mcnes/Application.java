@@ -47,9 +47,9 @@ public class Application {
     }
 
     public static void main(String[] args) {
-        debug = true;
+        debug = false;
         Application application = new Application();
-        String filePath = "2.nes";
+        String filePath = "1.nes";
         //读取.nes文件数据
         NESRomData romData = application.loadData(new File(filePath));
         //创建PPU

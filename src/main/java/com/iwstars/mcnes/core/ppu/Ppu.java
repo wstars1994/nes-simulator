@@ -39,6 +39,7 @@ public class Ppu {
      */
     public Ppu(byte[] patternData){
         PpuMemory.writePattern(patternData);
+        PpuMemory.initPalettes();
     }
 
     /**
@@ -95,26 +96,16 @@ public class Ppu {
             byte patternData = PpuMemory.read(patternAddr);
             //图案表颜色数据
             byte colorData = PpuMemory.read(patternColor);
-            //合并取低两位颜色
-            byte[] patternColorData = getPatternColorData(patternData,colorData);
-            //取属性表数据 (颜色高两位)
+            //取每像素的低两位颜色
+            byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
+            //属性表数据 (取颜色高两位)
             byte attributeData = (byte) (PpuMemory.read(nametableStartAddr + 0x3C0 + (i/4))&0xFF);
-            byte[] attributeDatas = MemUtil.toBits(attributeData);
-            int ii = i % 4;
-            int ll = line % 4;
-            int high2 = 0;
-            if(ll<2) {
-                if(ii<2) {
-                    high2 = (attributeDatas[0]) + (attributeDatas[1] & 2);
-                }else {
-                    high2 = (attributeDatas[2]) + (attributeDatas[3] & 2);
-                }
-            }else {
-                if(ii<2) {
-                    high2 = (attributeDatas[4]) + (attributeDatas[5] & 2);
-                }else {
-                    high2 = (attributeDatas[6]) + (attributeDatas[7] & 2);
-                }
+            byte patternColorHighData = getPatternColorHighData(attributeData,i,line);
+            //合并 取最终4位颜色
+            for (byte low : patternColorLowData) {
+                byte color = (byte) (((patternColorHighData << 2) & 0xF) | (low & 0x3));
+
+
             }
             print8(patternData);
         }
@@ -122,7 +113,28 @@ public class Ppu {
 
     }
 
-    private byte[] getPatternColorData(byte patternData, byte colorData) {
+    private byte getPatternColorHighData(byte attributeData,int i,int line) {
+        byte[] attributeDatas = MemUtil.toBits(attributeData);
+        int ii = i % 4;
+        int ll = line % 4;
+        byte high2 = 0;
+        if(ll<2) {
+            if(ii<2) {
+                high2 = (byte) ((attributeDatas[0]) + (attributeDatas[1] & 2));
+            }else {
+                high2 = (byte) ((attributeDatas[2]) + (attributeDatas[3] & 2));
+            }
+        }else {
+            if(ii<2) {
+                high2 = (byte) ((attributeDatas[4]) + (attributeDatas[5] & 2));
+            }else {
+                high2 = (byte) ((attributeDatas[6]) + (attributeDatas[7] & 2));
+            }
+        }
+        return high2;
+    }
+
+    private byte[] getPatternColorLowData(byte patternData, byte colorData) {
         byte[] patternDatas = MemUtil.toBits((byte) (patternData&0xFF));
         byte[] colorDatas = MemUtil.toBits((byte) (colorData&0xFF));
 

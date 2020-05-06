@@ -539,8 +539,43 @@ public class Cpu6502{
                     LogUtil.log("LDY_ZERO_X");
                     cpuCycle-= CpuRegister.LDY_ZERO_X(cpuMemory,iterator.next());
                     break;
+                //NOP
+                case 0xEA:
+                    LogUtil.log("NOP");
+                    cpuCycle-= CpuRegister.NOP();
+                    break;
+                //EOR_ABS
+                case 0x4D:
+                    LogUtil.log("EOR_ABS");
+                    cpuCycle-= CpuRegister.EOR_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //TSX
+                case 0xBA:
+                    LogUtil.log("TSX");
+                    cpuCycle-= CpuRegister.TSX();
+                    break;
+                //ASL_ABS
+                case 0x0E:
+                    LogUtil.log("ASL_ABS");
+                    cpuCycle-= CpuRegister.ASL_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //SBC_ABS
+                case 0xED:
+                    LogUtil.log("SBC_ABS");
+                    cpuCycle-= CpuRegister.SBC_ABS(cpuMemory,iterator.next(),iterator.next());
+                    break;
+                //EOR_INDIRECT_Y
+                case 0x51:
+                    LogUtil.log("EOR_INDIRECT_Y");
+                    cpuCycle-= CpuRegister.EOR_INDIRECT_Y(cpuMemory,iterator.next());
+                    break;
+                //INC_ABS_X
+                case 0xFE:
+                    LogUtil.log("INC_ABS_X");
+                    cpuCycle-= CpuRegister.INC_ABS_X(cpuMemory,iterator.next(),iterator.next());
+                    break;
                 default:
-                    LogUtil.logf("%02X",insCode);
+                    System.out.printf("%02X",insCode);
                     break;
             }
             if(cpuCycle <= 0) {

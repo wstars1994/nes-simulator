@@ -3,8 +3,8 @@ package com.iwstars.mcnes.core.ppu;
 import com.iwstars.mcnes.util.LogUtil;
 
 /**
- * 图形处理单元
- * 16KB space
+ * <p>图形处理单元</p>
+ * 64KB space
  *
  * Address range     Size	     Description
  * 图案表部分
@@ -55,5 +55,23 @@ public class PpuMemory {
 
     public static byte read(int addr) {
         return ppuData[addr];
+    }
+
+    public static void initPalettes() {
+        short[] palettes = {
+        333,014,006,326,403,503,510,420,320,120,031,040,022,000,000,000,
+        555,036,027,407,507,704,700,630,430,140,040,053,044,000,000,000,
+        777,357,447,637,707,737,740,750,660,360,070,276,077,000,000,000,
+        777,567,657,757,747,755,764,772,773,572,473,276,467,000,000,000};
+        for(int i=0;i<64;i++) {
+//            PpuMemory.write(0x3F00+i,palettes[i]);
+        }
+
+
+
+    }
+
+    public static void main(String[] args) {
+        System.out.println((short)(77&0xFFFF));
     }
 }
