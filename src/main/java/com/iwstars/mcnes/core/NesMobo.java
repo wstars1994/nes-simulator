@@ -4,7 +4,7 @@ import com.iwstars.mcnes.core.cpu.Cpu6502;
 import com.iwstars.mcnes.core.cpu.CpuMemory;
 import com.iwstars.mcnes.core.cpu.CpuRegister;
 import com.iwstars.mcnes.core.ppu.Ppu;
-import com.iwstars.mcnes.util.LogUtil;
+import com.iwstars.mcnes.ui.NesRenderController;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Setter;
 
@@ -27,10 +27,16 @@ public class NesMobo {
     private Ppu ppu;
 
     /**
+     * 屏幕
+     */
+    private NesRenderController nesRender;
+
+    /**
      * 主板通电
      */
     public void powerUp(){
         while (true)  {
+            short[][] renderBuff = new short[256*240][3];
             long start = System.nanoTime();
             //256x240 分辨率
             //设置vblank false
@@ -38,9 +44,10 @@ public class NesMobo {
             for (int i = 0; i < 262; i++) {
                 //HBlank start
                 if(i<240) {
-                    LogUtil.logLn("");
-                    LogUtil.logLn("");
-                    ppu.startRender(i);
+                    short[][] shorts = ppu.preRender(i);
+                    for(int r=0;r<256;r++) {
+                        renderBuff[i*256+r] = shorts[r];
+                    }
                 }
                 //VBlank
                 if(i==241) {
@@ -53,22 +60,16 @@ public class NesMobo {
                 }
                 this.cpu6502.go();
             }
-            long elapsed = System.nanoTime() - start;
-            long wait = (long) (1.0 / 60 - elapsed / 1e-9);
+            nesRender.render(renderBuff);
+//            long elapsed = System.nanoTime() - start;
+//            long wait = (long) (1.0 / 60 - elapsed / 1e-9);
             try {
-                if (wait > 0) {
-                    Thread.sleep(wait);
-                }
+//                if (wait > 0) {
+                    Thread.sleep(10);
+//                }
             } catch (InterruptedException e) {
             }
         }
-    }
-
-    /**
-     * 断电
-     */
-    public void powerDown(){
-
     }
 
     /**
@@ -76,7 +77,11 @@ public class NesMobo {
      */
     public void reset(){
         CpuMemory cpuMemory = cpu6502.getCpuMemory();
-        int addr = MemUtil.concatByte(cpuMemory.read(0xFFFC), cpuMemory.read(0xFFFD));
-        cpuMemory.setPrgPc(addr);
+        cpuMemory.setPrgPc(MemUtil.concatByte(cpuMemory.read(0xFFFC), cpuMemory.read(0xFFFD)));
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

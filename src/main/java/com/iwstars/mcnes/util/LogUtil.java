@@ -1,6 +1,6 @@
 package com.iwstars.mcnes.util;
 
-import com.iwstars.mcnes.Application;
+import com.iwstars.mcnes.Main;
 
 /**
  * 日志控制输出
@@ -10,18 +10,18 @@ import com.iwstars.mcnes.Application;
 public class LogUtil {
 
     public static void logLn(String info) {
-        if(Application.debug) {
+        if(Main.debug) {
             System.out.println(info);
         }
     }
     public static void log(String info) {
-        if(Application.debug) {
+        if(Main.debug) {
             System.out.print(info);
         }
     }
 
     public static void logf(String  format,Object ...args) {
-        if(Application.debug) {
+        if(Main.debug) {
             System.out.printf(format,args);
         }
     }

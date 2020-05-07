@@ -1,7 +1,6 @@
 package com.iwstars.mcnes.core.ppu;
 
 import com.iwstars.mcnes.core.DataBus;
-import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,20 +32,21 @@ import lombok.Setter;
 @Getter
 public class Ppu {
 
+
     /**
      * 初始化PPU 必须设置,从nes文件读取到的CHR数据
      * @param patternData 图案表数据
      */
     public Ppu(byte[] patternData){
         PpuMemory.writePattern(patternData);
-        PpuMemory.initPalettes();
     }
 
     /**
      * 开始绘制
      */
-    public void startRender(int line) {
-        LogUtil.logLn("--------------------Render begin--------------------");
+    public short[][] preRender(int line) {
+        short[][] render = new short[256][3];
+
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
         if(b2001[3] == 1) {
@@ -66,12 +66,16 @@ public class Ppu {
             if(bgAddr == 1) {
                 patternAddr = 0x1000;
             }
-            this.renderNameTable(line,nameTableAddr,patternAddr);
+            this.renderNameTable(line,nameTableAddr,patternAddr,render);
         }
-        if(b2001[4] == 1) {
-
+        if(b2001[3] == 0 && b2001[4] == 0) {
+            byte read = PpuMemory.read(0x3F10);
+            short[] palette = PpuMemory.palettes[read==0?0:read-1];
+            for(int i=0;i<256;i++) {
+                render[i] = palette;
+            }
         }
-        LogUtil.logLn("--------------------Render end--------------------");
+        return render;
     }
 
     /**
@@ -79,14 +83,14 @@ public class Ppu {
      * @param line 扫描线
      * @param nametableStartAddr 命名表起始地址
      * @param patternStartAddr 图案表起始地址
+     * @param render
      */
-    private void renderNameTable(int line,short nametableStartAddr,short patternStartAddr) {
+    private void renderNameTable(int line, short nametableStartAddr, short patternStartAddr, short[][] render) {
         //计算每条扫描线 起始的命名表地址
         //line/8 每8条扫描线命名表地址 ++32(每8条扫描线后才读取完32个8*8tile)
         nametableStartAddr = (short) (nametableStartAddr + (line/8) * 32);
-
         //32*30个Tile = (256*240 像素)
-        for (int i=0;i<33;i++) {
+        for (int i=0;i<32;i++) {
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
             int nameTableData = (PpuMemory.read(nametableStartAddr + i)&0xFF) * 16;
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
@@ -94,6 +98,9 @@ public class Ppu {
             int patternColor = patternAddr + 8;
             //图案表数据
             byte patternData = PpuMemory.read(patternAddr);
+
+            char[] bytes = print8(patternData).toCharArray();
+
             //图案表颜色数据
             byte colorData = PpuMemory.read(patternColor);
             //取每像素的低两位颜色
@@ -102,15 +109,18 @@ public class Ppu {
             byte attributeData = (byte) (PpuMemory.read(nametableStartAddr + 0x3C0 + (i/4))&0xFF);
             byte patternColorHighData = getPatternColorHighData(attributeData,i,line);
             //合并 取最终4位颜色
-            for (byte low : patternColorLowData) {
-                byte color = (byte) (((patternColorHighData << 2) & 0xF) | (low & 0x3));
-
-
+            for (int i1 = 0; i1 <8; i1++) {
+//                byte color = (byte) (((patternColorHighData << 2) & 0xF) | (patternColorLowData[i1] & 0x3));
+                byte color = (byte) Integer.parseInt(bytes[i1]+"");
+                short[] paletteColor = {0,0,0};
+                if(color!=0){
+                    paletteColor[0] = 255;
+                    paletteColor[1] = 255;
+                    paletteColor[2] = 255;
+                }
+                render[i*8+i1] = paletteColor;
             }
-            print8(patternData);
         }
-        System.out.println("");
-
     }
 
     private byte getPatternColorHighData(byte attributeData,int i,int line) {
@@ -140,16 +150,17 @@ public class Ppu {
 
         byte patternColorData[] = new byte[8];
         for(int i=7;i>0;i--) {
-            patternColorData[i] = (byte) ((colorDatas[i]<<1) | (patternDatas[i]));
+            patternColorData[i] = (byte) ((colorDatas[i]<<1) | (patternDatas[i]&1));
         }
         return patternColorData;
     }
 
-    private void print8(byte data){
+    private String print8(byte data){
         String s = Integer.toBinaryString(data & 0xFF);
         while ( s.length() < 8 ) {
             s = "0" + s;
         }
-        System.out.print(s);
+//        System.out.print(s);
+        return s;
     }
 }
