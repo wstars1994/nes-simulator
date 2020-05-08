@@ -1,7 +1,6 @@
 package com.iwstars.mcnes.core.cpu;
 
 import com.iwstars.mcnes.core.DataBus;
-import com.iwstars.mcnes.core.ppu.PpuMemory;
 import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
@@ -38,11 +37,11 @@ public class CpuMemory {
      * 2字节指针
      */
     private int prgPc = 0x8000;
-
     /**
      * cpu内存
      */
-    private byte[] data = new byte[0xFFFF+1];
+    private byte[] data = new byte[0x10000];
+
 
     /**
      * PRG数据迭代器
@@ -51,14 +50,17 @@ public class CpuMemory {
     public Iterator<Byte> iteratorPrgData() {
         return new Iterator<Byte>() {
 
+            @Override
             public boolean hasNext() {
                 return prgPc < data.length;
             }
 
+            @Override
             public Byte next() {
                 return data[prgPc++];
             }
 
+            @Override
             public void remove() {}
         };
     }
@@ -98,7 +100,7 @@ public class CpuMemory {
                 DataBus.p_2006_flag = !DataBus.p_2006_flag;
                 break;
             case 0x2007:
-                DataBus.writePpuNameTable(DataBus.p_2006_data,data);
+                DataBus.writePpuMemory(DataBus.p_2006_data,data);
                 DataBus.p_2006_data+=(DataBus.p_2000[2]==0?1:32);
                 break;
             //OAM DMA register (high byte)
@@ -106,8 +108,10 @@ public class CpuMemory {
                 short start = (short) (data*0x100);
                 for(int i=0;i<256;i++) {
                     byte read = read(start++);
-                    PpuMemory.writeSprRam((byte) i,read);
+                    DataBus.writePpuSprRam((byte) i,read);
                 }
+                break;
+            default:
                 break;
         }
     }
@@ -119,44 +123,6 @@ public class CpuMemory {
      */
     public void write(int addr,byte[] prgData){
         System.arraycopy(prgData,0,data,addr,prgData.length);
-    }
-
-    /**
-     * 入栈
-     * @param data
-     */
-    public void pushStack(byte data){
-        byte sp = CpuRegister.getReg_S();
-        this.data[0x0100 | (sp&0xFF)] = data;
-        LogUtil.logf(" --> push stack:addr=$%02X(index=%d),val=%d", 0x0100 | (sp&0xFF),0x0100 | (sp&0xFF),data);
-        CpuRegister.setReg_S((byte) (sp-1));
-    }
-    /**
-     * 入栈16位
-     */
-    public void push16Stack(short data){
-        pushStack((byte) ((data>>8)&0xFF));
-        pushStack((byte) (data&0xFF));
-    }
-
-    /**
-     * 出栈
-     */
-    public byte popStack(){
-        int sp = CpuRegister.getReg_S();
-        CpuRegister.setReg_S((byte) (sp+1));
-        byte data = this.data[0x0100 | ((sp + 1) & 0xFF)];
-        LogUtil.logf(" --> pop stack:addr=$%02X(index=%d),val=%d",0x0100 | ((sp + 1)&0xFF),0x0100 | ((sp + 1)&0xFF),data);
-        return data;
-    }
-
-    /**
-     * 出栈
-     */
-    public int pop16Stack(){
-        short pcLow8 = (short) (popStack()&0xFF);
-        short pcLow16 = (short) (popStack()&0xFF);
-        return  (pcLow16 << 8) | pcLow8;
     }
 
     /**
@@ -181,11 +147,13 @@ public class CpuMemory {
                     if(addr <= 0x3EFF) {
                         //读取PPU
                         byte res = DataBus.p_2007_read;
-                        DataBus.p_2007_read = PpuMemory.read(p2006);
+                        DataBus.p_2007_read = DataBus.ppuMemory.read(p2006);
                         return res;
                     }else if(addr <= 0x3FFF) {
                         //读取调色板
                     }
+                    break;
+                default:
                     break;
             }
         }

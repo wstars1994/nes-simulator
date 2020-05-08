@@ -1,11 +1,12 @@
 package com.iwstars.mcnes;
 
+import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.core.NesMobo;
 import com.iwstars.mcnes.core.cpu.Cpu6502;
 import com.iwstars.mcnes.core.ppu.Ppu;
 import com.iwstars.mcnes.rom.HeaderData;
 import com.iwstars.mcnes.rom.NESRomData;
-import com.iwstars.mcnes.ui.NesRenderController;
+import com.iwstars.mcnes.ui.NesUIRender;
 import com.iwstars.mcnes.util.RomReaderUtil;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -14,7 +15,6 @@ import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import lombok.Cleanup;
 
@@ -36,7 +36,7 @@ public class Main extends Application {
      */
     public static boolean debug = false;
 
-    private NesRenderController nesRender;
+    private NesUIRender nesRender;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -64,6 +64,8 @@ public class Main extends Application {
             Ppu ppu = new Ppu(romData.getRomCHR());
             //创建CPU
             Cpu6502 cpu6502 = new Cpu6502(romData.getRomPRG());
+            DataBus.cpuMemory = cpu6502.getCpuMemory();
+            DataBus.ppuMemory = ppu.getPpuMemory();
             //主板
             NesMobo nesMobo = new NesMobo();
             nesMobo.setPpu(ppu);
@@ -74,7 +76,6 @@ public class Main extends Application {
             nesMobo.powerUp();
         }).start();
     }
-
     /**
      * 加载.nes文件数据到内存
      * @param nesFile

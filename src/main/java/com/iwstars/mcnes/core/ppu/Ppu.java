@@ -3,7 +3,6 @@ package com.iwstars.mcnes.core.ppu;
 import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * 图形处理单元
@@ -28,21 +27,22 @@ import lombok.Setter;
  * @author WStars
  * @date 2020/4/18 13:46
  */
-@Setter
 @Getter
 public class Ppu {
 
+    private PpuMemory ppuMemory;
 
     /**
      * 初始化PPU 必须设置,从nes文件读取到的CHR数据
      * @param patternData 图案表数据
      */
     public Ppu(byte[] patternData){
-        PpuMemory.writePattern(patternData);
+        ppuMemory = new PpuMemory();
+        ppuMemory.writePattern(patternData);
     }
 
     /**
-     * 开始绘制
+     * 开始绘制扫描线
      */
     public short[][] preRender(int line) {
         short[][] render = new short[256][3];
@@ -69,8 +69,9 @@ public class Ppu {
             this.renderNameTable(line,nameTableAddr,patternAddr,render);
         }
         if(b2001[3] == 0 && b2001[4] == 0) {
-            byte read = PpuMemory.read(0x3F10);
-            short[] palette = PpuMemory.palettes[read==0?0:read-1];
+            render = new short[256][3];
+            byte read = ppuMemory.read(0x3F10);
+            short[] palette = ppuMemory.palettes[read==0?0:read-1];
             for(int i=0;i<256;i++) {
                 render[i] = palette;
             }
@@ -92,21 +93,21 @@ public class Ppu {
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<32;i++) {
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
-            int nameTableData = (PpuMemory.read(nametableStartAddr + i)&0xFF) * 16;
+            int nameTableData = (ppuMemory.read(nametableStartAddr + i)&0xFF) * 16;
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
             int patternAddr = patternStartAddr + nameTableData + (line%8);
             int patternColor = patternAddr + 8;
             //图案表数据
-            byte patternData = PpuMemory.read(patternAddr);
+            byte patternData = ppuMemory.read(patternAddr);
 
             char[] bytes = print8(patternData).toCharArray();
 
             //图案表颜色数据
-            byte colorData = PpuMemory.read(patternColor);
+            byte colorData = ppuMemory.read(patternColor);
             //取每像素的低两位颜色
             byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
             //属性表数据 (取颜色高两位)
-            byte attributeData = (byte) (PpuMemory.read(nametableStartAddr + 0x3C0 + (i/4))&0xFF);
+            byte attributeData = (byte) (ppuMemory.read(nametableStartAddr + 0x3C0 + (i/4))&0xFF);
             byte patternColorHighData = getPatternColorHighData(attributeData,i,line);
             //合并 取最终4位颜色
             for (int i1 = 0; i1 <8; i1++) {
@@ -123,6 +124,13 @@ public class Ppu {
         }
     }
 
+    /**
+     * 从属性表获取图案的高两位颜色
+     * @param attributeData
+     * @param i
+     * @param line
+     * @return
+     */
     private byte getPatternColorHighData(byte attributeData,int i,int line) {
         byte[] attributeDatas = MemUtil.toBits(attributeData);
         int ii = i % 4;
@@ -144,6 +152,12 @@ public class Ppu {
         return high2;
     }
 
+    /**
+     * 获取图案的低两位颜色
+     * @param patternData
+     * @param colorData
+     * @return
+     */
     private byte[] getPatternColorLowData(byte patternData, byte colorData) {
         byte[] patternDatas = MemUtil.toBits((byte) (patternData&0xFF));
         byte[] colorDatas = MemUtil.toBits((byte) (colorData&0xFF));

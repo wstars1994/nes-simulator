@@ -11,7 +11,7 @@ import javafx.scene.paint.Color;
  * @author: WStars
  * @date: 2020-05-07 10:14
  */
-public class NesRenderController {
+public class NesUIRender {
 
     @FXML
     private Canvas mainCanvas;
@@ -21,7 +21,7 @@ public class NesRenderController {
         PixelWriter pixelWriter = graphics.getPixelWriter();
         for(int h=0; h<240; h++) {
             for(int w=0;w<256;w++) {
-                short[] i = pixelColorBuff[w + (h*240)];
+                short[] i = pixelColorBuff[w + (h*256)];
                 pixelWriter.setColor(w,h,Color.rgb(i[0],i[1],i[2]));
             }
         }

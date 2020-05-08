@@ -2,9 +2,8 @@ package com.iwstars.mcnes.core;
 
 import com.iwstars.mcnes.core.cpu.Cpu6502;
 import com.iwstars.mcnes.core.cpu.CpuMemory;
-import com.iwstars.mcnes.core.cpu.CpuRegister;
 import com.iwstars.mcnes.core.ppu.Ppu;
-import com.iwstars.mcnes.ui.NesRenderController;
+import com.iwstars.mcnes.ui.NesUIRender;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Setter;
 
@@ -17,20 +16,17 @@ import lombok.Setter;
 public class NesMobo {
 
     /**
-     * CPU
+     * CPU6502
      */
     private Cpu6502 cpu6502;
-
     /**
      * PPU图形处理
      */
     private Ppu ppu;
-
     /**
-     * 屏幕
+     * 屏幕输出
      */
-    private NesRenderController nesRender;
-
+    private NesUIRender nesRender;
     /**
      * 主板通电
      */
@@ -43,10 +39,10 @@ public class NesMobo {
             DataBus.p_2002[7] = 0;
             for (int i = 0; i < 262; i++) {
                 //HBlank start
-                if(i<240) {
+                if(i < 240) {
                     short[][] shorts = ppu.preRender(i);
-                    for(int r=0;r<256;r++) {
-                        renderBuff[i*256+r] = shorts[r];
+                    for(int r = 0;r < 256; r++) {
+                        renderBuff[i*256 + r] = shorts[r];
                     }
                 }
                 //VBlank
@@ -55,18 +51,18 @@ public class NesMobo {
                     DataBus.p_2002[7] = 1;
                     //NMI中断
                     if(DataBus.p_2000[7] == 1) {
-                        CpuRegister.NMI(cpu6502.getCpuMemory());
+                        cpu6502.getCpuRegister().NMI();
                     }
                 }
                 this.cpu6502.go();
             }
             nesRender.render(renderBuff);
-//            long elapsed = System.nanoTime() - start;
-//            long wait = (long) (1.0 / 60 - elapsed / 1e-9);
+            long elapsed = System.nanoTime() - start;
+            long wait = (long) (1.0 / 60 - elapsed / 1e-9);
             try {
-//                if (wait > 0) {
-                    Thread.sleep(10);
-//                }
+                if (wait > 0) {
+                    Thread.sleep(wait);
+                }
             } catch (InterruptedException e) {
             }
         }

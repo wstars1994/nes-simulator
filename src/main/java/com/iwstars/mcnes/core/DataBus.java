@@ -1,5 +1,6 @@
 package com.iwstars.mcnes.core;
 
+import com.iwstars.mcnes.core.cpu.CpuMemory;
 import com.iwstars.mcnes.core.ppu.PpuMemory;
 
 /**
@@ -8,6 +9,10 @@ import com.iwstars.mcnes.core.ppu.PpuMemory;
  * @date: 2020-04-23 10:36
  */
 public class DataBus {
+
+    public static PpuMemory ppuMemory;
+
+    public static CpuMemory cpuMemory;
 
     /**
      * PPU Control Register
@@ -39,23 +44,32 @@ public class DataBus {
      */
     public static byte[] p_2005 = new byte[8];
 
-    public static boolean p_2006_flag = false;
     /**
      *  PPU Address Register
      */
     public static int p_2006_data;
+    public static boolean p_2006_flag = false;
+
     /**
      *  PPU Data Port
      */
     public static byte p_2007_read = 0;
 
     /**
-     *  OAM DMA register (high byte)
+     * 向ppu写数据
+     * @param addr
+     * @param data
      */
-    public static byte[] p_4014 = new byte[8];
+    public static void writePpuMemory(int addr, byte data) {
+        ppuMemory.write(addr,data);
+    }
 
-
-    public static void writePpuNameTable(int addr, byte data) {
-        PpuMemory.write(addr,data);
+    /**
+     * 写ppu精灵数据
+     * @param addr
+     * @param data
+     */
+    public static void writePpuSprRam(byte addr, byte data) {
+        ppuMemory.writeSprRam(addr,data);
     }
 }
