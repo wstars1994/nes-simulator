@@ -1018,4 +1018,36 @@ public class CpuRegister {
         setZ(data);
         return 7;
     }
+
+    public int EOR_ZERO_X(byte addr) {
+        int data = addr + (REG_X & 0xff);
+        EOR_A(cpuMemory.read(data));
+        return 4;
+    }
+
+    public int AND_ZERO_X(byte addr) {
+        int data = addr + (REG_X & 0xff);
+        AND(cpuMemory.read(data&0xFF));
+        return 4;
+    }
+
+    public int STY_ZERO_X(byte addr) {
+        int data = addr + (REG_X & 0xff);
+        cpuMemory.write(data,REG_Y);
+        return 4;
+    }
+
+    public int ADC_ZERO_X(byte data) {
+        int addr = (data&0xFF) + (REG_X & 0xff);
+        ADC(cpuMemory.read(addr));
+        return 4;
+    }
+
+    public int INC_ZERO_X(byte data) {
+        int addr = (data&0xFF) + (REG_X & 0xff);
+        cpuMemory.write(data&0xFF, (byte) (cpuMemory.read(addr)+1));
+        setN(data);
+        setZ(data);
+        return 4;
+    }
 }

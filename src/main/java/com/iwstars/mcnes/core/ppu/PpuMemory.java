@@ -45,6 +45,13 @@ public class PpuMemory{
 
     public void write(int addr, byte data) {
         LogUtil.logf(" write PPU memory addr=%02X[%d],val=%d",addr,addr,data);
+        //写入 $3F00-3FFF 的 D7-D6 字节被忽略.
+        if(addr >= 0x3F00 && addr <= 0x3FFF) {
+            data = (byte) (data & 0x3f);
+            if ((addr & 3) == 0){
+                addr &= ~0x10;
+            }
+        }
         ppuData[addr] = data;
     }
 

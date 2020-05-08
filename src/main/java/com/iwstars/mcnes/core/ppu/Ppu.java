@@ -69,7 +69,7 @@ public class Ppu {
         }
         if(b2001[3] == 0 && b2001[4] == 0) {
             render = new short[256][3];
-            byte read = ppuMemory.read(0x3F10);
+            byte read = ppuMemory.read(0x3F00);
             short[] palette = ppuMemory.palettes[read==0?0:read-1];
             for(int i=0;i<256;i++) {
                 render[i] = palette;
@@ -100,13 +100,19 @@ public class Ppu {
             //取每像素的低两位颜色
             byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
             //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每16条扫描线占用8字节
-            byte attributeData = ppuMemory.read(nametableStartAddr + 0x3C0 + (line/16*8)+i/4);
+            byte attributeData = ppuMemory.read(nametableStartAddr + 0x3C0 + (line/32*8)+i/4);
             byte patternColorHighData = getPatternColorHighData(attributeData,i,line);
             //合并 取最终4位颜色
             for (int i1 = 0; i1 <8; i1++) {
-                byte color = (byte) (((patternColorHighData << 2) & 0xF) | (patternColorLowData[7-i1] & 0x3));
-                int read = ppuMemory.read(0x3f00 + color-1) & 0x3F;
-                render[i*8+i1] = ppuMemory.palettes[read];
+                int patternColorLowBit = patternColorLowData[7 - i1];
+                //透明色 显示背景色
+                if(patternColorLowBit == 0) {
+                    render[i*8+i1] = ppuMemory.palettes[ppuMemory.read(0x3F00)];
+                }else {
+                    int colorAddr = 0x3f00 + ((patternColorHighData << 2) & 0xF) | (patternColorLowBit & 0x3);
+                    int paletteIndex = ppuMemory.read(colorAddr);
+                    render[i*8+i1] = ppuMemory.palettes[paletteIndex];
+                }
             }
         }
     }
@@ -148,7 +154,6 @@ public class Ppu {
     private byte[] getPatternColorLowData(byte patternData, byte colorData) {
         byte[] patternDatas = MemUtil.toBits((byte) (patternData&0xFF));
         byte[] colorDatas = MemUtil.toBits((byte) (colorData&0xFF));
-
         byte patternColorData[] = new byte[8];
         for(int i=7;i>0;i--) {
             patternColorData[i] = (byte) ((colorDatas[i]<<1) | (patternDatas[i]&1));

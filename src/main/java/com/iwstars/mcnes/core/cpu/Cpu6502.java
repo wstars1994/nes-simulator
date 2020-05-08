@@ -594,6 +594,31 @@ public class Cpu6502{
                 LogUtil.log("INC_ABS_X");
                 cpuCycle-= cpuRegister.INC_ABS_X(iterator.next(),iterator.next());
                 break;
+            //EOR_ZERO_X
+            case 0x55:
+                LogUtil.log("EOR_ZERO_X");
+                cpuCycle-= cpuRegister.EOR_ZERO_X(iterator.next());
+                break;
+            //AND_ZERO_X
+            case 0x35:
+                LogUtil.log("AND_ZERO_X");
+                cpuCycle-= cpuRegister.AND_ZERO_X(iterator.next());
+                break;
+            //STY_ZERO_X
+            case 0x94:
+                LogUtil.log("STY_ZERO_X");
+                cpuCycle-= cpuRegister.STY_ZERO_X(iterator.next());
+                break;
+            //ADC_ZERO_X
+            case 0x75:
+                LogUtil.log("ADC_ZERO_X");
+                cpuCycle-= cpuRegister.ADC_ZERO_X(iterator.next());
+                break;
+            //INC_ZERO_X
+            case 0xF6:
+                LogUtil.log("INC_ZERO_X");
+                cpuCycle-= cpuRegister.INC_ZERO_X(iterator.next());
+                break;
             default:
                 System.out.printf("%02X",insCode);
                 break;

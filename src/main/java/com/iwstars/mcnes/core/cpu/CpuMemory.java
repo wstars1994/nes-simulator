@@ -101,7 +101,7 @@ public class CpuMemory {
                 break;
             case 0x2007:
                 DataBus.writePpuMemory(DataBus.p_2006_data,data);
-                DataBus.p_2006_data+=(DataBus.p_2000[2]==0?1:32);
+                DataBus.p_2006_data += (DataBus.p_2000[2]==0?1:32);
                 break;
             //OAM DMA register (high byte)
             case 0x4014:
