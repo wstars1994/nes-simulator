@@ -46,7 +46,7 @@ public class Main extends Application {
         fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
         Parent root = fxmlLoader.load();
         primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(root, 300, 300));
+        primaryStage.setScene(new Scene(root, 256, 240));
         this.nesRender = fxmlLoader.getController();
         primaryStage.show();
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {

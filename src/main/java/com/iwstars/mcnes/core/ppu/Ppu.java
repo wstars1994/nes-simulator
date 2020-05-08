@@ -46,7 +46,6 @@ public class Ppu {
      */
     public short[][] preRender(int line) {
         short[][] render = new short[256][3];
-
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
         if(b2001[3] == 1) {
@@ -87,39 +86,27 @@ public class Ppu {
      * @param render
      */
     private void renderNameTable(int line, short nametableStartAddr, short patternStartAddr, short[][] render) {
-        //计算每条扫描线 起始的命名表地址
-        //line/8 每8条扫描线命名表地址 ++32(每8条扫描线后才读取完32个8*8tile)
-        nametableStartAddr = (short) (nametableStartAddr + (line/8) * 32);
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<32;i++) {
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
-            int nameTableData = (ppuMemory.read(nametableStartAddr + i)&0xFF) * 16;
+            int nameTableData = (ppuMemory.read((nametableStartAddr + (line/8) * 32) + i)&0xFF) * 16;
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
-            int patternAddr = patternStartAddr + nameTableData + (line%8);
+            int patternAddr = patternStartAddr + nameTableData + (line % 8);
             int patternColor = patternAddr + 8;
             //图案表数据
             byte patternData = ppuMemory.read(patternAddr);
-
-            char[] bytes = print8(patternData).toCharArray();
-
             //图案表颜色数据
             byte colorData = ppuMemory.read(patternColor);
             //取每像素的低两位颜色
             byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
-            //属性表数据 (取颜色高两位)
-            byte attributeData = (byte) (ppuMemory.read(nametableStartAddr + 0x3C0 + (i/4))&0xFF);
+            //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每16条扫描线占用8字节
+            byte attributeData = ppuMemory.read(nametableStartAddr + 0x3C0 + (line/16*8)+i/4);
             byte patternColorHighData = getPatternColorHighData(attributeData,i,line);
             //合并 取最终4位颜色
             for (int i1 = 0; i1 <8; i1++) {
-//                byte color = (byte) (((patternColorHighData << 2) & 0xF) | (patternColorLowData[i1] & 0x3));
-                byte color = (byte) Integer.parseInt(bytes[i1]+"");
-                short[] paletteColor = {0,0,0};
-                if(color!=0){
-                    paletteColor[0] = 255;
-                    paletteColor[1] = 255;
-                    paletteColor[2] = 255;
-                }
-                render[i*8+i1] = paletteColor;
+                byte color = (byte) (((patternColorHighData << 2) & 0xF) | (patternColorLowData[7-i1] & 0x3));
+                int read = ppuMemory.read(0x3f00 + color-1) & 0x3F;
+                render[i*8+i1] = ppuMemory.palettes[read];
             }
         }
     }
@@ -138,15 +125,15 @@ public class Ppu {
         byte high2 = 0;
         if(ll<2) {
             if(ii<2) {
-                high2 = (byte) ((attributeDatas[0]) + (attributeDatas[1] & 2));
+                high2 = (byte) ((attributeDatas[0]) + (attributeDatas[1]<<1));
             }else {
-                high2 = (byte) ((attributeDatas[2]) + (attributeDatas[3] & 2));
+                high2 = (byte) ((attributeDatas[2]) + (attributeDatas[3]<<1));
             }
         }else {
             if(ii<2) {
-                high2 = (byte) ((attributeDatas[4]) + (attributeDatas[5] & 2));
+                high2 = (byte) ((attributeDatas[4]) + (attributeDatas[5]<<1));
             }else {
-                high2 = (byte) ((attributeDatas[6]) + (attributeDatas[7] & 2));
+                high2 = (byte) ((attributeDatas[6]) + (attributeDatas[7]<<1));
             }
         }
         return high2;

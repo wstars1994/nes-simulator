@@ -33,7 +33,6 @@ public class NesMobo {
     public void powerUp(){
         while (true)  {
             short[][] renderBuff = new short[256*240][3];
-            long start = System.nanoTime();
             //256x240 分辨率
             //设置vblank false
             DataBus.p_2002[7] = 0;
@@ -57,13 +56,10 @@ public class NesMobo {
                 this.cpu6502.go();
             }
             nesRender.render(renderBuff);
-            long elapsed = System.nanoTime() - start;
-            long wait = (long) (1.0 / 60 - elapsed / 1e-9);
             try {
-                if (wait > 0) {
-                    Thread.sleep(wait);
-                }
+                Thread.sleep(50);
             } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

@@ -4,7 +4,6 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelWriter;
-import javafx.scene.paint.Color;
 
 /**
  * @description: 渲染controller
@@ -22,7 +21,8 @@ public class NesUIRender {
         for(int h=0; h<240; h++) {
             for(int w=0;w<256;w++) {
                 short[] i = pixelColorBuff[w + (h*256)];
-                pixelWriter.setColor(w,h,Color.rgb(i[0],i[1],i[2]));
+                int color = ((0xFF << 24)|(i[0] << 16)|(i[1] << 8)|i[2]);
+                pixelWriter.setArgb(w,h,color);
             }
         }
     }
