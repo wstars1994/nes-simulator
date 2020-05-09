@@ -9,13 +9,11 @@ import com.iwstars.mcnes.rom.NESRomData;
 import com.iwstars.mcnes.ui.NesUIRender;
 import com.iwstars.mcnes.util.RomReaderUtil;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import lombok.Cleanup;
 
 import java.io.DataInputStream;
@@ -49,11 +47,8 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root, 256, 240));
         this.nesRender = fxmlLoader.getController();
         primaryStage.show();
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                System.exit(0);
-            }
+        primaryStage.setOnCloseRequest((e) -> {
+            System.exit(0);
         });
         //加载程序
         new Thread(()->{
@@ -106,7 +101,7 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
-        launch(args);
         debug = false;
+        launch(args);
     }
 }

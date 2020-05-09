@@ -36,12 +36,13 @@ public class NesMobo {
             //256x240 分辨率
             //设置vblank false
             DataBus.p_2002[7] = 0;
+            DataBus.p_2002[6] = 0;
             for (int i = 0; i < 262; i++) {
                 //HBlank start
                 if(i < 240) {
                     short[][] shorts = ppu.preRender(i);
                     for(int r = 0;r < 256; r++) {
-                        renderBuff[i*256 + r] = shorts[r];
+                        renderBuff[i * 256 + r] = shorts[r];
                     }
                 }
                 //VBlank

@@ -131,8 +131,8 @@ public class CpuMemory {
      * @return
      */
     public byte read(int addr){
+//        LogUtil.logf(" read addr = %02X ",addr);
         if(addr == 0x2002 || addr == 0x2007) {
-            LogUtil.logf(" read addr = %02X",addr);
             switch (addr) {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:

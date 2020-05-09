@@ -182,12 +182,12 @@ public class Cpu6502{
             //RTS
             case 0x60:
                 LogUtil.log("RTS");
-                cpuCycle-= cpuRegister.RTS(cpuMemory);
+                cpuCycle-= cpuRegister.RTS();
                 break;
             //BRK
             case 0x00:
                 LogUtil.log("BRK");
-                cpuCycle-= cpuRegister.BRK(cpuMemory);
+                cpuCycle-= cpuRegister.BRK();
                 break;
             //SED
             case 0xF8:
@@ -272,7 +272,7 @@ public class Cpu6502{
             //PHA
             case 0x48:
                 LogUtil.log("PHA");
-                cpuCycle-= cpuRegister.PHA(cpuMemory);
+                cpuCycle-= cpuRegister.PHA();
                 break;
             //ORA_ZERO
             case 0x05:
@@ -282,17 +282,17 @@ public class Cpu6502{
             //PLA
             case 0x68:
                 LogUtil.log("PLA");
-                cpuCycle-= cpuRegister.PLA(cpuMemory);
+                cpuCycle-= cpuRegister.PLA();
                 break;
             //ROL
             case 0x2A:
                 LogUtil.log("ROL");
                 cpuCycle-= cpuRegister.ROL();
                 break;
-            //AND_ABS
+            //AND_ABS_X
             case 0x3D:
-                LogUtil.log("AND_ABS");
-                cpuCycle-= cpuRegister.AND_ABS(iterator.next(),iterator.next());
+                LogUtil.log("AND_ABS_X");
+                cpuCycle-= cpuRegister.AND_ABS_X(iterator.next(),iterator.next());
                 break;
             //BEQ
             case 0xF0:
@@ -337,7 +337,7 @@ public class Cpu6502{
             //RTI
             case 0x40:
                 LogUtil.log("RTI");
-                cpuCycle-= cpuRegister.RTI(cpuMemory);
+                cpuCycle-= cpuRegister.RTI();
                 break;
             //DEC_ABS
             case 0xCE:
@@ -512,7 +512,7 @@ public class Cpu6502{
             //PHP
             case 0x08:
                 LogUtil.log("PHP");
-                cpuCycle-= cpuRegister.PHP(cpuMemory);
+                cpuCycle-= cpuRegister.PHP();
                 break;
             //CPX_ZERO
             case 0xE4:
@@ -537,7 +537,7 @@ public class Cpu6502{
             //PLP
             case 0x28:
                 LogUtil.log("PLP");
-                cpuCycle-= cpuRegister.PLP(cpuMemory);
+                cpuCycle-= cpuRegister.PLP();
                 break;
             //ASL_ZERO
             case 0x06:
@@ -584,30 +584,60 @@ public class Cpu6502{
                 LogUtil.log("SBC_ABS");
                 cpuCycle-= cpuRegister.SBC_ABS(iterator.next(),iterator.next());
                 break;
-            //EOR_INDIRECT_Y
-            case 0x51:
-                LogUtil.log("EOR_INDIRECT_Y");
-                cpuCycle-= cpuRegister.EOR_INDIRECT_Y(iterator.next());
+//            //EOR_INDIRECT_Y
+//            case 0x51:
+//                LogUtil.log("EOR_INDIRECT_Y");
+//                cpuCycle-= cpuRegister.EOR_INDIRECT_Y(iterator.next());
+//                break;
+//            //INC_ABS_X
+//            case 0xFE:
+//                LogUtil.log("INC_ABS_X");
+//                cpuCycle-= cpuRegister.INC_ABS_X(iterator.next(),iterator.next());
+//                break;
+//            //EOR_ZERO_X
+//            case 0x55:
+//                LogUtil.log("EOR_ZERO_X");
+//                cpuCycle-= cpuRegister.EOR_ZERO_X(iterator.next());
+//                break;
+//            //AND_ZERO_X
+//            case 0x35:
+//                LogUtil.log("AND_ZERO_X");
+//                cpuCycle-= cpuRegister.AND_ZERO_X(iterator.next());
+//                break;
+//            //STY_ZERO_X
+//            case 0x94:
+//                LogUtil.log("STY_ZERO_X");
+//                cpuCycle-= cpuRegister.STY_ZERO_X(iterator.next());
+//                break;
+            //ORA_ABS
+            case 0x0D:
+                LogUtil.log("ORA_ABS");
+                cpuCycle-= cpuRegister.ORA_ABS(iterator.next(),iterator.next());
                 break;
-            //INC_ABS_X
-            case 0xFE:
-                LogUtil.log("INC_ABS_X");
-                cpuCycle-= cpuRegister.INC_ABS_X(iterator.next(),iterator.next());
+            //CMP_ZERO_X
+            case 0xD5:
+                LogUtil.log("CMP_ZERO_X");
+                cpuCycle-= cpuRegister.CMP_ZERO_X(iterator.next());
                 break;
-            //EOR_ZERO_X
-            case 0x55:
-                LogUtil.log("EOR_ZERO_X");
-                cpuCycle-= cpuRegister.EOR_ZERO_X(iterator.next());
+            //SBC_ZERO_X
+            case 0xF5:
+                LogUtil.log("SBC_ZERO_X");
+                cpuCycle-= cpuRegister.SBC_ZERO_X(iterator.next());
                 break;
-            //AND_ZERO_X
-            case 0x35:
-                LogUtil.log("AND_ZERO_X");
-                cpuCycle-= cpuRegister.AND_ZERO_X(iterator.next());
+            //AND_ABS_Y
+            case 0x39:
+                LogUtil.log("AND_ABS_Y");
+                cpuCycle-= cpuRegister.AND_ABS_Y(iterator.next(),iterator.next());
                 break;
-            //STY_ZERO_X
-            case 0x94:
-                LogUtil.log("STY_ZERO_X");
-                cpuCycle-= cpuRegister.STY_ZERO_X(iterator.next());
+            //AND_ABS
+            case 0x2D:
+                LogUtil.log("AND_ABS");
+                cpuCycle-= cpuRegister.AND_ABS(iterator.next(),iterator.next());
+                break;
+            //ADC_ABS_X
+            case 0x7D:
+                LogUtil.log("ADC_ABS_X");
+                cpuCycle-= cpuRegister.ADC_ABS_X(iterator.next(),iterator.next());
                 break;
             //ADC_ZERO_X
             case 0x75:
@@ -618,6 +648,11 @@ public class Cpu6502{
             case 0xF6:
                 LogUtil.log("INC_ZERO_X");
                 cpuCycle-= cpuRegister.INC_ZERO_X(iterator.next());
+                break;
+            //DEC_ZERO_X
+            case 0xD6:
+                LogUtil.log("DEC_ZERO_X");
+                cpuCycle-= cpuRegister.DEC_ZERO_X(iterator.next());
                 break;
             default:
                 System.out.printf("%02X",insCode);

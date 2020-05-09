@@ -331,7 +331,7 @@
   |  Zero Page     |   ADC Oper            |    65   |    2    |    3     |
   |  Zero Page,X   |   ADC Oper,X          |    75   |    2    |    4     |
   |  Absolute      |   ADC Oper            |    6D   |    3    |    4     |
-  |  Absolute,X    |   ADC Oper,X          |    70   |    3    |    4*    |
+  |  Absolute,X    |   ADC Oper,X          |    7D   |    3    |    4*    |
   |  Absolute,Y    |   ADC Oper,Y          |    79   |    3    |    4*    |
   |  (Indirect,X)  |   ADC (Oper,X)        |    61   |    2    |    6     |
   |  (Indirect),Y  |   ADC (Oper),Y        |    71   |    2    |    5*    |

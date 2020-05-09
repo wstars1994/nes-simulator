@@ -170,7 +170,8 @@ public class CpuRegister {
      */
     public int LDA_ABS_X(byte low, byte high) {
         int aShort = MemUtil.concatByte(low, high) + (REG_X & 0xff);
-        LDA(cpuMemory.read(aShort));
+        byte read = cpuMemory.read(aShort);
+        LDA(read);
         return 4;
     }
 
@@ -329,7 +330,7 @@ public class CpuRegister {
      * @param cpuMemory
      * @return
      */
-    public int RTS(CpuMemory cpuMemory) {
+    public int RTS() {
         int pc = this.pop16Stack();
         cpuMemory.setPrgPc(pc + 1);
         return 6;
@@ -367,7 +368,7 @@ public class CpuRegister {
      * @param cpuMemory
      * @return
      */
-    public int BRK(CpuMemory cpuMemory) {
+    public int BRK() {
         setB((byte) 1);
         short pc = (short) (cpuMemory.getPrgPc() + 2);
         this.push16Stack(pc);
@@ -509,13 +510,13 @@ public class CpuRegister {
         return 4;
     }
 
-    public int LDA_INDIRECT_Y( byte data) {
-        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1) )+ (REG_Y&0xFF);
+    public int LDA_INDIRECT_Y(byte data) {
+        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1))+ (REG_Y&0xFF);
+        LogUtil.logf(" LDA_INDIRECT_Y read addr = %02X ",addr);
         byte read = cpuMemory.read(addr);
         LDA(read);
         return 5;
     }
-
     public int SED() {
         setD((byte) 1);
         return 2;
@@ -550,7 +551,7 @@ public class CpuRegister {
         return 2;
     }
 
-    public int PHA(CpuMemory cpuMemory) {
+    public int PHA() {
         this.pushStack(REG_A);
         return 3;
     }
@@ -562,7 +563,7 @@ public class CpuRegister {
         return 3;
     }
 
-    public int PLA(CpuMemory cpuMemory) {
+    public int PLA() {
         REG_A = this.popStack();
         return 4;
     }
@@ -647,7 +648,7 @@ public class CpuRegister {
         return 7;
     }
 
-    public int RTI(CpuMemory cpuMemory) {
+    public int RTI() {
         REG_S_SET(this.popStack());
         cpuMemory.setPrgPc(this.pop16Stack());
         return 6;
@@ -835,6 +836,7 @@ public class CpuRegister {
         byte lsr = (byte) ((data & 0xff) >> 1);
         setN(lsr);
         setZ(lsr);
+        cpuMemory.write(addr,lsr);
         return 5;
     }
 
@@ -903,7 +905,7 @@ public class CpuRegister {
         return 4;
     }
 
-    public int PHP(CpuMemory cpuMemory) {
+    public int PHP() {
         this.pushStack(this.REG_S_MERGE());
         return 3;
     }
@@ -935,7 +937,7 @@ public class CpuRegister {
         return 3;
     }
 
-    public int PLP(CpuMemory cpuMemory) {
+    public int PLP() {
         this.REG_S_SET(this.popStack());
         return 4;
     }
@@ -986,7 +988,7 @@ public class CpuRegister {
         return 2;
     }
 
-    public int ASL_ABS( byte low, byte high) {
+    public int ASL_ABS(byte low, byte high) {
         int addr = MemUtil.concatByte(low, high);
         byte data = cpuMemory.read(addr);
         this.setC1((byte) ((data >> 7) & 1));
@@ -1048,6 +1050,51 @@ public class CpuRegister {
         cpuMemory.write(data&0xFF, (byte) (cpuMemory.read(addr)+1));
         setN(data);
         setZ(data);
+        return 4;
+    }
+
+    public int ORA_ABS(byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high);
+        ORA(cpuMemory.read(addr));
+        return 4;
+    }
+
+    public int CMP_ZERO_X(byte data) {
+        int addr = (data&0xFF) + (REG_X & 0xff);
+        CMP(cpuMemory.read(addr));
+        return 4;
+    }
+
+    public int SBC_ZERO_X(byte data) {
+        int addr = (data&0xFF) + (REG_X & 0xff);
+        SBC(cpuMemory.read(addr));
+        return 4;
+    }
+
+    public int AND_ABS_Y(byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high) + (REG_Y & 0xff);
+        AND(cpuMemory.read(addr));
+        return 4;
+    }
+
+    public int AND_ABS_X(byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        AND(cpuMemory.read(addr));
+        return 4;
+    }
+
+    public int ADC_ABS_X(byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        ADC(cpuMemory.read(addr));
+        return 4;
+    }
+
+    public int DEC_ZERO_X(byte data) {
+        int addr = (data&0xFF) + (REG_X & 0xff);
+        byte read = (byte) (cpuMemory.read(addr & 0xFF) - 1);
+        cpuMemory.write(addr & 0xFF,read);
+        setN(read);
+        setZ(read);
         return 4;
     }
 }

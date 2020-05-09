@@ -4,6 +4,8 @@ import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 /**
  * 图形处理单元
  * 16KB space
@@ -33,7 +35,7 @@ public class Ppu {
     private PpuMemory ppuMemory;
 
     /**
-     * 初始化PPU 必须设置,从nes文件读取到的CHR数据
+     * 初始化PPU  从nes文件读取到的CHR数据
      * @param patternData 图案表数据
      */
     public Ppu(byte[] patternData){
@@ -44,10 +46,11 @@ public class Ppu {
     /**
      * 开始绘制扫描线
      */
-    public short[][] preRender(int line) {
+    public short[][] preRender(int scanLineIndex) {
         short[][] render = new short[256][3];
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
+        //渲染背景
         if(b2001[3] == 1) {
             byte ntAddr = b2000[0];
             byte bgAddr = b2000[4];
@@ -65,33 +68,37 @@ public class Ppu {
             if(bgAddr == 1) {
                 patternAddr = 0x1000;
             }
-            this.renderNameTable(line,nameTableAddr,patternAddr,render);
+            this.renderNameTable(scanLineIndex,nameTableAddr,patternAddr,render);
         }
+        //渲染精灵
+        if(b2001[4] == 1) {
+            short spritePatternAddr = (short) (b2000[3]==0 ? 0:0x1000);
+            byte spriteSize = b2000[5];
+            this.renderSprite(scanLineIndex,spritePatternAddr,spriteSize,render);
+        }
+        //无背景和无精灵 渲染背景色
         if(b2001[3] == 0 && b2001[4] == 0) {
-            render = new short[256][3];
-            byte read = ppuMemory.read(0x3F00);
-            short[] palette = ppuMemory.palettes[read==0?0:read-1];
-            for(int i=0;i<256;i++) {
-                render[i] = palette;
-            }
+            byte colorIndex = ppuMemory.read(0x3F00);
+            short[] palette = ppuMemory.palettes[colorIndex];
+            Arrays.fill(render,palette);
         }
         return render;
     }
 
     /**
      * 绘制命名表
-     * @param line 扫描线
+     * @param scanLineIndex 扫描线
      * @param nametableStartAddr 命名表起始地址
      * @param patternStartAddr 图案表起始地址
      * @param render
      */
-    private void renderNameTable(int line, short nametableStartAddr, short patternStartAddr, short[][] render) {
+    private void renderNameTable(int scanLineIndex, short nametableStartAddr, short patternStartAddr, short[][] render) {
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<32;i++) {
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
-            int nameTableData = (ppuMemory.read((nametableStartAddr + (line/8) * 32) + i)&0xFF) * 16;
+            int nameTableData = (ppuMemory.read((nametableStartAddr + (scanLineIndex/8) * 32) + i)&0xFF) * 16;
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
-            int patternAddr = patternStartAddr + nameTableData + (line % 8);
+            int patternAddr = patternStartAddr + nameTableData + (scanLineIndex % 8);
             int patternColor = patternAddr + 8;
             //图案表数据
             byte patternData = ppuMemory.read(patternAddr);
@@ -99,22 +106,66 @@ public class Ppu {
             byte colorData = ppuMemory.read(patternColor);
             //取每像素的低两位颜色
             byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
-            //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每16条扫描线占用8字节
-            byte attributeData = ppuMemory.read(nametableStartAddr + 0x3C0 + (line/32*8)+i/4);
-            byte patternColorHighData = getPatternColorHighData(attributeData,i,line);
+            //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节
+            byte attributeData = ppuMemory.read(nametableStartAddr + 0x3C0 + (scanLineIndex/32*8)+i/4);
+            byte patternColorHighData = getPatternColorHighData(attributeData,i,scanLineIndex);
+            byte p0 = ppuMemory.read(0x3F00);
             //合并 取最终4位颜色
             for (int i1 = 0; i1 <8; i1++) {
                 int patternColorLowBit = patternColorLowData[7 - i1];
                 //透明色 显示背景色
                 if(patternColorLowBit == 0) {
-                    render[i*8+i1] = ppuMemory.palettes[ppuMemory.read(0x3F00)];
+                    render[i*8+i1] = ppuMemory.palettes[p0];
                 }else {
-                    int colorAddr = 0x3f00 + ((patternColorHighData << 2) & 0xF) | (patternColorLowBit & 0x3);
+                    int colorAddr = 0x3f00 + (((patternColorHighData << 2) & 0xF) | (patternColorLowBit & 0x3));
                     int paletteIndex = ppuMemory.read(colorAddr);
                     render[i*8+i1] = ppuMemory.palettes[paletteIndex];
                 }
             }
         }
+    }
+    /**
+     * 渲染精灵
+     * @param spritePatternStartAddr 8x8精灵开始地址
+     * @param spriteSize 精灵size 0=8x8;1=8x16(注意,8x16精灵上面的8x8像素在图案表0x0000,下面的在0x1000,不受spritePatternAddr控制)
+     * @param render
+     */
+    private void renderSprite(int sl,short spritePatternStartAddr, byte spriteSize, short[][] render) {
+        byte[] sprRam = ppuMemory.getSprRam();
+        for (int i = 0; i < sprRam.length; i+=4) {
+            short y = (short) ((sprRam[i]&0xff));
+            short patternIndex = (short) (sprRam[i+1]&0xff);
+            byte attributeData = sprRam[i+2];
+            byte backgroundPriority = (byte) ((attributeData>>5)&1);
+            short x = (short) (sprRam[i+3]&0xff);
+            if(sl >= y && sl <= y + 8) {
+                //获取图案地址
+                int spritePatternAddr = spritePatternStartAddr + patternIndex*16 + (sl - y);
+                //获取图案颜色数据
+                byte patternData = ppuMemory.read(spritePatternAddr);
+                byte colorData = ppuMemory.read(spritePatternAddr + 8);
+                byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
+                byte patternColorHighData = (byte) (attributeData & 0x03);
+                for (int i1 = 0; i1 <8; i1++) {
+                    //获取4位颜色
+                    int colorAddr = 0x3f10 + (((patternColorHighData << 2) & 0xF) | ((patternColorLowData[7 - i1]) & 0x3));
+                    short[] bg = render[x + i1];
+                    short[] spriteColor = ppuMemory.palettes[ppuMemory.read(colorAddr)];
+                    if((bg[0]|bg[1]|bg[2])!=0 && (spriteColor[0]|spriteColor[1]|spriteColor[2]) != 0) {
+                        DataBus.p_2002[6] = 1;
+                    }
+                    if(backgroundPriority == 0) {
+                        render[x + i1] = spriteColor;
+                    }
+                }
+            }
+        }
+        if(spriteSize == 0) {
+
+        }else {
+            System.out.println(1);
+        }
+
     }
 
     /**
@@ -126,17 +177,17 @@ public class Ppu {
      */
     private byte getPatternColorHighData(byte attributeData,int i,int line) {
         byte[] attributeDatas = MemUtil.toBits(attributeData);
-        int ii = i % 4;
-        int ll = line % 4;
+        int x = i % 4;
+        int y = line % 32 / 8;
         byte high2 = 0;
-        if(ll<2) {
-            if(ii<2) {
+        if(y<2) {
+            if(x<2) {
                 high2 = (byte) ((attributeDatas[0]) + (attributeDatas[1]<<1));
             }else {
                 high2 = (byte) ((attributeDatas[2]) + (attributeDatas[3]<<1));
             }
         }else {
-            if(ii<2) {
+            if(x<2) {
                 high2 = (byte) ((attributeDatas[4]) + (attributeDatas[5]<<1));
             }else {
                 high2 = (byte) ((attributeDatas[6]) + (attributeDatas[7]<<1));
@@ -152,21 +203,12 @@ public class Ppu {
      * @return
      */
     private byte[] getPatternColorLowData(byte patternData, byte colorData) {
-        byte[] patternDatas = MemUtil.toBits((byte) (patternData&0xFF));
-        byte[] colorDatas = MemUtil.toBits((byte) (colorData&0xFF));
+        byte[] patternDatas = MemUtil.toBits(patternData);
+        byte[] colorDatas = MemUtil.toBits(colorData);
         byte patternColorData[] = new byte[8];
-        for(int i=7;i>0;i--) {
-            patternColorData[i] = (byte) ((colorDatas[i]<<1) | (patternDatas[i]&1));
+        for(int i=7;i>=0;i--) {
+            patternColorData[i] = (byte) (((colorDatas[i]<<1)&3) | (patternDatas[i]&1));
         }
         return patternColorData;
-    }
-
-    private String print8(byte data){
-        String s = Integer.toBinaryString(data & 0xFF);
-        while ( s.length() < 8 ) {
-            s = "0" + s;
-        }
-//        System.out.print(s);
-        return s;
     }
 }
