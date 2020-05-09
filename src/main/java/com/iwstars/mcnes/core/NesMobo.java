@@ -34,9 +34,12 @@ public class NesMobo {
         while (true)  {
             short[][] renderBuff = new short[256*240][3];
             //256x240 分辨率
+            //NMI中断
+            if(DataBus.p_2000[7] == 1) {
+                cpu6502.getCpuRegister().NMI();
+            }
             //设置vblank false
             DataBus.p_2002[7] = 0;
-            DataBus.p_2002[6] = 0;
             for (int i = 0; i < 262; i++) {
                 //HBlank start
                 if(i < 240) {
@@ -49,13 +52,11 @@ public class NesMobo {
                 if(i==241) {
                     //设置vblanking
                     DataBus.p_2002[7] = 1;
-                    //NMI中断
-                    if(DataBus.p_2000[7] == 1) {
-                        cpu6502.getCpuRegister().NMI();
-                    }
+                    DataBus.p_2002[6] = 0;
                 }
                 this.cpu6502.go();
             }
+
             nesRender.render(renderBuff);
 //            try {
 //                Thread.sleep(50);

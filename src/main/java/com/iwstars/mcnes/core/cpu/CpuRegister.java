@@ -1091,8 +1091,8 @@ public class CpuRegister {
 
     public int DEC_ZERO_X(byte data) {
         int addr = (data&0xFF) + (REG_X & 0xff);
-        byte read = (byte) (cpuMemory.read(addr & 0xFF) - 1);
-        cpuMemory.write(addr & 0xFF,read);
+        byte read = (byte) (cpuMemory.read(addr) - 1);
+        cpuMemory.write(addr,read);
         setN(read);
         setZ(read);
         return 4;
