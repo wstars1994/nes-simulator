@@ -327,7 +327,6 @@ public class CpuRegister {
     /**
      * 从栈中读取PC,然后PC=PC+1
      * PC fromS, PC + 1 -> PC
-     * @param cpuMemory
      * @return
      */
     public int RTS() {
@@ -365,7 +364,6 @@ public class CpuRegister {
 
     /**
      * 强制中断
-     * @param cpuMemory
      * @return
      */
     public int BRK() {
@@ -578,7 +576,7 @@ public class CpuRegister {
     }
 
     public int AND_ABS( byte low, byte high) {
-        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        int addr = MemUtil.concatByte(low, high);
         REG_A &= cpuMemory.read(addr);
         setN(REG_A);
         setZ(REG_A);
@@ -726,7 +724,7 @@ public class CpuRegister {
         return 4;
     }
 
-    public int DEC_ZERO( byte addr) {
+    public int DEC_ZERO(int addr) {
         byte read = (byte) (cpuMemory.read(addr & 0xFF) - 1);
         cpuMemory.write(addr & 0xFF,read);
         setN(read);
@@ -1091,10 +1089,7 @@ public class CpuRegister {
 
     public int DEC_ZERO_X(byte data) {
         int addr = (data&0xFF) + (REG_X & 0xff);
-        byte read = (byte) (cpuMemory.read(addr) - 1);
-        cpuMemory.write(addr,read);
-        setN(read);
-        setZ(read);
+        DEC_ZERO(addr);
         return 4;
     }
 }
