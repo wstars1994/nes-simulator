@@ -964,8 +964,8 @@ public class CpuRegister {
     }
 
     public int LDY_ZERO_X( byte addr) {
-        byte data = (byte) (addr+ (REG_X & 0xff));
-        LDY(cpuMemory.read(data));
+        int data = addr+ (REG_X & 0xff);
+        LDY(cpuMemory.read(data&0xFF));
         return 4;
     }
 

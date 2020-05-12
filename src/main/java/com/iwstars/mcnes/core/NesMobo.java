@@ -48,21 +48,17 @@ public class NesMobo {
                         renderBuff[i * 256 + r] = shorts[r];
                     }
                 }
-                //VBlank
-                if(i==241) {
-                    //设置vblanking
-                    DataBus.p_2002[7] = 1;
+                //vblank start
+                if(i == 241) {
+                    //Sprite 0 Hit false
                     DataBus.p_2002[6] = 0;
+                    //设置vblank true
+                    DataBus.p_2002[7] = 1;
                 }
                 this.cpu6502.go();
             }
 
             nesRender.render(renderBuff);
-//            try {
-//                Thread.sleep(50);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
         }
     }
 

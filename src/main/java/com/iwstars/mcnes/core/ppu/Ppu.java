@@ -131,27 +131,29 @@ public class Ppu {
      * @param render
      */
     private void renderSprite(int sl,short spritePatternStartAddr, byte spriteSize, short[][] render) {
+        //获取精灵高度
+        int spriteHeight = spriteSize == 0?8:16;
         byte[] sprRam = ppuMemory.getSprRam();
-        for (int i = 0; i < sprRam.length; i+=4) {
-            short y = (short) ((sprRam[i]&0xff));
+        for (int i = 0; i < sprRam.length; i += 4) {
+            short y = (short) ((sprRam[i]&0xff)+1);
             short patternIndex = (short) (sprRam[i+1]&0xff);
             byte attributeData = sprRam[i+2];
             byte backgroundPriority = (byte) ((attributeData>>5)&1);
             short x = (short) (sprRam[i+3]&0xff);
-            if(sl >= y && sl <= y + 8) {
+            if(sl >= y && sl <= y + spriteHeight) {
                 //获取图案地址
-                int spritePatternAddr = spritePatternStartAddr + patternIndex*16 + (sl - y);
+                int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + (sl - y);
                 //获取图案颜色数据
                 byte patternData = ppuMemory.read(spritePatternAddr);
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
                 byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
                 byte patternColorHighData = (byte) (attributeData & 0x03);
-                for (int i1 = 0; i1 <8; i1++) {
+                for (int i1 = 0; i1 <spriteHeight; i1++) {
                     //获取4位颜色
                     int colorAddr = 0x3f10 + (((patternColorHighData << 2) & 0xF) | ((patternColorLowData[7 - i1]) & 0x3));
                     short[] bg = render[x + i1];
                     short[] spriteColor = ppuMemory.palettes[ppuMemory.read(colorAddr)];
-                    if((bg[0]|bg[1]|bg[2])!=0 && (spriteColor[0]|spriteColor[1]|spriteColor[2]) != 0) {
+                    if(DataBus.p_2002[6] == 0 && i==0 && patternData!=0 && colorData!=0 && (bg[0]!=0||bg[1]!=0||bg[2]!=0)) {
                         DataBus.p_2002[6] = 1;
                     }
                     if(backgroundPriority == 0) {
@@ -167,7 +169,6 @@ public class Ppu {
         }
 
     }
-
     /**
      * 从属性表获取图案的高两位颜色
      * @param attributeData
