@@ -32,7 +32,7 @@ public class Main extends Application {
     /**
      * 调试模式
      */
-    public static boolean debug = false;
+    public static boolean debug = true;
 
     private NesUIRender nesRender;
 

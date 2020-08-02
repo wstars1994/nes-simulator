@@ -78,8 +78,7 @@ public class Ppu {
         }
         //无背景和无精灵 渲染背景色
         if(b2001[3] == 0 && b2001[4] == 0) {
-            byte colorIndex = ppuMemory.read(0x3F00);
-            short[] palette = ppuMemory.palettes[colorIndex];
+            short[] palette = ppuMemory.palettes[ppuMemory.read(0x3F00)];
             Arrays.fill(render,palette);
         }
         return render;
@@ -149,23 +148,19 @@ public class Ppu {
                 byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
                 byte patternColorHighData = (byte) (attributeData & 0x03);
                 for (int i1 = 0; i1 <spriteHeight; i1++) {
-                    //获取4位颜色
-                    int colorAddr = 0x3f10 + (((patternColorHighData << 2) & 0xF) | ((patternColorLowData[7 - i1]) & 0x3));
-                    short[] bg = render[x + i1];
-                    short[] spriteColor = ppuMemory.palettes[ppuMemory.read(colorAddr)];
-                    if(DataBus.p_2002[6] == 0 && i==0 && patternData!=0 && colorData!=0 && (bg[0]!=0||bg[1]!=0||bg[2]!=0)) {
+                    //命中非透明背景
+                    if(patternData + colorData != 0) {
                         DataBus.p_2002[6] = 1;
                     }
                     if(backgroundPriority == 0) {
-                        render[x + i1] = spriteColor;
+                        //获取4位颜色
+                        int colorAddr = 0x3f10 + (((patternColorHighData << 2) & 0xF) | ((patternColorLowData[7 - i1]) & 0x3));
+                        if(patternData+colorData+patternColorHighData!=0 && colorAddr!=0x3f10) {
+                            render[x + i1] = ppuMemory.palettes[ppuMemory.read(colorAddr)];;
+                        }
                     }
                 }
             }
-        }
-        if(spriteSize == 0) {
-
-        }else {
-            System.out.println(1);
         }
 
     }

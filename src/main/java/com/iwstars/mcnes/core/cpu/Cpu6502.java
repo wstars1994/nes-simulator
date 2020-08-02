@@ -51,14 +51,14 @@ public class Cpu6502{
             LogUtil.logLn("");
             int prgPc = cpuMemory.getPrgPc();
 
-            LogUtil.logf("insNum=%06d cycle=%03d A=$%02X,X=$%02X,Y=$%02X,S=$%02X pc=$%02X P:%c%c%c%c%c%c%c ",
-                    runCycleNum++,cpuCycle, cpuRegister.getReg_A()&0xFF, cpuRegister.getReg_X()&0xFF, cpuRegister.getReg_Y()&0xFF, cpuRegister.getReg_S()&0xFF,prgPc&0xFFFF
-            ,cpuRegister.getN() != 0 ? 'N'
-                            : 'n', cpuRegister.getV() != 0 ? 'V' : 'v', cpuRegister.getB() != 0 ? 'B'
-                            : 'b', cpuRegister.getD() != 0 ? 'D' : 'd', cpuRegister.getI() != 0 ? 'I'
-                            : 'i', cpuRegister.getZ() != 0 ? 'Z' : 'z', cpuRegister.getC() != 0 ? 'C'
-                            : 'c'
-            );
+//            LogUtil.logf("insNum=%06d cycle=%03d A=$%02X,X=$%02X,Y=$%02X,S=$%02X pc=$%02X P:%c%c%c%c%c%c%c ",
+//                    runCycleNum++,cpuCycle, cpuRegister.getReg_A()&0xFF, cpuRegister.getReg_X()&0xFF, cpuRegister.getReg_Y()&0xFF, cpuRegister.getReg_S()&0xFF,prgPc&0xFFFF
+//            ,cpuRegister.getN() != 0 ? 'N'
+//                            : 'n', cpuRegister.getV() != 0 ? 'V' : 'v', cpuRegister.getB() != 0 ? 'B'
+//                            : 'b', cpuRegister.getD() != 0 ? 'D' : 'd', cpuRegister.getI() != 0 ? 'I'
+//                            : 'i', cpuRegister.getZ() != 0 ? 'Z' : 'z', cpuRegister.getC() != 0 ? 'C'
+//                            : 'c'
+//            );
             this.execInstrcution(iterator);
             if(cpuCycle <= 0) {
                 break;

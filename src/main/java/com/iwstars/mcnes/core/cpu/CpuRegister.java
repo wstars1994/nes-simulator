@@ -964,7 +964,7 @@ public class CpuRegister {
     }
 
     public int LDY_ZERO_X( byte addr) {
-        int data = addr+ (REG_X & 0xff);
+        int data = (addr & 0xff) + (REG_X & 0xff);
         LDY(cpuMemory.read(data&0xFF));
         return 4;
     }
@@ -1058,37 +1058,37 @@ public class CpuRegister {
     }
 
     public int CMP_ZERO_X(byte data) {
-        int addr = (data&0xFF) + (REG_X & 0xff);
+        int addr = (data&0xFF) + REG_X;
         CMP(cpuMemory.read(addr));
         return 4;
     }
 
     public int SBC_ZERO_X(byte data) {
-        int addr = (data&0xFF) + (REG_X & 0xff);
+        int addr = (data&0xFF) + REG_X;
         SBC(cpuMemory.read(addr));
         return 4;
     }
 
     public int AND_ABS_Y(byte low, byte high) {
-        int addr = MemUtil.concatByte(low, high) + (REG_Y & 0xff);
+        int addr = MemUtil.concatByte(low, high) + REG_X;
         AND(cpuMemory.read(addr));
         return 4;
     }
 
     public int AND_ABS_X(byte low, byte high) {
-        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        int addr = MemUtil.concatByte(low, high) + REG_X;
         AND(cpuMemory.read(addr));
         return 4;
     }
 
     public int ADC_ABS_X(byte low, byte high) {
-        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        int addr = MemUtil.concatByte(low, high) + REG_X ;
         ADC(cpuMemory.read(addr));
         return 4;
     }
 
     public int DEC_ZERO_X(byte data) {
-        int addr = (data&0xFF) + (REG_X & 0xff);
+        int addr = data + REG_X ;
         DEC_ZERO(addr);
         return 4;
     }
