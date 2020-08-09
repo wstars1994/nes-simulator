@@ -42,7 +42,6 @@ public class CpuMemory {
      */
     private byte[] data = new byte[0x10000];
 
-
     /**
      * PRG数据迭代器
      * @return
@@ -84,7 +83,10 @@ public class CpuMemory {
                 DataBus.p_2003 = MemUtil.toBits(data);
                 break;
             case 0x2004:
-                DataBus.p_2004 = MemUtil.toBits(data);
+                byte arrd = (byte) ((MemUtil.bitsToByte(DataBus.p_2003)+1) & 0xff);
+                DataBus.p_2003 = MemUtil.toBits(arrd);
+                DataBus.writePpuSprRam(arrd,data);
+//                DataBus.p_2004 = MemUtil.toBits(data);
                 break;
             case 0x2005:
                 DataBus.p_2005 = MemUtil.toBits(data);
@@ -131,8 +133,8 @@ public class CpuMemory {
      * @return
      */
     public byte read(int addr){
-//        LogUtil.logf(" read addr = %02X ",addr);
-        if(addr == 0x2002 || addr == 0x2007) {
+        LogUtil.logf(" read addr = %02X ",addr);
+        if(addr >= 0x2002 && addr <= 0x3FFF) {
             switch (addr) {
                 //读PPUSTATUS状态寄存器
                 case 0x2002:
@@ -151,10 +153,11 @@ public class CpuMemory {
                         return res;
                     }else if(addr <= 0x3FFF) {
                         //读取调色板
+                        System.out.println("读取调色板");
                     }
                     break;
                 default:
-                    break;
+                    return 0;
             }
         }
         return this.data[addr];
