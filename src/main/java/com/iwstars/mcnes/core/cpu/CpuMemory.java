@@ -162,8 +162,8 @@ public class CpuMemory {
                 }
                 break;
             case 0x4016:
-                System.out.println("读取手柄1输入:" + this.data[addr]);
-                return 0;
+//                System.out.println("读取手柄1输入:" + this.data[addr]);
+                break;
             case 0x4017:
 //                System.out.println("读取手柄2输入:" + this.data[addr]);
                 break;

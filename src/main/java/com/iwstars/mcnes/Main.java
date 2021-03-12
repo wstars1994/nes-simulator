@@ -61,7 +61,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        debug = false;
+        debug = true;
         new Main().launch();
     }
 
