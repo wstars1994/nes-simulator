@@ -1063,7 +1063,8 @@ public class CpuRegister {
     }
 
     public int SBC_ZERO_X(byte data) {
-        int addr = (data&0xFF) + REG_X;
+        int addr = (data + REG_X)& 0xff;
+        //TODO 这里读出来应该是1
         SBC(cpuMemory.read(addr));
         return 4;
     }

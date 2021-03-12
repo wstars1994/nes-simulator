@@ -28,6 +28,6 @@ public class NesUIRender {
                 image.setRGB(w, h, rgb );
             }
         }
-        frame.getGraphics().drawImage(image, 0, 15, frame);
+        frame.getGraphics().drawImage(image, 2, 15, frame);
     }
 }

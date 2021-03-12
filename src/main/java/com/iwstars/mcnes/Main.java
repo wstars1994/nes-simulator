@@ -68,18 +68,22 @@ public class Main {
     private void launch() {
         frame = new Frame("MCNES");
         //设置窗口的大小和位置
-        frame.setSize(256, 255);
+        frame.setSize(260, 255);
+        //不可最大化
         frame.setResizable(false);
+        //居中
         frame.setLocationRelativeTo(null);
+        //退出
         frame.addWindowListener(new WindowAdapter(){
             @Override
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
             }
         });
-        //将窗口显示出来（默认隐藏）
+        //显示
         frame.setVisible(true);
-        new Thread(()->{
+        //运行模拟器
+        new Thread(() -> {
             String filePath = "1.nes";
             //读取.nes文件数据
             NESRomData romData = this.loadData(new File(filePath));
@@ -87,9 +91,10 @@ public class Main {
             Ppu ppu = new Ppu(romData.getRomCHR());
             //创建CPU
             Cpu6502 cpu6502 = new Cpu6502(romData.getRomPRG());
+            //挂载到总线
             DataBus.cpuMemory = cpu6502.getCpuMemory();
             DataBus.ppuMemory = ppu.getPpuMemory();
-            //主板
+            //创建主板
             NesMobo nesMobo = new NesMobo();
             nesMobo.setPpu(ppu);
             nesMobo.setCpu6502(cpu6502);

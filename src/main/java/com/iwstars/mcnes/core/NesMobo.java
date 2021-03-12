@@ -63,7 +63,7 @@ public class NesMobo {
             }
             nesRender.render(renderBuff);
             try {
-                Thread.sleep(10);
+                Thread.sleep(5);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
