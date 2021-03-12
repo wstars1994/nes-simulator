@@ -534,7 +534,7 @@ public class CpuRegister {
     }
 
     public int LSR() {
-        setC1((byte) (REG_A&1));
+        setC1((byte) (REG_A & 1));
         REG_A = (byte) ((REG_A & 0xff) >> 1);
         setN(REG_A);
         setZ(REG_A);
@@ -891,7 +891,7 @@ public class CpuRegister {
     }
 
     public int STA_ZERO_X(byte addr) {
-        byte addr2 = (byte) (cpuMemory.read(addr&0xFF) + (REG_X & 0xff));
+        byte addr2 = (byte) (addr + REG_X);
         STA_ZERO(addr2);
         return 4;
     }

@@ -113,6 +113,12 @@ public class CpuMemory {
                     DataBus.writePpuSprRam((byte) i,read);
                 }
                 break;
+            case 110:
+//                System.out.println("110 被写:"+data);
+                break;
+            case 0xF273:
+                System.out.println("0xF274 被写:"+data);
+                break;
             default:
                 break;
         }
@@ -134,31 +140,35 @@ public class CpuMemory {
      */
     public byte read(int addr){
         LogUtil.logf(" read addr = %02X ",addr);
-        if(addr >= 0x2002 && addr <= 0x3FFF) {
-            switch (addr) {
-                //读PPUSTATUS状态寄存器
-                case 0x2002:
-                    byte readData = MemUtil.bitsToByte(DataBus.p_2002);
-                    //当CPU读取$2002后vblank标志设置为0
-                    DataBus.p_2002[7] = 0;
-                    DataBus.p_2006_flag = false;
-                    return readData;
-                case 0x2007:
-                    int p2006 = DataBus.p_2006_data;
-                    DataBus.p_2006_data += (DataBus.p_2000[2]==0?1:32);
-                    if(addr <= 0x3EFF) {
-                        //读取PPU
-                        byte res = DataBus.p_2007_read;
-                        DataBus.p_2007_read = DataBus.ppuMemory.read(p2006);
-                        return res;
-                    }else if(addr <= 0x3FFF) {
-                        //读取调色板
-                        System.out.println("读取调色板");
-                    }
-                    break;
-                default:
-                    return 0;
-            }
+        switch (addr) {
+            //读PPUSTATUS状态寄存器
+            case 0x2002:
+                byte readData = MemUtil.bitsToByte(DataBus.p_2002);
+                //当CPU读取$2002后vblank标志设置为0
+                DataBus.p_2002[7] = 0;
+                DataBus.p_2006_flag = false;
+                return readData;
+            case 0x2007:
+                int p2006 = DataBus.p_2006_data;
+                DataBus.p_2006_data += (DataBus.p_2000[2]==0?1:32);
+                if(addr <= 0x3EFF) {
+                    //读取PPU
+                    byte res = DataBus.p_2007_read;
+                    DataBus.p_2007_read = DataBus.ppuMemory.read(p2006);
+                    return res;
+                }else if(addr <= 0x3FFF) {
+                    //读取调色板
+                    System.out.println("读取调色板");
+                }
+                break;
+            case 0x4016:
+                System.out.println("读取手柄1输入:" + this.data[addr]);
+                return 0;
+            case 0x4017:
+//                System.out.println("读取手柄2输入:" + this.data[addr]);
+                break;
+            default:
+                return this.data[addr];
         }
         return this.data[addr];
     }
