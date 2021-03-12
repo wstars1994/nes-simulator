@@ -10,19 +10,19 @@ import com.iwstars.mcnes.Main;
 public class LogUtil {
 
     public static void logLn(String info) {
-//        if(Main.debug) {
-//            System.out.println(info);
-//        }
+        if(Main.debug) {
+            System.out.println(info);
+        }
     }
     public static void log(String info) {
-//        if(Main.debug) {
-//            System.out.print(info);
-//        }
+        if(Main.debug) {
+            System.out.print(info);
+        }
     }
 
     public static void logf(String  format,Object ...args) {
-//        if(Main.debug) {
-//            System.out.printf(format,args);
-//        }
+        if(Main.debug) {
+            System.out.printf(format,args);
+        }
     }
 }

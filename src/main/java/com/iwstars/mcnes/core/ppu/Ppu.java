@@ -75,9 +75,8 @@ public class Ppu {
             short spritePatternAddr = (short) (b2000[3]==0 ? 0:0x1000);
             byte spriteSize = b2000[5];
             this.renderSprite(scanLineIndex,spritePatternAddr,spriteSize,render);
-        }
-        //无背景和无精灵 渲染背景色
-        if(b2001[3] == 0 && b2001[4] == 0) {
+        }else if(b2001[3] == 0 && b2001[4] == 0) {
+            //无背景和无精灵 渲染背景色
             short[] palette = ppuMemory.palettes[ppuMemory.read(0x3F00)];
             Arrays.fill(render,palette);
         }
@@ -147,11 +146,11 @@ public class Ppu {
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
                 byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
                 byte patternColorHighData = (byte) (attributeData & 0x03);
+                //命中非透明背景
+                if(patternData + colorData != 0) {
+                    DataBus.p_2002[6] = 1;
+                }
                 for (int i1 = 0; i1 <spriteHeight; i1++) {
-                    //命中非透明背景
-                    if(patternData + colorData != 0) {
-                        DataBus.p_2002[6] = 1;
-                    }
                     if(backgroundPriority == 0) {
                         //获取4位颜色
                         int colorAddr = 0x3f10 + (((patternColorHighData << 2) & 0xF) | ((patternColorLowData[7 - i1]) & 0x3));

@@ -371,8 +371,7 @@ public class CpuRegister {
         short pc = (short) (cpuMemory.getPrgPc() + 2);
         this.push16Stack(pc);
         pushStack(REG_S_MERGE());
-        short high = cpuMemory.read(0xFFFE);
-        cpuMemory.setPrgPc(high);
+        cpuMemory.setPrgPc(cpuMemory.read(0xFFFE));
         setI((byte) 1);
         return 7;
     }

@@ -27,54 +27,41 @@ public class NesMobo {
      * 屏幕输出
      */
     private NesUIRender nesRender;
+
     /**
      * 主板通电
      */
     public void powerUp(){
-        long frameStartMill = System.currentTimeMillis();
-        int frame = 1;
         while (true)  {
             //256x240 分辨率
             short[][] renderBuff = new short[256*240][3];
+            for (int i = 0; i < 240; i++) {
+                this.cpu6502.go();
+                short[][] shorts = ppu.preRender(i);
+                for(int r = 0; r < 256; r++) {
+                    renderBuff[i * 256 + r] = shorts[r];
+                }
+            }
+            //240
+            this.cpu6502.go();
+            //241
+            //设置vblank true
+            DataBus.p_2002[7] = 1;
             //NMI中断
             if(DataBus.p_2000[7] == 1) {
                 cpu6502.getCpuRegister().NMI();
             }
-            //设置vblank false
-            DataBus.p_2002[7] = 0;
-            for (int i = 0; i < 262; i++) {
-                //HBlank start
-                if(i < 240) {
-                    short[][] shorts = ppu.preRender(i);
-                    for(int r = 0;r < 256; r++) {
-                        renderBuff[i * 256 + r] = shorts[r];
-                    }
-                }
-                //vblank start
-                if(i == 241) {
+            //242-
+            for (int i = 242; i < 262; i++) {
+                if( i == 261 ) {
                     //Sprite 0 Hit false
                     DataBus.p_2002[6] = 0;
-                    this.cpu6502.go(true);
-                    //设置vblank true
-                    DataBus.p_2002[7] = 1;
+                    //设置vblank false
+                    DataBus.p_2002[7] = 0;
                 }
-                this.cpu6502.go(false);
+                this.cpu6502.go();
             }
             nesRender.render(renderBuff);
-
-            frame++;
-            if(frame > 60) {
-                long frameMill = System.currentTimeMillis() - frameStartMill;
-                if(frameMill < 1000) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                frame = 1;
-                frameStartMill = System.currentTimeMillis();
-            }
         }
     }
 
@@ -83,7 +70,8 @@ public class NesMobo {
      */
     public void reset(){
         CpuMemory cpuMemory = cpu6502.getCpuMemory();
-        cpuMemory.setPrgPc(MemUtil.concatByte(cpuMemory.read(0xFFFC), cpuMemory.read(0xFFFD)));
+        int initPc = MemUtil.concatByte(cpuMemory.read(0xFFFC), cpuMemory.read(0xFFFD));
+        cpuMemory.setPrgPc(initPc);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
