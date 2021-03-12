@@ -1,10 +1,9 @@
 package com.iwstars.mcnes.ui;
 
-import javafx.fxml.FXML;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DirectColorModel;
 
 /**
  * @description: 渲染controller
@@ -13,19 +12,22 @@ import javafx.scene.paint.Color;
  */
 public class NesUIRender {
 
-    @FXML
-    private Canvas mainCanvas;
+    private Frame frame;
+    private BufferedImage image = new BufferedImage(256, 240, BufferedImage.TYPE_3BYTE_BGR);
+
+
+    public NesUIRender(Frame frame) {
+        this.frame = frame;
+    }
 
     public void render(short[][] pixelColorBuff){
-        GraphicsContext graphics = mainCanvas.getGraphicsContext2D();
-        long l = System.currentTimeMillis();
         for(int h=0; h<240; h++) {
             for(int w=0;w<256; w++) {
-                short[] i = pixelColorBuff[w + (h*256)];
-                graphics.setFill(Color.rgb(i[0],i[1],i[2]));
-                graphics.fillRect(w,h,1,1);
+                short[] pixels = pixelColorBuff[w + (h*256)];
+                int rgb = ((pixels[0] << 16) | ((pixels[1] << 8) | pixels[2]));
+                image.setRGB(w, h, rgb );
             }
         }
-        System.out.println(System.currentTimeMillis()-l);
+        frame.getGraphics().drawImage(image, 0, 15, frame);
     }
 }

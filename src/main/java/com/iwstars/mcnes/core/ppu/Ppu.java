@@ -120,7 +120,9 @@ public class Ppu {
                     render[i*8+i1] = ppuMemory.palettes[paletteIndex];
                 }
             }
+//            print8(patternData);
         }
+//        System.out.println("");
     }
     /**
      * 渲染精灵
@@ -205,5 +207,13 @@ public class Ppu {
             patternColorData[i] = (byte) (((colorDatas[i]<<1)&3) | (patternDatas[i]&1));
         }
         return patternColorData;
+    }
+
+    private void print8(byte data){
+        String s = Integer.toBinaryString(data & 0xFF);
+        while (s.length()<8) {
+            s="0"+s;
+        }
+        System.out.print(s);
     }
 }

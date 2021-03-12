@@ -62,6 +62,11 @@ public class NesMobo {
                 this.cpu6502.go();
             }
             nesRender.render(renderBuff);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
