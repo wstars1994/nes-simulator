@@ -133,31 +133,51 @@ public class Ppu {
     private void renderSprite(int sl,short spritePatternStartAddr, byte spriteSize, short[][] render) {
         //获取精灵高度
         int spriteHeight = spriteSize == 0?8:16;
+        //获取内存中的精灵数据
         byte[] sprRam = ppuMemory.getSprRam();
         for (int i = 0; i < sprRam.length; i += 4) {
             short y = (short) ((sprRam[i]&0xff)+1);
             short patternIndex = (short) (sprRam[i+1]&0xff);
+            //子图形数据
             byte attributeData = sprRam[i+2];
+            //[5] 背景层级
             byte backgroundPriority = (byte) ((attributeData>>5)&1);
+            //图案垂直翻转
+            byte vFlip = (byte) ((attributeData>>7)&1);
+            //图案水平翻转
+            byte hFlip = (byte) ((attributeData>>6)&1);
             short x = (short) (sprRam[i+3]&0xff);
             if(sl >= y && sl <= y + spriteHeight) {
                 //获取图案地址
+                if(spriteHeight == 16) {
+                    byte[] bytes = MemUtil.toBits((byte) patternIndex);
+                    spritePatternStartAddr = (short) (bytes[0] == 0 ? 0x1000:0x2000);
+;                }
                 int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + (sl - y);
-                //获取图案颜色数据
                 byte patternData = ppuMemory.read(spritePatternAddr);
+                if(hFlip == 1) {
+                    byte[] patterBytes = MemUtil.toBits(patternData);
+                    for (int j = 0; j < 4; j++) {
+                        int temp = patterBytes[j];
+                        patterBytes[j] = patterBytes[7-j];
+                        patterBytes[7-j] = (byte) temp;
+                    }
+                    patternData = MemUtil.bitsToByte(patterBytes);
+                }
+                //获取图案颜色数据
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
                 byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
                 byte patternColorHighData = (byte) (attributeData & 0x03);
-                //命中非透明背景
-                if(patternData + colorData != 0) {
+                //命中非透明背景 sprite hit
+                if(patternData + colorData != 0 && DataBus.p_2001[1] != 0 &&DataBus.p_2001[2] != 0) {
                     DataBus.p_2002[6] = 1;
                 }
-                for (int i1 = 0; i1 <spriteHeight; i1++) {
+                for (int i1 = 0; i1 < 8; i1++) {
                     if(backgroundPriority == 0) {
                         //获取4位颜色
                         int colorAddr = 0x3f10 + (((patternColorHighData << 2) & 0xF) | ((patternColorLowData[7 - i1]) & 0x3));
                         if(patternData+colorData+patternColorHighData!=0 && colorAddr!=0x3f10) {
-                            render[x + i1] = ppuMemory.palettes[ppuMemory.read(colorAddr)];;
+                            render[x + i1] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
                         }
                     }
                 }
@@ -165,6 +185,7 @@ public class Ppu {
         }
 
     }
+
     /**
      * 从属性表获取图案的高两位颜色
      * @param attributeData

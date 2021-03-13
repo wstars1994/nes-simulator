@@ -32,6 +32,7 @@ public class NesMobo {
      * 主板通电
      */
     public void powerUp(){
+        int frame = 1;
         while (true)  {
             //256x240 分辨率
             short[][] renderBuff = new short[256*240][3];
@@ -62,11 +63,6 @@ public class NesMobo {
                 this.cpu6502.go();
             }
             nesRender.render(renderBuff);
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 

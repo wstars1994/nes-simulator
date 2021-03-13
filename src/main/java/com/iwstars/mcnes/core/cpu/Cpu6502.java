@@ -303,14 +303,14 @@ public class Cpu6502{
                 LogUtil.log("INX");
                 cpuCycle-= cpuRegister.INX();
                 break;
-            //INX
+            //SEC
             case 0x38:
                 LogUtil.log("SEC");
                 cpuCycle-= cpuRegister.SEC();
                 break;
             //SBC
             case 0xF9:
-                LogUtil.log("SBC");
+                LogUtil.log("SBC_ABS_Y");
                 cpuCycle-= cpuRegister.SBC_ABS_Y(iterator.next(),iterator.next());
                 break;
             //BCC
@@ -603,12 +603,13 @@ public class Cpu6502{
                 LogUtil.log("AND_ABS_Y");
                 cpuCycle-= cpuRegister.AND_ABS_Y(iterator.next(),iterator.next());
                 break;
-            //AND_ABS
+//            //AND_ABS
             case 0x2D:
                 LogUtil.log("AND_ABS");
                 cpuCycle-= cpuRegister.AND_ABS(iterator.next(),iterator.next());
                 break;
             //ADC_ABS_X
+            //TODO 可能有问题
             case 0x7D:
                 LogUtil.log("ADC_ABS_X");
                 cpuCycle-= cpuRegister.ADC_ABS_X(iterator.next(),iterator.next());
@@ -618,15 +619,61 @@ public class Cpu6502{
                 LogUtil.log("ADC_ZERO_X");
                 cpuCycle-= cpuRegister.ADC_ZERO_X(iterator.next());
                 break;
+//            //INC_ZERO_X
+//            case 0xF6:
+//                LogUtil.log("INC_ZERO_X");
+//                cpuCycle-= cpuRegister.INC_ZERO_X(iterator.next());
+//                break;
+//            //DEC_ZERO_X
+            case 0xD6:
+                LogUtil.log("DEC_ZERO_X");
+                cpuCycle-= cpuRegister.DEC_ZERO_X(iterator.next());
+                break;
+            //开始调试马戏团
+            //EOR
+            case 0x55:
+                LogUtil.log("EOR_ZERO_X");
+                cpuCycle-= cpuRegister.EOR_ZERO_X(iterator.next());
+                break;
+            //AND_ZERO_X
+            case 0x35:
+                LogUtil.log("AND_ZERO_X");
+                cpuCycle-= cpuRegister.AND_ZERO_X(iterator.next());
+                break;
+            //STY_ZERO_X
+            case 0x94:
+                LogUtil.log("STY_ZERO_X");
+                cpuCycle-= cpuRegister.STY_ZERO_X(iterator.next());
+                break;
             //INC_ZERO_X
             case 0xF6:
                 LogUtil.log("INC_ZERO_X");
                 cpuCycle-= cpuRegister.INC_ZERO_X(iterator.next());
                 break;
-            //DEC_ZERO_X
-            case 0xD6:
-                LogUtil.log("DEC_ZERO_X");
-                cpuCycle-= cpuRegister.DEC_ZERO_X(iterator.next());
+            //ORA_ZERO_X
+            case 0x15:
+                LogUtil.log("ORA_ZERO_X");
+                cpuCycle-= cpuRegister.ORA_ZERO_X(iterator.next());
+                break;
+            //BVC
+            case 0x50:
+                LogUtil.log("BVC");
+                cpuCycle-= cpuRegister.BVC(iterator.next());
+                break;
+            //SBC_ABS_X
+            case 0xFD:
+                LogUtil.log("SBC_ABS_X");
+                cpuCycle-= cpuRegister.SBC_ABS_X(iterator.next(),iterator.next());
+                break;
+            //CPY_ZERO
+            case 0xC4:
+                LogUtil.log("CPY_ZERO");
+                cpuCycle-= cpuRegister.CPY_ZERO(iterator.next());
+                break;
+            //ORA_INDIRECT_Y
+            case 0x11:
+                LogUtil.log("ORA_INDIRECT_Y");
+                cpuCycle-= cpuRegister.ORA_INDIRECT_Y(iterator.next());
                 break;
             default:
                 System.out.printf("%02X",insCode);

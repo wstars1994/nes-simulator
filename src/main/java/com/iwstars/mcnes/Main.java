@@ -29,6 +29,10 @@ public class Main {
      * 调试模式
      */
     public static boolean debug = true;
+    /**
+     * 放大倍数 默认256*240
+     */
+    public static int videoScale = 1;
 
     private Frame frame;
     /**
@@ -61,14 +65,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        debug = true;
+        debug = args.length == 1;
+        videoScale = 1;
         new Main().launch();
     }
 
     private void launch() {
         frame = new Frame("MCNES");
         //设置窗口的大小和位置
-        frame.setSize(260, 255);
+        frame.setSize(260 * videoScale, 255*videoScale);
         //不可最大化
         frame.setResizable(false);
         //居中
@@ -83,8 +88,8 @@ public class Main {
         //显示
         frame.setVisible(true);
         //运行模拟器
+        String filePath = "2.nes";
         new Thread(() -> {
-            String filePath = "1.nes";
             //读取.nes文件数据
             NESRomData romData = this.loadData(new File(filePath));
             //创建PPU

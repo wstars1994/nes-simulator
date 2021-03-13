@@ -1,5 +1,7 @@
 package com.iwstars.mcnes.ui;
 
+import com.iwstars.mcnes.Main;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -13,17 +15,18 @@ import java.awt.image.DirectColorModel;
 public class NesUIRender {
 
     private Frame frame;
-    private BufferedImage image = new BufferedImage(256, 240, BufferedImage.TYPE_3BYTE_BGR);
+    private BufferedImage image;
 
 
     public NesUIRender(Frame frame) {
         this.frame = frame;
+        image = new BufferedImage(256 * Main.videoScale, 240 * Main.videoScale, BufferedImage.TYPE_3BYTE_BGR);
     }
 
     public void render(short[][] pixelColorBuff){
-        for(int h=0; h<240; h++) {
-            for(int w=0;w<256; w++) {
-                short[] pixels = pixelColorBuff[w + (h*256)];
+        for(int h=0; h<240*Main.videoScale; h++) {
+            for(int w=0;w<256*Main.videoScale; w++) {
+                short[] pixels = pixelColorBuff[(w / Main.videoScale) + ((h / Main.videoScale) * 256)];
                 int rgb = ((pixels[0] << 16) | ((pixels[1] << 8) | pixels[2]));
                 image.setRGB(w, h, rgb );
             }

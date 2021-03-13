@@ -113,12 +113,6 @@ public class CpuMemory {
                     DataBus.writePpuSprRam((byte) i,read);
                 }
                 break;
-            case 110:
-//                System.out.println("110 被写:"+data);
-                break;
-            case 0xF273:
-                System.out.println("0xF274 被写:"+data);
-                break;
             default:
                 break;
         }
