@@ -56,6 +56,11 @@ public class DataBus {
     public static byte p_2007_read = 0;
 
     /**
+     *  Joypad 1
+     */
+    public static byte c_4016 = 0;
+
+    /**
      * 向ppu写数据
      * @param addr
      * @param data

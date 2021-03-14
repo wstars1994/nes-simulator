@@ -151,7 +151,7 @@ public class Cpu6502{
             //STA 将累加器A的数据存入CPU内存
             case 0x85:
                 LogUtil.log("STA_ZERO");
-                cpuCycle-= cpuRegister.STA_ZERO(iterator.next());
+                cpuCycle-= cpuRegister.STA(iterator.next());
                 break;
             //STX 将寄存器X的数据存入CPU内存
             case 0x86:
@@ -674,6 +674,41 @@ public class Cpu6502{
             case 0x11:
                 LogUtil.log("ORA_INDIRECT_Y");
                 cpuCycle-= cpuRegister.ORA_INDIRECT_Y(iterator.next());
+                break;
+            //ORA_ABS_Y
+            case 0x19:
+                LogUtil.log("ORA_ABS_Y");
+                cpuCycle-= cpuRegister.ORA_ABS_Y(iterator.next(),iterator.next());
+                break;
+            //ADC_INDIRECT_Y
+            case 0x71:
+                LogUtil.log("ADC_INDIRECT_Y");
+                cpuCycle-= cpuRegister.ADC_INDIRECT_Y(iterator.next());
+                break;
+            //ORA_ABS_X
+            case 0x1D:
+                LogUtil.log("ORA_ABS_X");
+                cpuCycle-= cpuRegister.ORA_ABS_X(iterator.next(),iterator.next());
+                break;
+            //ORA_ABS_X
+            case 0xD1:
+                LogUtil.log("ORA_ABS_X");
+                cpuCycle-= cpuRegister.CMP_INDIRECT_Y(iterator.next());
+                break;
+            //SBC_INDIRECT_Y
+            case 0xF1:
+                LogUtil.log("SBC_INDIRECT_Y");
+                cpuCycle-= cpuRegister.SBC_INDIRECT_Y(iterator.next());
+                break;
+            //LDA_INDIRECT_X
+            case 0xA1:
+                LogUtil.log("LDA_INDIRECT_X");
+                cpuCycle-= cpuRegister.LDA_INDIRECT_X(iterator.next());
+                break;
+            //STA_INDIRECT_X
+            case 0x81:
+                LogUtil.log("STA_INDIRECT_X");
+                cpuCycle-= cpuRegister.STA_INDIRECT_X(iterator.next());
                 break;
             default:
                 System.out.printf("%02X",insCode);

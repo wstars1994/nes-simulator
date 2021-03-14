@@ -136,7 +136,7 @@ public class Ppu {
         //获取内存中的精灵数据
         byte[] sprRam = ppuMemory.getSprRam();
         for (int i = 0; i < sprRam.length; i += 4) {
-            short y = (short) ((sprRam[i]&0xff)+1);
+            short y = (short) ((sprRam[i]&0xff));
             short patternIndex = (short) (sprRam[i+1]&0xff);
             //子图形数据
             byte attributeData = sprRam[i+2];
@@ -151,32 +151,41 @@ public class Ppu {
                 //获取图案地址
                 if(spriteHeight == 16) {
                     byte[] bytes = MemUtil.toBits((byte) patternIndex);
-                    spritePatternStartAddr = (short) (bytes[0] == 0 ? 0x1000:0x2000);
-;                }
+                    spritePatternStartAddr = (short) (bytes[0] == 0 ? 0x0000:0x1000);
+                }
                 int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + (sl - y);
-                byte patternData = ppuMemory.read(spritePatternAddr);
+                byte spritePatternData = ppuMemory.read(spritePatternAddr);
                 if(hFlip == 1) {
-                    byte[] patterBytes = MemUtil.toBits(patternData);
+                    byte[] patterBytes = MemUtil.toBits(spritePatternData);
                     for (int j = 0; j < 4; j++) {
                         int temp = patterBytes[j];
                         patterBytes[j] = patterBytes[7-j];
                         patterBytes[7-j] = (byte) temp;
                     }
-                    patternData = MemUtil.bitsToByte(patterBytes);
+                    spritePatternData = MemUtil.bitsToByte(patterBytes);
                 }
+//                if(vFlip == 1) {
+//                    byte[] patterBytes = MemUtil.toBits(spritePatternData);
+//                    for (int j = 0; j < 4; j++) {
+//                        int temp = patterBytes[j];
+//                        patterBytes[j] = patterBytes[7-j];
+//                        patterBytes[7-j] = (byte) temp;
+//                    }
+//                    spritePatternData = MemUtil.bitsToByte(patterBytes);
+//                }
                 //获取图案颜色数据
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
-                byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
+                byte[] patternColorLowData = getPatternColorLowData(spritePatternData,colorData);
                 byte patternColorHighData = (byte) (attributeData & 0x03);
                 //命中非透明背景 sprite hit
-                if(patternData + colorData != 0 && DataBus.p_2001[1] != 0 &&DataBus.p_2001[2] != 0) {
+                if(spritePatternData + colorData != 0 && DataBus.p_2001[1] != 0 &&DataBus.p_2001[2] != 0) {
                     DataBus.p_2002[6] = 1;
                 }
                 for (int i1 = 0; i1 < 8; i1++) {
                     if(backgroundPriority == 0) {
                         //获取4位颜色
                         int colorAddr = 0x3f10 + (((patternColorHighData << 2) & 0xF) | ((patternColorLowData[7 - i1]) & 0x3));
-                        if(patternData+colorData+patternColorHighData!=0 && colorAddr!=0x3f10) {
+                        if(spritePatternData+colorData+patternColorHighData!=0 && colorAddr!=0x3f10) {
                             render[x + i1] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
                         }
                     }

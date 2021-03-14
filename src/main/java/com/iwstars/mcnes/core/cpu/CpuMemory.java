@@ -108,9 +108,9 @@ public class CpuMemory {
             //OAM DMA register (high byte)
             case 0x4014:
                 short start = (short) (data*0x100);
-                for(int i=0;i<256;i++) {
-                    byte read = read(start++);
-                    DataBus.writePpuSprRam((byte) i,read);
+                for(int i=0; i < 256; i++) {
+                    byte readData = read(start++);
+                    DataBus.writePpuSprRam((byte) i,readData);
                 }
                 break;
             default:
@@ -156,8 +156,7 @@ public class CpuMemory {
                 }
                 break;
             case 0x4016:
-//                System.out.println("读取手柄1输入:" + this.data[addr]);
-                break;
+                return DataBus.c_4016;
             case 0x4017:
 //                System.out.println("读取手柄2输入:" + this.data[addr]);
                 break;

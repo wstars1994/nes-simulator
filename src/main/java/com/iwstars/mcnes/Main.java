@@ -11,6 +11,8 @@ import com.iwstars.mcnes.util.RomReaderUtil;
 import lombok.Cleanup;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
@@ -66,7 +68,7 @@ public class Main {
 
     public static void main(String[] args) {
         debug = args.length == 1;
-        videoScale = 1;
+        videoScale = 2;
         new Main().launch();
     }
 
@@ -78,6 +80,50 @@ public class Main {
         frame.setResizable(false);
         //居中
         frame.setLocationRelativeTo(null);
+
+        frame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int keyCode = e.getKeyCode();
+                switch (keyCode){
+                    case 87: //W UP
+                        DataBus.c_4016 = 4;
+                        break;
+                    case 83: //S DOWN
+                        DataBus.c_4016 = 5;
+                        break;
+                    case 65: //A LEFT
+                        DataBus.c_4016 = 6;
+                        break;
+                    case 68: //D RIGHT
+                        DataBus.c_4016 = 7;
+                        break;
+                    case 49: //1 SELECT
+                        DataBus.c_4016 = 2;
+                        break;
+                    case 50: //2 START
+                        DataBus.c_4016 = 3;
+                        break;
+                    case 74: //J A
+                        DataBus.c_4016 = 0;
+                        break;
+                    case 75: //K B
+                        DataBus.c_4016 = 1;
+                        break;
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                DataBus.c_4016 = 0;
+            }
+        });
+
         //退出
         frame.addWindowListener(new WindowAdapter(){
             @Override
@@ -88,7 +134,7 @@ public class Main {
         //显示
         frame.setVisible(true);
         //运行模拟器
-        String filePath = "2.nes";
+        String filePath = "4.nes";
         new Thread(() -> {
             //读取.nes文件数据
             NESRomData romData = this.loadData(new File(filePath));

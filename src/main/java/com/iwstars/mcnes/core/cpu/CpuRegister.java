@@ -2,7 +2,6 @@ package com.iwstars.mcnes.core.cpu;
 
 import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
-import lombok.Data;
 import lombok.Setter;
 
 /**
@@ -153,6 +152,25 @@ public class CpuRegister {
         return REG_S_V;
     }
 
+
+    //---------------------------寻址方式 开始-----------------------------------
+
+    int zero(byte addr,byte reg){
+        return (addr&0XFF) + (reg & 0xff);
+    }
+
+    byte indirectY(byte data){
+        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1) )+ (REG_Y & 0xFF);
+        return cpuMemory.read(addr);
+    }
+    int indirectX(byte data){
+        byte addr = (byte) ((data & 0xFF) + (REG_X & 0xFF));
+        return MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((addr & 0xFF) + 1));
+    }
+
+    
+    //---------------------------寻址方式 结束-----------------------------------
+
     /**
      * data -> REG_Y
      * @param data
@@ -271,7 +289,7 @@ public class CpuRegister {
         return 6;
     }
 
-    public int STA_ZERO(byte addr) {
+    public int STA(byte addr) {
         cpuMemory.write(addr&0xFF, REG_A);
         return 3;
     }
@@ -509,9 +527,7 @@ public class CpuRegister {
     }
 
     public int LDA_INDIRECT_Y(byte data) {
-        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1))+ (REG_Y&0xFF);
-        byte read = cpuMemory.read(addr);
-        LDA(read);
+        LDA(indirectY(data));
         return 5;
     }
     public int SED() {
@@ -893,8 +909,8 @@ public class CpuRegister {
     }
 
     public int STA_ZERO_X(byte addr) {
-        int addr2 = zeorX(addr);
-        STA_ZERO((byte) addr2);
+        int addr2 = zero(addr,REG_X);
+        STA((byte) addr2);
         return 4;
     }
 
@@ -925,7 +941,7 @@ public class CpuRegister {
     }
 
     public int LDA_ZERO_X(byte addr) {
-        int data = zeorX(addr);
+        int data = zero(addr,REG_X);
         LDA(cpuMemory.read(data&0xFF));
         return 4;
     }
@@ -952,9 +968,7 @@ public class CpuRegister {
     }
 
     public int AND_INDIRECT_Y( byte data) {
-        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1) )+ (REG_Y&0xFF);
-        byte read = cpuMemory.read(addr);
-        AND(read);
+        AND(indirectY(data));
         return 5;
     }
 
@@ -965,7 +979,7 @@ public class CpuRegister {
     }
 
     public int LDY_ZERO_X( byte addr) {
-        int data = zeorX(addr);
+        int data = zero(addr,REG_X);
         LDY(cpuMemory.read(data&0xFF));
         return 4;
     }
@@ -1006,8 +1020,7 @@ public class CpuRegister {
     }
 
     public int EOR_INDIRECT_Y( byte data) {
-        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1) )+ (REG_Y&0xFF);
-        EOR_A(cpuMemory.read(addr));
+        EOR_A(indirectY(data));
         return 5;
     }
 
@@ -1020,36 +1033,32 @@ public class CpuRegister {
         return 7;
     }
 
-    int zeorX(byte addr){
-        return (addr&0XFF) + (REG_X & 0xff);
-    }
-
     public int EOR_ZERO_X(byte addr) {
-        int data = zeorX(addr);
+        int data = zero(addr,REG_X);
         EOR_A(cpuMemory.read(data));
         return 4;
     }
 
     public int AND_ZERO_X(byte addr) {
-        int data = zeorX(addr);
+        int data = zero(addr,REG_X);
         AND(cpuMemory.read(data));
         return 4;
     }
 
     public int STY_ZERO_X(byte addr) {
-        int data = zeorX(addr);
+        int data = zero(addr,REG_X);
         cpuMemory.write(data,REG_Y);
         return 4;
     }
 
     public int ADC_ZERO_X(byte data) {
-        int addr = zeorX(data);
+        int addr = zero(data,REG_X);
         ADC(cpuMemory.read(addr));
         return 4;
     }
 
     public int INC_ZERO_X(byte data) {
-        int addr = zeorX(data);
+        int addr = zero(data,REG_X);
         int incData = cpuMemory.read(addr) + 1;
         cpuMemory.write(data, (byte) incData);
         REG_S_N = (byte) ((incData >> 7) & 1);
@@ -1064,13 +1073,13 @@ public class CpuRegister {
     }
 
     public int CMP_ZERO_X(byte data) {
-        int addr = zeorX(data);
+        int addr = zero(data,REG_X);
         CMP(cpuMemory.read(addr));
         return 4;
     }
 
     public int SBC_ZERO_X(byte data) {
-        int addr = zeorX(data);
+        int addr = zero(data,REG_X);
         byte read = cpuMemory.read(addr);
         SBC(read);
         return 4;
@@ -1095,13 +1104,13 @@ public class CpuRegister {
     }
 
     public int DEC_ZERO_X(byte data) {
-        int addr = zeorX(data);
+        int addr = zero(data,REG_X);
         DEC_ZERO(addr);
         return 4;
     }
 
     public int ORA_ZERO_X(byte data) {
-        int addr = zeorX(data);
+        int addr = zero(data,REG_X);
         EOR_A(cpuMemory.read(addr));
         return 4;
     }
@@ -1128,9 +1137,48 @@ public class CpuRegister {
     }
 
     public int ORA_INDIRECT_Y(byte data) {
-        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1))+ (REG_Y&0xFF);
+        ORA(indirectY(data));
+        return 5;
+    }
+
+    public int ORA_ABS_Y(byte low, byte high) {
+        int addr = MemUtil.concatByte(low,high) + (REG_Y&0xFF);
         byte read = cpuMemory.read(addr);
         ORA(read);
+        return 4;
+    }
+
+    public int ADC_INDIRECT_Y(byte data) {
+        ADC(indirectY(data));
         return 5;
+    }
+
+    public int ORA_ABS_X(byte low, byte high) {
+        int addr = MemUtil.concatByte(low,high) + (REG_X&0xFF);
+        byte read = cpuMemory.read(addr);
+        ORA(read);
+        return 4;
+    }
+
+    public int CMP_INDIRECT_Y(byte data) {
+        CMP(indirectY(data));
+        return 5;
+    }
+
+    public int SBC_INDIRECT_Y(byte data) {
+        SBC(indirectY(data));
+        return 5;
+    }
+
+    public int LDA_INDIRECT_X(byte data) {
+        int addr = indirectX(data);
+        LDA(cpuMemory.read(addr));
+        return 6;
+    }
+
+    public int STA_INDIRECT_X(byte data) {
+        int addr = indirectX(data);
+        STA(cpuMemory.read(addr));
+        return 6;
     }
 }
