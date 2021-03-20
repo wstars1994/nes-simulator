@@ -3,6 +3,9 @@ package com.iwstars.mcnes.core;
 import com.iwstars.mcnes.core.cpu.CpuMemory;
 import com.iwstars.mcnes.core.ppu.PpuMemory;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * @description: cpu与ppu通信
  * @author: WStars
@@ -58,7 +61,8 @@ public class DataBus {
     /**
      *  Joypad 1
      */
-    public static byte c_4016 = 0;
+    public static byte c_4016 = -1;
+    public static LinkedList<Byte> c_4016_datas = new LinkedList();
 
     /**
      * 向ppu写数据

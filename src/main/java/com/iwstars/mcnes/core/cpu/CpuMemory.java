@@ -113,6 +113,16 @@ public class CpuMemory {
                     DataBus.writePpuSprRam((byte) i,readData);
                 }
                 break;
+            //输入设备
+            case 0x4016:
+                if(data == 0) {
+                    count = 0;
+                    DataBus.c_4016 = -1;
+                    if( DataBus.c_4016_datas.size() > 0){
+                        DataBus.c_4016 = DataBus.c_4016_datas.getFirst();
+                    }
+                }
+                break;
             default:
                 break;
         }
@@ -132,6 +142,8 @@ public class CpuMemory {
      * @param addr
      * @return
      */
+
+    private int count = 0;
     public byte read(int addr){
         LogUtil.logf(" read addr = %02X ",addr);
         switch (addr) {
@@ -156,12 +168,22 @@ public class CpuMemory {
                 }
                 break;
             case 0x4016:
-                return DataBus.c_4016;
+                byte returnNum = 0;
+                if(DataBus.c_4016 > -1) {
+                    if(count == DataBus.c_4016){
+                        returnNum = 1;
+                    }else{
+                        returnNum = 0;
+                    }
+                    if(count == 7 &&  DataBus.c_4016_datas.size() > 0){
+                        DataBus.c_4016_datas.removeFirst();
+                    }
+                }
+                count++;
+                return returnNum;
             case 0x4017:
 //                System.out.println("读取手柄2输入:" + this.data[addr]);
                 break;
-            default:
-                return this.data[addr];
         }
         return this.data[addr];
     }

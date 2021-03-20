@@ -20,15 +20,16 @@ public class NesUIRender {
 
     public NesUIRender(Frame frame) {
         this.frame = frame;
-        image = new BufferedImage(256 * Main.videoScale, 240 * Main.videoScale, BufferedImage.TYPE_3BYTE_BGR);
+        image = new BufferedImage(256 * Main.videoScale, 240 * Main.videoScale, BufferedImage.TYPE_INT_ARGB);
     }
 
     public void render(short[][] pixelColorBuff){
         for(int h=0; h<240*Main.videoScale; h++) {
             for(int w=0;w<256*Main.videoScale; w++) {
                 short[] pixels = pixelColorBuff[(w / Main.videoScale) + ((h / Main.videoScale) * 256)];
-                int rgb = ((pixels[0] << 16) | ((pixels[1] << 8) | pixels[2]));
-                image.setRGB(w, h, rgb );
+                int rgb = ((pixels[0] << 24) |(pixels[0] << 16) | ((pixels[1] << 8) | pixels[2]));
+                int a = rgb == 0?0x00:0xFF;
+                image.setRGB(w, h, (a<<24) | rgb );
             }
         }
         frame.getGraphics().drawImage(image, 2, 15, frame);

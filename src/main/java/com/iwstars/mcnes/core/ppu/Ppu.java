@@ -155,15 +155,6 @@ public class Ppu {
                 }
                 int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + (sl - y);
                 byte spritePatternData = ppuMemory.read(spritePatternAddr);
-                if(hFlip == 1) {
-                    byte[] patterBytes = MemUtil.toBits(spritePatternData);
-                    for (int j = 0; j < 4; j++) {
-                        int temp = patterBytes[j];
-                        patterBytes[j] = patterBytes[7-j];
-                        patterBytes[7-j] = (byte) temp;
-                    }
-                    spritePatternData = MemUtil.bitsToByte(patterBytes);
-                }
 //                if(vFlip == 1) {
 //                    byte[] patterBytes = MemUtil.toBits(spritePatternData);
 //                    for (int j = 0; j < 4; j++) {
@@ -185,14 +176,20 @@ public class Ppu {
                     if(backgroundPriority == 0) {
                         //获取4位颜色
                         int colorAddr = 0x3f10 + (((patternColorHighData << 2) & 0xF) | ((patternColorLowData[7 - i1]) & 0x3));
-                        if(spritePatternData+colorData+patternColorHighData!=0 && colorAddr!=0x3f10) {
+                        if(colorAddr != 0x3f10) {
                             render[x + i1] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
                         }
                     }
                 }
+                if(hFlip == 1) {
+                    for (int j = 0; j < 4; j++) {
+                        short[] temp = render[x + j];
+                        render[x + j] = render[(x+7)-j];
+                        render[(x+7)-j] =temp;
+                    }
+                }
             }
         }
-
     }
 
     /**

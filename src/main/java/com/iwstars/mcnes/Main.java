@@ -90,37 +90,41 @@ public class Main {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
+                byte key = -1;
                 switch (keyCode){
                     case 87: //W UP
-                        DataBus.c_4016 = 4;
+                        key = 4;
                         break;
                     case 83: //S DOWN
-                        DataBus.c_4016 = 5;
+                        key = 5;
                         break;
                     case 65: //A LEFT
-                        DataBus.c_4016 = 6;
+                        key = 6;
                         break;
                     case 68: //D RIGHT
-                        DataBus.c_4016 = 7;
+                        key = 7;
                         break;
                     case 49: //1 SELECT
-                        DataBus.c_4016 = 2;
+                        key = 2;
                         break;
                     case 50: //2 START
-                        DataBus.c_4016 = 3;
+                        key = 3;
                         break;
                     case 74: //J A
-                        DataBus.c_4016 = 0;
+                        key = 0;
                         break;
                     case 75: //K B
-                        DataBus.c_4016 = 1;
+                        key = 1;
                         break;
+                }
+                if(key!=-1){
+                    DataBus.c_4016_datas.add(key);
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                DataBus.c_4016 = 0;
+
             }
         });
 
@@ -134,7 +138,7 @@ public class Main {
         //显示
         frame.setVisible(true);
         //运行模拟器
-        String filePath = "4.nes";
+        String filePath = "1.nes";
         new Thread(() -> {
             //读取.nes文件数据
             NESRomData romData = this.loadData(new File(filePath));

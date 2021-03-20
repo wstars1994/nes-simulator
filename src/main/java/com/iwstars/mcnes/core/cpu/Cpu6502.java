@@ -710,6 +710,11 @@ public class Cpu6502{
                 LogUtil.log("STA_INDIRECT_X");
                 cpuCycle-= cpuRegister.STA_INDIRECT_X(iterator.next());
                 break;
+            //INC_ABS_X
+            case 0xFE:
+                LogUtil.log("INC_ABS_X");
+                cpuCycle-= cpuRegister.INC_ABS_X(iterator.next(),iterator.next());
+                break;
             default:
                 System.out.printf("%02X",insCode);
                 break;
