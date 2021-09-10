@@ -70,7 +70,8 @@ public class CpuMemory {
      * @param data
      */
     public void write(int addr,byte data){
-        LogUtil.logf(" --> Write to memory:addr=$%02X(index=%d),val=%d", addr,addr,data);
+        LogUtil.logf(" | WR:[ADDR:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
+//        LogUtil.logf(" --> Write to memory:addr=$%02X(index=%d),val=%d", addr,addr,data);
         this.data[addr&0xFFFF] = data;
         switch (addr) {
             case 0x2000:
@@ -145,7 +146,8 @@ public class CpuMemory {
 
     private int count = 0;
     public byte read(int addr){
-        LogUtil.logf(" read addr = %02X ",addr);
+//        LogUtil.logf(" read addr = %02X ",addr);
+        LogUtil.logf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
         switch (addr) {
             //读PPUSTATUS状态寄存器
             case 0x2002:

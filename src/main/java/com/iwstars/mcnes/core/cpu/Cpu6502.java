@@ -21,7 +21,7 @@ public class Cpu6502{
      */
     private int cpuCycle = 113;
 
-    private static int runCycleNum = 1;
+    private static int runCycleNum = 0;
     /**
      * CPU内存数据
      */
@@ -50,15 +50,26 @@ public class Cpu6502{
         while (iterator.hasNext()) {
             LogUtil.logLn("");
             int prgPc = cpuMemory.getPrgPc();
-            LogUtil.logf("insNum=%06d cycle=%03d A=$%02X,X=$%02X,Y=$%02X,S=$%02X pc=$%02X P:%c%c%c%c%c%c%c ",
-                    runCycleNum++,cpuCycle, cpuRegister.getReg_A()&0xFF, cpuRegister.getReg_X()&0xFF, cpuRegister.getReg_Y()&0xFF, cpuRegister.getReg_S()&0xFF,prgPc&0xFFFF
-                    ,cpuRegister.getN() != 0 ? 'N'
-                            : 'n', cpuRegister.getV() != 0 ? 'V' : 'v', cpuRegister.getB() != 0 ? 'B'
-                            : 'b', cpuRegister.getD() != 0 ? 'D' : 'd', cpuRegister.getI() != 0 ? 'I'
-                            : 'i', cpuRegister.getZ() != 0 ? 'Z' : 'z', cpuRegister.getC() != 0 ? 'C'
-                            : 'c'
-            );
-            this.execInstrcution(iterator);
+            byte insCode = iterator.next();
+
+            LogUtil.logf("PC:[%06d] | CYC:[%03d] | PC:[%X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
+                    ++runCycleNum,
+                    cpuCycle,
+                    prgPc&0xFFFF,
+                    insCode&0xFF,
+                    cpuRegister.getReg_A()&0xFF,cpuRegister.getReg_X()&0xFF,cpuRegister.getReg_Y()&0xFF,cpuRegister.getReg_S()&0xFF,
+                    cpuRegister.getN(),cpuRegister.getV(),cpuRegister.getB(),cpuRegister.getD(),cpuRegister.getI(),cpuRegister.getZ(),cpuRegister.getC());
+
+//            LogUtil.logf("insNum=%06d cycle=%03d A=$%02X,X=$%02X,Y=$%02X,S=$%02X pc=$%02X P:%c%c%c%c%c%c%c ",
+//                    runCycleNum++,cpuCycle, cpuRegister.getReg_A()&0xFF, cpuRegister.getReg_X()&0xFF, cpuRegister.getReg_Y()&0xFF, cpuRegister.getReg_S()&0xFF,prgPc&0xFFFF
+//                    ,cpuRegister.getN() != 0 ? 'N'
+//                            : 'n', cpuRegister.getV() != 0 ? 'V' : 'v', cpuRegister.getB() != 0 ? 'B'
+//                            : 'b', cpuRegister.getD() != 0 ? 'D' : 'd', cpuRegister.getI() != 0 ? 'I'
+//                            : 'i', cpuRegister.getZ() != 0 ? 'Z' : 'z', cpuRegister.getC() != 0 ? 'C'
+//                            : 'c'
+//            );
+
+            this.execInstrcution(insCode,iterator);
             if(cpuCycle < 0) {
                 break;
             }
@@ -67,10 +78,9 @@ public class Cpu6502{
 
     /**
      * 执行指令
-     * @param iterator
+     * @param insCode
      */
-    private void execInstrcution(Iterator<Byte> iterator) {
-        byte insCode = iterator.next();
+    private void execInstrcution(byte insCode,Iterator<Byte> iterator) {
         //执行程序(超级玛丽的执行顺序)
         switch(insCode&0xff) {
             //SEI 禁止中断

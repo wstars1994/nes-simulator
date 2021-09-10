@@ -402,7 +402,7 @@ public class CpuRegister {
     private void pushStack(byte data){
         byte sp = this.getReg_S();
         cpuMemory.write(0x0100 | (sp&0xFF),data);
-        LogUtil.logf(" --> push stack:addr=$%02X(index=%d),val=%d", 0x0100 | (sp&0xFF),0x0100 | (sp&0xFF),data);
+//        LogUtil.logf(" --> push stack:addr=$%02X(index=%d),val=%d", 0x0100 | (sp&0xFF),0x0100 | (sp&0xFF),data);
         this.setReg_S((byte) (sp-1));
     }
 
@@ -421,7 +421,7 @@ public class CpuRegister {
         int sp = this.getReg_S();
         this.setReg_S((byte) (sp+1));
         byte data = cpuMemory.read(0x0100 | ((sp + 1) & 0xFF));
-        LogUtil.logf(" --> pop stack:addr=$%02X(index=%d),val=%d",0x0100 | ((sp + 1)&0xFF),0x0100 | ((sp + 1)&0xFF),data);
+//        LogUtil.logf(" --> pop stack:addr=$%02X(index=%d),val=%d",0x0100 | ((sp + 1)&0xFF),0x0100 | ((sp + 1)&0xFF),data);
         return data;
     }
 

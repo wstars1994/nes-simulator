@@ -70,16 +70,16 @@ public class Ppu {
             }
             this.renderNameTable(scanLineIndex,nameTableAddr,patternAddr,render);
         }
-        //渲染精灵
-        if(b2001[4] == 1) {
-            short spritePatternAddr = (short) (b2000[3]==0 ? 0:0x1000);
-            byte spriteSize = b2000[5];
-            this.renderSprite(scanLineIndex,spritePatternAddr,spriteSize,render);
-        }else if(b2001[3] == 0 && b2001[4] == 0) {
-            //无背景和无精灵 渲染背景色
-            short[] palette = ppuMemory.palettes[ppuMemory.read(0x3F00)];
-            Arrays.fill(render,palette);
-        }
+//        //渲染精灵
+//        if(b2001[4] == 1) {
+//            short spritePatternAddr = (short) (b2000[3]==0 ? 0:0x1000);
+//            byte spriteSize = b2000[5];
+//            this.renderSprite(scanLineIndex,spritePatternAddr,spriteSize,render);
+//        }else if(b2001[3] == 0 && b2001[4] == 0) {
+//            //无背景和无精灵 渲染背景色
+//            short[] palette = ppuMemory.palettes[ppuMemory.read(0x3F00)];
+//            Arrays.fill(render,palette);
+//        }
         return render;
     }
 

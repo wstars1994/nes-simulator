@@ -70,13 +70,13 @@ public class NesMobo {
      * 复位
      */
     public void reset(){
-        CpuMemory cpuMemory = cpu6502.getCpuMemory();
-        int initPc = MemUtil.concatByte(cpuMemory.read(0xFFFC), cpuMemory.read(0xFFFD));
-        cpuMemory.setPrgPc(initPc);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        CpuMemory cpuMemory = cpu6502.getCpuMemory();
+//        int initPc = MemUtil.concatByte(cpuMemory.read(0xFFFC), cpuMemory.read(0xFFFD));
+//        cpuMemory.setPrgPc(initPc);
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 }
