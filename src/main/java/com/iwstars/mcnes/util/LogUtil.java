@@ -18,7 +18,7 @@ public class LogUtil {
     static BufferedWriter bw;
     static {
         try {
-            bw = new BufferedWriter(new FileWriter("H:\\workspace\\mcnes\\log.txt"));
+            bw = new BufferedWriter(new FileWriter("D:\\workspace\\mcnes\\log.txt"));
         } catch (IOException e) {
             e.printStackTrace();
         }

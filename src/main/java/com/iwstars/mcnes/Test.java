@@ -10,6 +10,6 @@ import com.iwstars.mcnes.util.MemUtil;
 public class Test {
 
     public static void main(String[] args) {
-        System.out.println((byte)1234);
+        System.out.println(-32768&0xffff);
     }
 }

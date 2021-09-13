@@ -216,7 +216,7 @@ public class CpuRegister {
      */
     public int BPL(byte data) {
         if(getN() == 0) {
-            int cycle =  2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
+            int cycle =  2 + ((cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2);
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return cycle;
         }
@@ -243,7 +243,7 @@ public class CpuRegister {
      */
     public int BNE(byte data) {
         if(REG_S_Z == 0) {
-            int clk = 2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
+            int clk = 2 + ((cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2);
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return clk;
         }
@@ -257,7 +257,7 @@ public class CpuRegister {
      */
     public int BCS(byte data) {
         if(REG_S_C != 0) {
-            int clk = 2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
+            int clk = 2 + ((cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2);
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return clk;
         }
@@ -402,7 +402,6 @@ public class CpuRegister {
     private void pushStack(byte data){
         byte sp = this.getReg_S();
         cpuMemory.write(0x0100 | (sp&0xFF),data);
-//        LogUtil.logf(" --> push stack:addr=$%02X(index=%d),val=%d", 0x0100 | (sp&0xFF),0x0100 | (sp&0xFF),data);
         this.setReg_S((byte) (sp-1));
     }
 
@@ -421,7 +420,6 @@ public class CpuRegister {
         int sp = this.getReg_S();
         this.setReg_S((byte) (sp+1));
         byte data = cpuMemory.read(0x0100 | ((sp + 1) & 0xFF));
-//        LogUtil.logf(" --> pop stack:addr=$%02X(index=%d),val=%d",0x0100 | ((sp + 1)&0xFF),0x0100 | ((sp + 1)&0xFF),data);
         return data;
     }
 
@@ -578,6 +576,8 @@ public class CpuRegister {
 
     public int PLA() {
         REG_A = this.popStack();
+        setN(REG_A);
+        setZ(REG_A);
         return 4;
     }
 
@@ -600,7 +600,7 @@ public class CpuRegister {
 
     public int BEQ( byte data) {
         if (getZ() == 1) {
-            int clk = 2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
+            int clk = 2 + ((cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2);
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return clk;
         }
@@ -633,7 +633,7 @@ public class CpuRegister {
 
     public int BCC( byte data) {
         if(REG_S_C == 0) {
-            int clk = 2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
+            int clk = 2 + ((cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2);
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return clk;
         }
@@ -738,7 +738,7 @@ public class CpuRegister {
 
     public int LDA_ZERO( byte addr) {
         LDA(cpuMemory.read(addr&0xFF));
-        return 4;
+        return 3;
     }
 
     public int DEC_ZERO(int addr) {
@@ -775,7 +775,7 @@ public class CpuRegister {
 
     public int BMI( byte data) {
         if(REG_S_N == 1) {
-            int clk = 2 + (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
+            int clk = 2 + ((cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2);
             cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
             return clk;
         }

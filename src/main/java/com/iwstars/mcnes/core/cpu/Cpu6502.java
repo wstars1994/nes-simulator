@@ -1,6 +1,8 @@
 package com.iwstars.mcnes.core.cpu;
 
+import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.util.LogUtil;
+import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 
 import java.util.Iterator;
@@ -38,7 +40,10 @@ public class Cpu6502{
         cpuRegister.setCpuMemory(cpuMemory);
     }
 
-    public void go(){
+    public void go(boolean once){
+        if(once){
+            this.cpuCycle = 0;
+        }
         this.runProgram();
         this.cpuCycle = 113;
     }
@@ -47,9 +52,10 @@ public class Cpu6502{
      */
     private void runProgram(){
         Iterator<Byte> iterator = cpuMemory.iteratorPrgData();
-        while (iterator.hasNext()) {
+
+        do{
             LogUtil.logLn("");
-            int prgPc = cpuMemory.getPrgPc();
+            int prgPc = cpuMemory.getPrgPc()+1;
             byte insCode = iterator.next();
 
             LogUtil.logf("PC:[%06d] | CYC:[%03d] | PC:[%X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
@@ -59,21 +65,16 @@ public class Cpu6502{
                     insCode&0xFF,
                     cpuRegister.getReg_A()&0xFF,cpuRegister.getReg_X()&0xFF,cpuRegister.getReg_Y()&0xFF,cpuRegister.getReg_S()&0xFF,
                     cpuRegister.getN(),cpuRegister.getV(),cpuRegister.getB(),cpuRegister.getD(),cpuRegister.getI(),cpuRegister.getZ(),cpuRegister.getC());
-
-//            LogUtil.logf("insNum=%06d cycle=%03d A=$%02X,X=$%02X,Y=$%02X,S=$%02X pc=$%02X P:%c%c%c%c%c%c%c ",
-//                    runCycleNum++,cpuCycle, cpuRegister.getReg_A()&0xFF, cpuRegister.getReg_X()&0xFF, cpuRegister.getReg_Y()&0xFF, cpuRegister.getReg_S()&0xFF,prgPc&0xFFFF
-//                    ,cpuRegister.getN() != 0 ? 'N'
-//                            : 'n', cpuRegister.getV() != 0 ? 'V' : 'v', cpuRegister.getB() != 0 ? 'B'
-//                            : 'b', cpuRegister.getD() != 0 ? 'D' : 'd', cpuRegister.getI() != 0 ? 'I'
-//                            : 'i', cpuRegister.getZ() != 0 ? 'Z' : 'z', cpuRegister.getC() != 0 ? 'C'
-//                            : 'c'
-//            );
-
             this.execInstrcution(insCode,iterator);
-            if(cpuCycle < 0) {
-                break;
-            }
         }
+        while (cpuCycle > 0);
+
+//        while (iterator.hasNext()) {
+//
+//            if(cpuCycle < 0) {
+//                break;
+//            }
+//        }
     }
 
     /**

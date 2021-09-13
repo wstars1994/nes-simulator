@@ -67,8 +67,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        debug = args.length == 1;
-        debug = true;
         videoScale = 1;
         new Main().launch();
     }
