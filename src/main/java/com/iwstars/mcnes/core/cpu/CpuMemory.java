@@ -71,7 +71,7 @@ public class CpuMemory {
      */
     public void write(int addr,byte data){
         LogUtil.logf(" | WR:[ADDR:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
-        this.data[addr&0xFFFF] = data;
+
         switch (addr) {
             case 0x2000:
                 DataBus.p_2000 = MemUtil.toBits(data);
@@ -121,15 +121,15 @@ public class CpuMemory {
                 break;
             //输入设备
             case 0x4016:
-                if(data == 0) {
+                if(data == 1){
                     count = 0;
                     DataBus.c_4016 = -1;
-                    if( DataBus.c_4016_datas.size() > 0){
-                        DataBus.c_4016 = DataBus.c_4016_datas.getFirst();
-                    }
+                }else if(DataBus.c_4016_datas.size() > 0){
+                    DataBus.c_4016 = DataBus.c_4016_datas.getFirst();
                 }
                 break;
             default:
+                this.data[addr&0xFFFF] = data;
                 break;
         }
     }
@@ -180,12 +180,8 @@ public class CpuMemory {
             case 0x4016:
                 byte returnNum = 0;
                 if(DataBus.c_4016 > -1) {
-                    if(count == DataBus.c_4016){
-                        returnNum = 1;
-                    }else{
-                        returnNum = 0;
-                    }
-                    if(count == 7 &&  DataBus.c_4016_datas.size() > 0){
+                    returnNum = (byte) (count == DataBus.c_4016 ? 1:0);
+                    if(count == 7){
                         DataBus.c_4016_datas.removeFirst();
                     }
                 }
@@ -193,7 +189,7 @@ public class CpuMemory {
                 return returnNum;
             case 0x4017:
 //                System.out.println("读取手柄2输入:" + this.data[addr]);
-                break;
+                return 0;
         }
         return this.data[addr];
     }

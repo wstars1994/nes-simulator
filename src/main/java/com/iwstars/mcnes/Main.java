@@ -11,10 +11,7 @@ import com.iwstars.mcnes.util.RomReaderUtil;
 import lombok.Cleanup;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -80,9 +77,7 @@ public class Main {
         //居中
         frame.setLocationRelativeTo(null);
 
-        frame.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {}
+        frame.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
@@ -113,6 +108,7 @@ public class Main {
                         key = 1;
                         break;
                 }
+                System.out.println(key);
                 if(key!=-1){
                     DataBus.c_4016_datas.add(key);
                 }

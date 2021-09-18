@@ -47,7 +47,11 @@ public class NesMobo {
      */
     public void powerUp(){
         int frame = 1;
+
+        int perFrameMillis = 1000 / 50;
+
         while (true)  {
+            long begin = System.currentTimeMillis();
             //256x240 分辨率
             short[][] renderBuff = new short[256*240][3];
             //设置vblank true
@@ -79,6 +83,15 @@ public class NesMobo {
                 this.cpu6502.go(false);
             }
             nesRender.render(renderBuff);
+            long end = System.currentTimeMillis();
+
+            if(end-begin<perFrameMillis){
+                try {
+                    Thread.sleep(perFrameMillis-(end-begin));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
