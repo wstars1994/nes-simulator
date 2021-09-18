@@ -47,6 +47,10 @@ public class DataBus {
      */
     public static byte[] p_2005 = new byte[8];
 
+    public static boolean p_scroll_xy_flag;
+    public static byte p_scroll_x = 0;
+    public static byte p_scroll_y = 0;
+
     /**
      *  PPU Address Register
      */

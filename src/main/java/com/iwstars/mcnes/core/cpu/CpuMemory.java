@@ -89,7 +89,13 @@ public class CpuMemory {
 //                DataBus.p_2004 = MemUtil.toBits(data);
                 break;
             case 0x2005:
-                DataBus.p_2005 = MemUtil.toBits(data);
+                //写两次 第一次x 第二次y
+                if(!DataBus.p_scroll_xy_flag){
+                    DataBus.p_scroll_x = data;
+                }else{
+                    DataBus.p_scroll_y = data;
+                }
+                DataBus.p_scroll_xy_flag=!DataBus.p_scroll_xy_flag;
                 break;
             case 0x2006:
                 if(!DataBus.p_2006_flag) {
@@ -153,6 +159,10 @@ public class CpuMemory {
                 //当CPU读取$2002后vblank标志设置为0
                 DataBus.p_2002[7] = 0;
                 DataBus.p_2006_flag = false;
+
+                DataBus.p_scroll_xy_flag = false;
+                DataBus.p_scroll_x = 0;
+                DataBus.p_scroll_y = 0;
                 return readData;
             case 0x2007:
                 int p2006 = DataBus.p_2006_data;

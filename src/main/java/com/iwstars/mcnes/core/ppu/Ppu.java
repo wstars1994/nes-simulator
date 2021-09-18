@@ -93,6 +93,9 @@ public class Ppu {
     private void renderNameTable(int scanLineIndex, short nametableStartAddr, short patternStartAddr, short[][] render) {
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<32;i++) {
+            byte pScrollX = DataBus.p_scroll_x;
+            byte pScrollY = DataBus.p_scroll_y;
+
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
             int nameTableData = (ppuMemory.read((nametableStartAddr + (scanLineIndex/8) * 32) + i)&0xFF) * 16;
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
@@ -155,15 +158,22 @@ public class Ppu {
                 }
                 int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + (sl - y);
                 byte spritePatternData = ppuMemory.read(spritePatternAddr);
-//                if(vFlip == 1) {
-//                    byte[] patterBytes = MemUtil.toBits(spritePatternData);
-//                    for (int j = 0; j < 4; j++) {
-//                        int temp = patterBytes[j];
-//                        patterBytes[j] = patterBytes[7-j];
-//                        patterBytes[7-j] = (byte) temp;
-//                    }
-//                    spritePatternData = MemUtil.bitsToByte(patterBytes);
-//                }
+                if(vFlip == 1) {
+                    byte[] patterBytes = MemUtil.toBits(spritePatternData);
+                    for (int j = 0; j < 4; j++) {
+                        int temp = patterBytes[j];
+                        patterBytes[j] = patterBytes[7-j];
+                        patterBytes[7-j] = (byte) temp;
+                    }
+                    spritePatternData = MemUtil.bitsToByte(patterBytes);
+                }
+                if(hFlip == 1) {
+                    for (int j = 0; j < 4; j++) {
+                        short[] temp = render[x + j];
+                        render[x + j] = render[(x+7)-j];
+                        render[(x+7)-j] =temp;
+                    }
+                }
                 //获取图案颜色数据
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
                 byte[] patternColorLowData = getPatternColorLowData(spritePatternData,colorData);
@@ -181,13 +191,7 @@ public class Ppu {
                         }
                     }
                 }
-                if(hFlip == 1) {
-                    for (int j = 0; j < 4; j++) {
-                        short[] temp = render[x + j];
-                        render[x + j] = render[(x+7)-j];
-                        render[(x+7)-j] =temp;
-                    }
-                }
+//
             }
         }
     }

@@ -30,7 +30,7 @@ public class Main {
     /**
      * 调试模式
      */
-    public static boolean debug = true;
+    public static boolean debug = false;
     /**
      * 放大倍数 默认256*240
      */
@@ -82,10 +82,7 @@ public class Main {
 
         frame.addKeyListener(new KeyListener() {
             @Override
-            public void keyTyped(KeyEvent e) {
-
-            }
-
+            public void keyTyped(KeyEvent e) {}
             @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
@@ -126,7 +123,6 @@ public class Main {
 
             }
         });
-
         //退出
         frame.addWindowListener(new WindowAdapter(){
             @Override
