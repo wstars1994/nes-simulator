@@ -108,7 +108,6 @@ public class Main {
                         key = 1;
                         break;
                 }
-                System.out.println(key);
                 if(key!=-1){
                     DataBus.c_4016_datas.add(key);
                 }

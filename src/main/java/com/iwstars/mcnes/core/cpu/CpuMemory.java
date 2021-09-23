@@ -86,30 +86,32 @@ public class CpuMemory {
                 byte arrd = (byte) ((MemUtil.bitsToByte(DataBus.p_2003)+1) & 0xff);
                 DataBus.p_2003 = MemUtil.toBits(arrd);
                 DataBus.writePpuSprRam(arrd,data);
-//                DataBus.p_2004 = MemUtil.toBits(data);
                 break;
             case 0x2005:
                 //写两次 第一次x 第二次y
-                if(!DataBus.p_scroll_xy_flag){
-                    DataBus.p_scroll_x = data;
-                }else{
-                    DataBus.p_scroll_y = data;
+                if(!DataBus.p_write_toggle) {
+                    DataBus.p_vram_addr = (byte) (data>>3);
+                } else {
+                    //将后5位放到第5位前
+                    DataBus.p_vram_addr |= ((data&31)<<5);
+                    //将低三位放到15位最前边
+                    DataBus.p_vram_addr |= (data&7)<<12;
                 }
-                DataBus.p_scroll_xy_flag=!DataBus.p_scroll_xy_flag;
+                DataBus.p_write_toggle =!DataBus.p_write_toggle;
                 break;
             case 0x2006:
-                if(!DataBus.p_2006_flag) {
+                if(!DataBus.p_write_toggle) {
                     //第一次写将写入高6位;
-                    DataBus.p_2006_data = (short) ((data&0x3F) << 8);
+                    DataBus.p_vram_addr = (short) ((data&0x3F) << 8);
                 }else {
                     //第二次写将写入低8位
-                    DataBus.p_2006_data|=(data&0xFF);
+                    DataBus.p_vram_addr |=(data&0xFF);
                 }
-                DataBus.p_2006_flag = !DataBus.p_2006_flag;
+                DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
             case 0x2007:
-                DataBus.writePpuMemory(DataBus.p_2006_data,data);
-                DataBus.p_2006_data += (DataBus.p_2000[2]==0?1:32);
+                DataBus.writePpuMemory(DataBus.p_vram_addr,data);
+                DataBus.p_vram_addr += (DataBus.p_2000[2]==0?1:32);
                 break;
             //OAM DMA register (high byte)
             case 0x4014:
@@ -158,15 +160,14 @@ public class CpuMemory {
                 byte readData = MemUtil.bitsToByte(DataBus.p_2002);
                 //当CPU读取$2002后vblank标志设置为0
                 DataBus.p_2002[7] = 0;
-                DataBus.p_2006_flag = false;
+                DataBus.p_write_toggle = false;
 
-                DataBus.p_scroll_xy_flag = false;
                 DataBus.p_scroll_x = 0;
                 DataBus.p_scroll_y = 0;
                 return readData;
             case 0x2007:
-                int p2006 = DataBus.p_2006_data;
-                DataBus.p_2006_data += (DataBus.p_2000[2]==0?1:32);
+                int p2006 = DataBus.p_vram_addr;
+                DataBus.p_vram_addr += (DataBus.p_2000[2]==0?1:32);
                 if(addr <= 0x3EFF) {
                     //读取PPU
                     byte res = DataBus.p_2007_read;

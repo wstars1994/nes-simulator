@@ -37,25 +37,14 @@ public class DataBus {
      */
     public static byte[] p_2003 = new byte[8];
 
-    /**
-     *  OAM Data Port
-     */
-    public static byte[] p_2004 = new byte[8];
-
-    /**
-     *  PPU Scrolling Position Register
-     */
-    public static byte[] p_2005 = new byte[8];
-
-    public static boolean p_scroll_xy_flag;
     public static byte p_scroll_x = 0;
     public static byte p_scroll_y = 0;
 
     /**
      *  PPU Address Register
      */
-    public static int p_2006_data;
-    public static boolean p_2006_flag = false;
+    public static short p_vram_addr;
+    public static boolean p_write_toggle = false;
 
     /**
      *  PPU Data Port

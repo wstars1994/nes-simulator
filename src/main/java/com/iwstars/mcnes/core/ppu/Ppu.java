@@ -50,6 +50,8 @@ public class Ppu {
         short[][] render = new short[256][3];
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
+        byte pScrollX = (byte) (DataBus.p_scroll_x>>3);
+        byte pScrollY = DataBus.p_scroll_y;
         //渲染背景
         if(b2001[3] == 1) {
             byte ntAddr = b2000[0];
@@ -93,9 +95,6 @@ public class Ppu {
     private void renderNameTable(int scanLineIndex, short nametableStartAddr, short patternStartAddr, short[][] render) {
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<32;i++) {
-            byte pScrollX = DataBus.p_scroll_x;
-            byte pScrollY = DataBus.p_scroll_y;
-
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
             int nameTableData = (ppuMemory.read((nametableStartAddr + (scanLineIndex/8) * 32) + i)&0xFF) * 16;
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
@@ -123,9 +122,7 @@ public class Ppu {
                     render[i*8+i1] = ppuMemory.palettes[paletteIndex];
                 }
             }
-//            print8(patternData);
         }
-//        System.out.println("");
     }
     /**
      * 渲染精灵
@@ -143,7 +140,7 @@ public class Ppu {
             short patternIndex = (short) (sprRam[i+1]&0xff);
             //子图形数据
             byte attributeData = sprRam[i+2];
-            //[5] 背景层级
+            //背景层级
             byte backgroundPriority = (byte) ((attributeData>>5)&1);
             //图案垂直翻转
             byte vFlip = (byte) ((attributeData>>7)&1);
@@ -167,13 +164,13 @@ public class Ppu {
                     }
                     spritePatternData = MemUtil.bitsToByte(patterBytes);
                 }
-                if(hFlip == 1) {
-                    for (int j = 0; j < 4; j++) {
-                        short[] temp = render[x + j];
-                        render[x + j] = render[(x+7)-j];
-                        render[(x+7)-j] =temp;
-                    }
-                }
+//                if(hFlip == 1) {
+//                    for (int j = 0; j < 4; j++) {
+//                        short[] temp = render[x + j];
+//                        render[x + j] = render[(x+7)-j];
+//                        render[(x+7)-j] =temp;
+//                    }
+//                }
                 //获取图案颜色数据
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
                 byte[] patternColorLowData = getPatternColorLowData(spritePatternData,colorData);

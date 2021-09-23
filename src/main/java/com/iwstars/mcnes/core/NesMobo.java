@@ -85,13 +85,13 @@ public class NesMobo {
             nesRender.render(renderBuff);
             long end = System.currentTimeMillis();
 
-            if(end-begin<perFrameMillis){
-                try {
-                    Thread.sleep(perFrameMillis-(end-begin));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+//            if(end-begin<perFrameMillis){
+//                try {
+//                    Thread.sleep(perFrameMillis-(end-begin));
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
     }
 }
