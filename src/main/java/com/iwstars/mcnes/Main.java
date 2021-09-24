@@ -11,7 +11,10 @@ import com.iwstars.mcnes.util.RomReaderUtil;
 import lombok.Cleanup;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -68,6 +71,37 @@ public class Main {
         new Main().launch();
     }
 
+    private byte getKeyIndex(int keyCode){
+        byte key = -1;
+        switch (keyCode){
+            case 87: //W UP
+                key = 4;
+                break;
+            case 83: //S DOWN
+                key = 5;
+                break;
+            case 65: //A LEFT
+                key = 6;
+                break;
+            case 68: //D RIGHT
+                key = 7;
+                break;
+            case 49: //1 SELECT
+                key = 2;
+                break;
+            case 50: //2 START
+                key = 3;
+                break;
+            case 74: //J A
+                key = 0;
+                break;
+            case 75: //K B
+                key = 1;
+                break;
+        }
+        return key;
+    }
+
     private void launch() {
         frame = new Frame("MCNES");
         //设置窗口的大小和位置
@@ -81,41 +115,19 @@ public class Main {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
-                byte key = -1;
-                switch (keyCode){
-                    case 87: //W UP
-                        key = 4;
-                        break;
-                    case 83: //S DOWN
-                        key = 5;
-                        break;
-                    case 65: //A LEFT
-                        key = 6;
-                        break;
-                    case 68: //D RIGHT
-                        key = 7;
-                        break;
-                    case 49: //1 SELECT
-                        key = 2;
-                        break;
-                    case 50: //2 START
-                        key = 3;
-                        break;
-                    case 74: //J A
-                        key = 0;
-                        break;
-                    case 75: //K B
-                        key = 1;
-                        break;
-                }
-                if(key!=-1){
-                    DataBus.c_4016_datas.add(key);
+                byte keyIndex = getKeyIndex(keyCode);
+                if(keyIndex !=-1){
+                    DataBus.c_4016_datas[keyIndex] = 1;
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-
+                int keyCode = e.getKeyCode();
+                byte keyIndex = getKeyIndex(keyCode);
+                if(keyIndex !=-1){
+                    DataBus.c_4016_datas[keyIndex] = 0;
+                }
             }
         });
         //退出

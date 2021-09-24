@@ -50,26 +50,12 @@ public class Ppu {
         short[][] render = new short[256][3];
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
-        byte pScrollX = (byte) (DataBus.p_scroll_x>>3);
-        byte pScrollY = DataBus.p_scroll_y;
         //渲染背景
         if(b2001[3] == 1) {
-            byte ntAddr = b2000[0];
+            byte ntAddr = (byte) (b2000[1]<<1 | b2000[0]);
             byte bgAddr = b2000[4];
-            short nameTableAddr = 0;
-            short patternAddr = 0;
-            if(ntAddr == 0x00) {
-                nameTableAddr = 0x2000;
-            }else if (ntAddr == 0x01){
-                nameTableAddr = 0x2400;
-            }else if (ntAddr == 0x10){
-                nameTableAddr = 0x2800;
-            }else if (ntAddr == 0x11){
-                nameTableAddr = 0x2C00;
-            }
-            if(bgAddr == 1) {
-                patternAddr = 0x1000;
-            }
+            short nameTableAddr = (short) (0x2000|ntAddr<<10);
+            short patternAddr = (short) (bgAddr * 0x1000);
             this.renderNameTable(scanLineIndex,nameTableAddr,patternAddr,render);
         }
         //渲染精灵
@@ -93,6 +79,9 @@ public class Ppu {
      * @param render
      */
     private void renderNameTable(int scanLineIndex, short nametableStartAddr, short patternStartAddr, short[][] render) {
+
+        byte scroll_x = DataBus.p_scroll_x;
+
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<32;i++) {
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)

@@ -69,6 +69,7 @@ public class CpuMemory {
      * @param addr
      * @param data
      */
+    private byte write_count_4016 = 0,read_count_4016 = 0;
     public void write(int addr,byte data){
         LogUtil.logf(" | WR:[ADDR:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
 
@@ -90,22 +91,29 @@ public class CpuMemory {
             case 0x2005:
                 //写两次 第一次x 第二次y
                 if(!DataBus.p_write_toggle) {
-                    DataBus.p_vram_addr = (byte) (data>>3);
+                    DataBus.p_scroll_x = (byte) (data&0x7);
+                    //将data的高5位为addr低5位赋值
+                    DataBus.p_vram_addr &= ~0x1F;
+                    DataBus.p_vram_addr |= (data>>3)&0x1F;
                 } else {
-                    //将后5位放到第5位前
-                    DataBus.p_vram_addr |= ((data&31)<<5);
+                    //将data前5位放到addr低5位前
+                    DataBus.p_vram_addr |= ((data>>3)<<5);
                     //将低三位放到15位最前边
-                    DataBus.p_vram_addr |= (data&7)<<12;
+                    DataBus.p_vram_addr |= (data&0x7)<<12;
                 }
-                DataBus.p_write_toggle =!DataBus.p_write_toggle;
+                DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
             case 0x2006:
                 if(!DataBus.p_write_toggle) {
+                    //高6位置0 PPU高7/8位无效 置0
+                    DataBus.p_vram_addr &= ~(0xFF<<8);
                     //第一次写将写入高6位;
-                    DataBus.p_vram_addr = (short) ((data&0x3F) << 8);
+                    DataBus.p_vram_addr |= ((data&0x3F) << 8);
                 }else {
+                    //低8位置0
+                    DataBus.p_vram_addr &= ~0xFF;
                     //第二次写将写入低8位
-                    DataBus.p_vram_addr |=(data&0xFF);
+                    DataBus.p_vram_addr |= data&0xFF;
                 }
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
@@ -124,10 +132,25 @@ public class CpuMemory {
             //输入设备
             case 0x4016:
                 if(data == 1){
-                    count = 0;
+                    read_count_4016 = 0;
                     DataBus.c_4016 = -1;
-                }else if(DataBus.c_4016_datas.size() > 0){
-                    DataBus.c_4016 = DataBus.c_4016_datas.getFirst();
+                }else {
+                    for (byte i = write_count_4016; i < 8; i++) {
+                        byte c4016Data = DataBus.c_4016_datas[i];
+                        if(c4016Data == 1) {
+                            DataBus.c_4016 = i;
+                            break;
+                        }
+                    }
+                    //如果没找到复位 加快找1速度
+                    if(DataBus.c_4016==-1){
+                        write_count_4016 = 0;
+                    }else{
+                        write_count_4016++;
+                    }
+                    if(write_count_4016 == 8){
+                        write_count_4016 = 0;
+                    }
                 }
                 break;
             default:
@@ -150,8 +173,6 @@ public class CpuMemory {
      * @param addr
      * @return
      */
-
-    private int count = 0;
     public byte read(int addr){
         LogUtil.logf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
         switch (addr) {
@@ -161,9 +182,6 @@ public class CpuMemory {
                 //当CPU读取$2002后vblank标志设置为0
                 DataBus.p_2002[7] = 0;
                 DataBus.p_write_toggle = false;
-
-                DataBus.p_scroll_x = 0;
-                DataBus.p_scroll_y = 0;
                 return readData;
             case 0x2007:
                 int p2006 = DataBus.p_vram_addr;
@@ -181,12 +199,9 @@ public class CpuMemory {
             case 0x4016:
                 byte returnNum = 0;
                 if(DataBus.c_4016 > -1) {
-                    returnNum = (byte) (count == DataBus.c_4016 ? 1:0);
-                    if(count == 7){
-                        DataBus.c_4016_datas.removeFirst();
-                    }
+                    returnNum = (byte) (read_count_4016 == DataBus.c_4016 ? 1:0);
                 }
-                count++;
+                read_count_4016++;
                 return returnNum;
             case 0x4017:
 //                System.out.println("读取手柄2输入:" + this.data[addr]);

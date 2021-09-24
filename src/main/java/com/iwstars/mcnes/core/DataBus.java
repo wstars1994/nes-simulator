@@ -55,7 +55,7 @@ public class DataBus {
      *  Joypad 1
      */
     public static byte c_4016 = -1;
-    public static LinkedList<Byte> c_4016_datas = new LinkedList();
+    public static byte c_4016_datas[] = new byte[8];
 
     /**
      * 向ppu写数据
