@@ -45,6 +45,7 @@ public class DataBus {
      */
     public static short p_vram_addr;
     public static boolean p_write_toggle = false;
+    public static short temp_vram;
 
     /**
      *  PPU Data Port

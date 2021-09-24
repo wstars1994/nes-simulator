@@ -93,32 +93,33 @@ public class CpuMemory {
                 if(!DataBus.p_write_toggle) {
                     DataBus.p_scroll_x = (byte) (data&0x7);
                     //将data的高5位为addr低5位赋值
-                    DataBus.p_vram_addr &= ~0x1F;
-                    DataBus.p_vram_addr |= (data>>3)&0x1F;
+                    DataBus.temp_vram &= ~0x1F;
+                    DataBus.temp_vram |= (data>>3)&0x1F;
                 } else {
                     //将data前5位放到addr低5位前
-                    DataBus.p_vram_addr |= ((data>>3)<<5);
+                    DataBus.temp_vram |= ((data>>3)<<5);
                     //将低三位放到15位最前边
-                    DataBus.p_vram_addr |= (data&0x7)<<12;
+                    DataBus.temp_vram |= (data&0x7)<<12;
                 }
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
             case 0x2006:
                 if(!DataBus.p_write_toggle) {
                     //高6位置0 PPU高7/8位无效 置0
-                    DataBus.p_vram_addr &= ~(0xFF<<8);
+                    DataBus.temp_vram &= ~(0xFF<<8);
                     //第一次写将写入高6位;
-                    DataBus.p_vram_addr |= ((data&0x3F) << 8);
+                    DataBus.temp_vram |= ((data&0x3F) << 8);
                 }else {
                     //低8位置0
-                    DataBus.p_vram_addr &= ~0xFF;
+                    DataBus.temp_vram &= ~0xFF;
                     //第二次写将写入低8位
-                    DataBus.p_vram_addr |= data&0xFF;
+                    DataBus.temp_vram |= data&0xFF;
+                    DataBus.p_vram_addr = DataBus.temp_vram;
                 }
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
             case 0x2007:
-                DataBus.writePpuMemory(DataBus.p_vram_addr,data);
+                DataBus.writePpuMemory(DataBus.p_vram_addr&0x3fff,data);
                 DataBus.p_vram_addr += (DataBus.p_2000[2]==0?1:32);
                 break;
             //OAM DMA register (high byte)

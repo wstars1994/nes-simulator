@@ -57,11 +57,11 @@ public class NesMobo {
             //设置vblank true
             DataBus.p_2002[7] = 0;
             for (int i = 0; i < 240; i++) {
-                this.cpu6502.go(false);
                 short[][] shorts = ppu.preRender(i);
                 for(int r = 0; r < 256+16; r++) {
                     renderBuff[i * 256 + r] = shorts[r];
                 }
+                this.cpu6502.go(false);
             }
 
             //242-
@@ -83,14 +83,14 @@ public class NesMobo {
                 this.cpu6502.go(false);
             }
             nesRender.render(renderBuff);
-            long end = System.currentTimeMillis();
-            if(end-begin<perFrameMillis){
-                try {
-                    Thread.sleep(perFrameMillis-(end-begin));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+//            long end = System.currentTimeMillis();
+//            if(end-begin<perFrameMillis){
+//                try {
+//                    Thread.sleep(perFrameMillis-(end-begin));
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
     }
 }

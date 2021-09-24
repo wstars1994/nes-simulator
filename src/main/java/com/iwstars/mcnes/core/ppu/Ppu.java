@@ -79,9 +79,8 @@ public class Ppu {
      * @param render
      */
     private void renderNameTable(int scanLineIndex, short nametableStartAddr, short patternStartAddr, short[][] render) {
-
-        byte scroll_x = DataBus.p_scroll_x;
-
+        short p_vram_addr = DataBus.p_vram_addr;
+        int is;
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<32;i++) {
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
@@ -100,15 +99,15 @@ public class Ppu {
             byte patternColorHighData = getPatternColorHighData(attributeData,i,scanLineIndex);
             byte p0 = ppuMemory.read(0x3F00);
             //合并 取最终4位颜色
-            for (int i1 = 0; i1 <8; i1++) {
-                int patternColorLowBit = patternColorLowData[7 - i1];
+            for (int j = 0; j <8; j++) {
+                int patternColorLowBit = patternColorLowData[7 - j];
                 //透明色 显示背景色
                 if(patternColorLowBit == 0) {
-                    render[i*8+i1] = ppuMemory.palettes[p0];
+                    render[i*8+j] = ppuMemory.palettes[p0];
                 }else {
                     int colorAddr = 0x3f00 + (((patternColorHighData << 2) & 0xF) | (patternColorLowBit & 0x3));
                     int paletteIndex = ppuMemory.read(colorAddr);
-                    render[i*8+i1] = ppuMemory.palettes[paletteIndex];
+                    render[i*8+j] = ppuMemory.palettes[paletteIndex];
                 }
             }
         }
