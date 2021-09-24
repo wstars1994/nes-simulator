@@ -47,7 +47,7 @@ public class Ppu {
      * 开始绘制扫描线
      */
     public short[][] preRender(int scanLineIndex) {
-        short[][] render = new short[256][3];
+        short[][] render = new short[256+16][3];
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
         //渲染背景

@@ -53,13 +53,13 @@ public class NesMobo {
         while (true)  {
             long begin = System.currentTimeMillis();
             //256x240 分辨率
-            short[][] renderBuff = new short[256*240][3];
+            short[][] renderBuff = new short[(256+16)*240][3];
             //设置vblank true
             DataBus.p_2002[7] = 0;
             for (int i = 0; i < 240; i++) {
                 this.cpu6502.go(false);
                 short[][] shorts = ppu.preRender(i);
-                for(int r = 0; r < 256; r++) {
+                for(int r = 0; r < 256+16; r++) {
                     renderBuff[i * 256 + r] = shorts[r];
                 }
             }
