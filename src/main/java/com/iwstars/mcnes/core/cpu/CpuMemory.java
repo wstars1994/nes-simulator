@@ -76,6 +76,8 @@ public class CpuMemory {
         switch (addr) {
             case 0x2000:
                 DataBus.p_2000 = MemUtil.toBits(data);
+                //强nametable选择写到10-11位
+                DataBus.p_temp_vram = (short) ((DataBus.p_temp_vram & 0xf3ff) | ((data & 3) << 10));
                 break;
             case 0x2001:
                 DataBus.p_2001 = MemUtil.toBits(data);
@@ -93,28 +95,28 @@ public class CpuMemory {
                 if(!DataBus.p_write_toggle) {
                     DataBus.p_scroll_x = (byte) (data&0x7);
                     //将data的高5位为addr低5位赋值
-                    DataBus.temp_vram &= ~0x1F;
-                    DataBus.temp_vram |= (data>>3)&0x1F;
+                    DataBus.p_temp_vram &= ~0x1F;
+                    DataBus.p_temp_vram |= (data>>3)&0x1F;
                 } else {
                     //将data前5位放到addr低5位前
-                    DataBus.temp_vram |= ((data>>3)<<5);
+                    DataBus.p_temp_vram |= ((data>>3)<<5);
                     //将低三位放到15位最前边
-                    DataBus.temp_vram |= (data&0x7)<<12;
+                    DataBus.p_temp_vram |= (data&0x7)<<12;
                 }
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
             case 0x2006:
                 if(!DataBus.p_write_toggle) {
                     //高6位置0 PPU高7/8位无效 置0
-                    DataBus.temp_vram &= ~(0xFF<<8);
+                    DataBus.p_temp_vram &= ~(0xFF<<8);
                     //第一次写将写入高6位;
-                    DataBus.temp_vram |= ((data&0x3F) << 8);
+                    DataBus.p_temp_vram |= ((data&0x3F) << 8);
                 }else {
                     //低8位置0
-                    DataBus.temp_vram &= ~0xFF;
+                    DataBus.p_temp_vram &= ~0xFF;
                     //第二次写将写入低8位
-                    DataBus.temp_vram |= data&0xFF;
-                    DataBus.p_vram_addr = DataBus.temp_vram;
+                    DataBus.p_temp_vram |= data&0xFF;
+                    DataBus.p_vram_addr = DataBus.p_temp_vram;
                 }
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
