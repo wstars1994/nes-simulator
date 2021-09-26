@@ -76,8 +76,8 @@ public class CpuMemory {
         switch (addr) {
             case 0x2000:
                 DataBus.p_2000 = MemUtil.toBits(data);
-                //强nametable选择写到10-11位
-                DataBus.p_temp_vram = (short) ((DataBus.p_temp_vram & 0xf3ff) | ((data & 3) << 10));
+                //将nametable选择写到临时t的10-11位
+                DataBus.p_vram_temp_addr = (short) ((DataBus.p_vram_temp_addr & 0xf3ff) | ((data & 3) << 10));
                 break;
             case 0x2001:
                 DataBus.p_2001 = MemUtil.toBits(data);
@@ -95,28 +95,28 @@ public class CpuMemory {
                 if(!DataBus.p_write_toggle) {
                     DataBus.p_scroll_x = (byte) (data&0x7);
                     //将data的高5位为addr低5位赋值
-                    DataBus.p_temp_vram &= ~0x1F;
-                    DataBus.p_temp_vram |= (data>>3)&0x1F;
+                    DataBus.p_vram_temp_addr &= ~0x1F;
+                    DataBus.p_vram_temp_addr |= (data>>3)&0x1F;
                 } else {
                     //将data前5位放到addr低5位前
-                    DataBus.p_temp_vram |= ((data>>3)<<5);
+                    DataBus.p_vram_temp_addr |= ((data>>3)<<5);
                     //将低三位放到15位最前边
-                    DataBus.p_temp_vram |= (data&0x7)<<12;
+                    DataBus.p_vram_temp_addr |= (data&0x7)<<12;
                 }
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
             case 0x2006:
                 if(!DataBus.p_write_toggle) {
                     //高6位置0 PPU高7/8位无效 置0
-                    DataBus.p_temp_vram &= ~(0xFF<<8);
+                    DataBus.p_vram_temp_addr &= ~(0xFF<<8);
                     //第一次写将写入高6位;
-                    DataBus.p_temp_vram |= ((data&0x3F) << 8);
+                    DataBus.p_vram_temp_addr |= ((data&0x3F) << 8);
                 }else {
                     //低8位置0
-                    DataBus.p_temp_vram &= ~0xFF;
+                    DataBus.p_vram_temp_addr &= ~0xFF;
                     //第二次写将写入低8位
-                    DataBus.p_temp_vram |= data&0xFF;
-                    DataBus.p_vram_addr = DataBus.p_temp_vram;
+                    DataBus.p_vram_temp_addr |= data&0xFF;
+                    DataBus.p_vram_addr = DataBus.p_vram_temp_addr;
                 }
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
@@ -145,7 +145,7 @@ public class CpuMemory {
                             break;
                         }
                     }
-                    //如果没找到复位 加快找1速度
+                    //如果没找到直接复位 加快找1速度
                     if(DataBus.c_4016==-1){
                         write_count_4016 = 0;
                     }else{
@@ -187,16 +187,13 @@ public class CpuMemory {
                 DataBus.p_write_toggle = false;
                 return readData;
             case 0x2007:
-                int p2006 = DataBus.p_vram_addr;
+                int p2006 = DataBus.p_vram_addr&0x3fff;
                 DataBus.p_vram_addr += (DataBus.p_2000[2]==0?1:32);
                 if(addr <= 0x3EFF) {
                     //读取PPU
                     byte res = DataBus.p_2007_read;
                     DataBus.p_2007_read = DataBus.ppuMemory.read(p2006);
                     return res;
-                }else if(addr <= 0x3FFF) {
-                    //读取调色板
-                    System.out.println("读取调色板");
                 }
                 break;
             case 0x4016:

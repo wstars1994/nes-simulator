@@ -52,16 +52,15 @@ public class Ppu {
         byte[] b2001 = DataBus.p_2001;
         //渲染背景
         if(b2001[3] == 1) {
-            DataBus.p_vram_addr = DataBus.p_temp_vram;
             byte ntAddr = (byte) (b2000[1]<<1 | b2000[0]);
             byte bgAddr = b2000[4];
             short nameTableAddr = (short) (0x2000|ntAddr<<10);
             short patternAddr = (short) (bgAddr * 0x1000);
-            this.renderNameTable(scanLineIndex,nameTableAddr,patternAddr,render);
+            short nameTableAddr2  = (short) (0x2000 | (DataBus.p_vram_addr & 0x0FFF));
+            this.renderNameTable(scanLineIndex,nameTableAddr2,patternAddr,render);
         }
         //渲染精灵
         if(b2001[4] == 1) {
-            DataBus.p_vram_addr = DataBus.p_temp_vram;
             short spritePatternAddr = (short) (b2000[3]==0 ? 0:0x1000);
             byte spriteSize = b2000[5];
             this.renderSprite(scanLineIndex,spritePatternAddr,spriteSize,render);
@@ -80,18 +79,17 @@ public class Ppu {
      * @param patternStartAddr 图案表起始地址
      * @param render
      */
-    private void renderNameTable(int scanLineIndex, short nametableStartAddr, short patternStartAddr, short[][] render) {
-        short p_vram_addr = DataBus.p_vram_addr;
-        int aa=1;
+    private void renderNameTable(int scanLineIndex, short nametableStartAddr ,short patternStartAddr, short[][] render) {
+        int fine_x = DataBus.p_scroll_x;
+        int fine_y = (DataBus.p_vram_addr >> 12) & 7;
+
         //32*30个Tile = (256*240 像素)
-        for (int i=0;i<32;i++) {
-            if(p_vram_addr==1){
-                aa++;
-            }
+        int ix = -fine_x;
+        for (int i=0;i<33;i++,ix+=8) {
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
-            int nameTableData = (ppuMemory.read((nametableStartAddr + (scanLineIndex/8) * 32) + i)&0xFF) * 16;
+            int nameTableData = (ppuMemory.read(nametableStartAddr)&0xFF) * 16;
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
-            int patternAddr = patternStartAddr + nameTableData + (scanLineIndex % 8);
+            int patternAddr = patternStartAddr + nameTableData + fine_y;
             int patternColor = patternAddr + 8;
             //图案表数据
             byte patternData = ppuMemory.read(patternAddr);
@@ -100,7 +98,8 @@ public class Ppu {
             //取每像素的低两位颜色
             byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
             //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节
-            byte attributeData = ppuMemory.read(nametableStartAddr + 0x3C0 + (scanLineIndex/32*8)+i/4);
+            int attribute_address = 0x23C0 | (nametableStartAddr & 0x0C00) | ((nametableStartAddr >> 4) & 0x38) | ((nametableStartAddr >> 2) & 0x07);
+            byte attributeData = ppuMemory.read(attribute_address);
             byte patternColorHighData = getPatternColorHighData(attributeData,i,scanLineIndex);
             byte p0 = ppuMemory.read(0x3F00);
             //合并 取最终4位颜色
@@ -115,6 +114,10 @@ public class Ppu {
                     render[i*8+j] = ppuMemory.palettes[paletteIndex];
                 }
             }
+            if ((nametableStartAddr & 0x1f) == 0x1f)
+                nametableStartAddr = (short) ((nametableStartAddr & ~0x1f) ^ 0x400);
+            else
+                nametableStartAddr++;
         }
     }
     /**

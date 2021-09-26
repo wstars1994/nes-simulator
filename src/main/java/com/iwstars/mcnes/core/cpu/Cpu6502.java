@@ -1,8 +1,6 @@
 package com.iwstars.mcnes.core.cpu;
 
-import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.util.LogUtil;
-import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 
 import java.util.Iterator;
@@ -40,10 +38,7 @@ public class Cpu6502{
         cpuRegister.setCpuMemory(cpuMemory);
     }
 
-    public void go(boolean once){
-        if(once){
-            this.cpuCycle = 0;
-        }
+    public void go(){
         this.runProgram();
         this.cpuCycle = 113;
     }
@@ -68,13 +63,6 @@ public class Cpu6502{
             this.execInstrcution(insCode,iterator);
         }
         while (cpuCycle > 0);
-
-//        while (iterator.hasNext()) {
-//
-//            if(cpuCycle < 0) {
-//                break;
-//            }
-//        }
     }
 
     /**
