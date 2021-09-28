@@ -19,7 +19,7 @@ public class Cpu6502{
      * 计算出每条扫描数所需要的CPU周期
      * 1.79*Math.pow(10,6)/60/262 ≈ 113
      */
-    private int cpuCycle = 113;
+    public static int cpuCycle = 113;
 
     private static int runCycleNum = 0;
     /**
@@ -40,7 +40,7 @@ public class Cpu6502{
 
     public void go(){
         this.runProgram();
-        this.cpuCycle = 113;
+        cpuCycle = 113;
     }
     /**
      * 运行程序

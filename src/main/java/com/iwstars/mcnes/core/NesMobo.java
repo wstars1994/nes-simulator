@@ -59,7 +59,7 @@ public class NesMobo {
     public void powerUp(){
         int frame = 1;
 
-        int perFrameMillis = 1000 / 90;
+        int perFrameMillis = 1000 / 70;
 
         while (true)  {
             long begin = System.currentTimeMillis();
@@ -75,20 +75,29 @@ public class NesMobo {
                 }
                 this.cpu6502.go();
                 if (DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1) {
-                    if ((DataBus.p_vram_addr & 0x7000) != 0x7000) {        // if fine Y < 7
-                        DataBus.p_vram_addr += 0x1000;                     // increment fine Y
+                    // if fine Y < 7
+                    if ((DataBus.p_vram_addr & 0x7000) != 0x7000) {
+                        // increment fine Y
+                        DataBus.p_vram_addr += 0x1000;
                     }else{
-                        DataBus.p_vram_addr &= ~0x7000;                     // fine Y = 0
-                        int y = (DataBus.p_vram_addr & 0x03E0) >> 5;        // let y = coarse Y
+                        // fine Y = 0
+                        DataBus.p_vram_addr &= ~0x7000;
+                        // let y = coarse Y
+                        int y = (DataBus.p_vram_addr & 0x03E0) >> 5;
                         if (y == 29){
-                            y = 0;// coarse Y = 0
-                            DataBus.p_vram_addr ^= 0x0800; // switch vertical nametableelse if (y == 31)
+                            // coarse Y = 0
+                            y = 0;
+                            // switch vertical nametableelse if (y == 31)
+                            DataBus.p_vram_addr ^= 0x0800;
                         }else if (y == 31) {
-                            y = 0;                          // coarse Y = 0, nametable not switched
+                            // coarse Y = 0, nametable not switched
+                            y = 0;
                         }else{
-                            y += 1;                         // increment coarse Y
+                            // increment coarse Y
+                            y += 1;
                         }
-                        DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & ~0x03E0) | (y << 5));     // put coarse Y back into v
+                        // put coarse Y back into v
+                        DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & ~0x03E0) | (y << 5));
                     }
                 }
             }
@@ -99,15 +108,15 @@ public class NesMobo {
             }
             //242-260
             for (int i = 241; i < 262; i++) {
+                if(i==261){
+                    this.endVBlank();
+                }
                 this.cpu6502.go();
             }
-            this.endVBlank();
             //vblank结束后 如果有渲染 将t复制到v
             if(DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1){
                 DataBus.p_vram_addr = DataBus.p_vram_temp_addr;
             }
-            //渲染图像
-            nesRender.render(renderBuff);
             //模拟器运行延时
             long end = System.currentTimeMillis();
             if(end-begin<perFrameMillis){
@@ -117,6 +126,9 @@ public class NesMobo {
                     e.printStackTrace();
                 }
             }
+            //渲染图像
+            nesRender.render(renderBuff);
+
         }
     }
 }

@@ -56,8 +56,7 @@ public class Ppu {
             byte bgAddr = b2000[4];
             short nameTableAddr = (short) (0x2000|ntAddr<<10);
             short patternAddr = (short) (bgAddr * 0x1000);
-            short nameTableAddr2  = (short) (0x2000 | (DataBus.p_vram_addr & 0x0FFF));
-            this.renderNameTable(scanLineIndex,nameTableAddr2,patternAddr,render);
+            this.renderNameTable(scanLineIndex,patternAddr,render);
         }
         //渲染精灵
         if(b2001[4] == 1) {
@@ -75,19 +74,18 @@ public class Ppu {
     /**
      * 绘制命名表
      * @param scanLineIndex 扫描线
-     * @param nametableStartAddr 命名表起始地址
      * @param patternStartAddr 图案表起始地址
      * @param render
      */
-    private void renderNameTable(int scanLineIndex, short nametableStartAddr ,short patternStartAddr, short[][] render) {
+    private void renderNameTable(int scanLineIndex,short patternStartAddr, short[][] render) {
         int fine_x = DataBus.p_scroll_x;
         int fine_y = (DataBus.p_vram_addr >> 12) & 7;
-
+        short nameTableAddress  = (short) (0x2000 | (DataBus.p_vram_addr & 0x0FFF));
         //32*30个Tile = (256*240 像素)
         int ix = -fine_x;
         for (int i=0;i<33;i++,ix+=8) {
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
-            int nameTableData = (ppuMemory.read(nametableStartAddr)&0xFF) * 16;
+            int nameTableData = (ppuMemory.read(nameTableAddress)&0xFF) * 16;
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
             int patternAddr = patternStartAddr + nameTableData + fine_y;
             int patternColor = patternAddr + 8;
@@ -97,9 +95,9 @@ public class Ppu {
             byte colorData = ppuMemory.read(patternColor);
             //取每像素的低两位颜色
             byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
+            int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00) | ((nameTableAddress >> 4) & 0x38) | ((nameTableAddress >> 2) & 0x07);
+            byte attributeData = ppuMemory.read(attributeAddress);
             //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节
-            int attribute_address = 0x23C0 | (nametableStartAddr & 0x0C00) | ((nametableStartAddr >> 4) & 0x38) | ((nametableStartAddr >> 2) & 0x07);
-            byte attributeData = ppuMemory.read(attribute_address);
             byte patternColorHighData = getPatternColorHighData(attributeData,i,scanLineIndex);
             byte p0 = ppuMemory.read(0x3F00);
             //合并 取最终4位颜色
@@ -115,13 +113,13 @@ public class Ppu {
                 }
             }
             // if coarse X == 31 (coarseX的最大值就是31即11111B,所以到最大值了要切换到下一个nametable)
-            if ((nametableStartAddr & 0x001F) == 31) {
+            if ((nameTableAddress & 0x001F) == 0x1F) {
                 // coarse X = 0
-                nametableStartAddr &= ~0x001F;
+                nameTableAddress &= ~0x001F;
                 // switch horizontal nametable
-                nametableStartAddr ^= 0x0400;
+                nameTableAddress ^= 0x0400;
             }else {
-                nametableStartAddr++;
+                nameTableAddress++;
             }
         }
     }
