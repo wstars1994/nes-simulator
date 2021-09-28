@@ -1,6 +1,5 @@
 package com.iwstars.mcnes.core.cpu;
 
-import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Setter;
 
@@ -1180,5 +1179,10 @@ public class CpuRegister {
         int addr = indirectX(data);
         STA(cpuMemory.read(addr));
         return 6;
+    }
+
+    public int CPY_ABS(byte low, byte high) {
+        CPY(cpuMemory.read(MemUtil.concatByte(low,high)));
+        return 4;
     }
 }

@@ -59,7 +59,7 @@ public class NesMobo {
     public void powerUp(){
         int frame = 1;
 
-        int perFrameMillis = 1000 / 50;
+        int perFrameMillis = 1000 / 90;
 
         while (true)  {
             long begin = System.currentTimeMillis();
@@ -109,14 +109,14 @@ public class NesMobo {
             //渲染图像
             nesRender.render(renderBuff);
             //模拟器运行延时
-//            long end = System.currentTimeMillis();
-//            if(end-begin<perFrameMillis){
-//                try {
-//                    Thread.sleep(perFrameMillis-(end-begin));
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
+            long end = System.currentTimeMillis();
+            if(end-begin<perFrameMillis){
+                try {
+                    Thread.sleep(perFrameMillis-(end-begin));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

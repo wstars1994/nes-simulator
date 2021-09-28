@@ -134,25 +134,15 @@ public class CpuMemory {
                 break;
             //输入设备
             case 0x4016:
+                DataBus.c_4016 = 0;
                 if(data == 1){
                     read_count_4016 = 0;
-                    DataBus.c_4016 = -1;
-                }else {
-                    for (byte i = write_count_4016; i < 8; i++) {
+                }else{
+                    for (byte i = 0; i < 8; i++) {
                         byte c4016Data = DataBus.c_4016_datas[i];
                         if(c4016Data == 1) {
-                            DataBus.c_4016 = i;
-                            break;
+                            DataBus.c_4016 = (byte) ((DataBus.c_4016) | 1<<i);
                         }
-                    }
-                    //如果没找到直接复位 加快找1速度
-                    if(DataBus.c_4016==-1){
-                        write_count_4016 = 0;
-                    }else{
-                        write_count_4016++;
-                    }
-                    if(write_count_4016 == 8){
-                        write_count_4016 = 0;
                     }
                 }
                 break;
@@ -197,10 +187,11 @@ public class CpuMemory {
                 }
                 break;
             case 0x4016:
-                byte returnNum = 0;
-                if(DataBus.c_4016 > -1) {
-                    returnNum = (byte) (read_count_4016 == DataBus.c_4016 ? 1:0);
-                }
+                byte returnNum = (byte) ((DataBus.c_4016 >> read_count_4016) & 1);
+
+//                if(DataBus.c_4016 > -1) {
+//                    returnNum = (byte) (read_count_4016 == DataBus.c_4016 ? 1:0);
+//                }
                 read_count_4016++;
                 return returnNum;
             case 0x4017:

@@ -714,6 +714,10 @@ public class Cpu6502{
                 LogUtil.log("INC_ABS_X");
                 cpuCycle-= cpuRegister.INC_ABS_X(iterator.next(),iterator.next());
                 break;
+            case 0xCC:
+                LogUtil.log("CPY_ABS");
+                cpuCycle-= cpuRegister.CPY_ABS(iterator.next(),iterator.next());
+                break;
             default:
                 System.out.printf("%02X",insCode);
                 break;

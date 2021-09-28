@@ -114,10 +114,15 @@ public class Ppu {
                     render[i*8+j] = ppuMemory.palettes[paletteIndex];
                 }
             }
-            if ((nametableStartAddr & 0x1f) == 0x1f)
-                nametableStartAddr = (short) ((nametableStartAddr & ~0x1f) ^ 0x400);
-            else
+            // if coarse X == 31 (coarseX的最大值就是31即11111B,所以到最大值了要切换到下一个nametable)
+            if ((nametableStartAddr & 0x001F) == 31) {
+                // coarse X = 0
+                nametableStartAddr &= ~0x001F;
+                // switch horizontal nametable
+                nametableStartAddr ^= 0x0400;
+            }else {
                 nametableStartAddr++;
+            }
         }
     }
     /**
