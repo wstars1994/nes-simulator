@@ -121,7 +121,7 @@ public class CpuMemory {
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
             case 0x2007:
-                DataBus.writePpuMemory(DataBus.p_vram_addr&0x3fff,data);
+                DataBus.writePpuMemory(DataBus.p_vram_addr,data);
                 DataBus.p_vram_addr += (DataBus.p_2000[2]==0?1:32);
                 break;
             //OAM DMA register (high byte)

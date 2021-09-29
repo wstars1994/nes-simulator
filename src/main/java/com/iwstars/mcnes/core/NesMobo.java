@@ -57,10 +57,7 @@ public class NesMobo {
      * 主板通电
      */
     public void powerUp(){
-        int frame = 1;
-
-        int perFrameMillis = 1000 / 70;
-
+        int perFrameMillis = 1000 / 100;
         while (true)  {
             long begin = System.currentTimeMillis();
             //256x240 分辨率
@@ -69,11 +66,11 @@ public class NesMobo {
                 if(DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1){
                     DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & 0xfbe0) | (DataBus.p_vram_temp_addr & 0x041f));
                 }
+                this.cpu6502.go();
                 short[][] shorts = ppu.preRender(i);
-                for(int r = 0; r < 256+16; r++) {
+                for(int r = 0; r < 256; r++) {
                     renderBuff[i * 256 + r] = shorts[r];
                 }
-                this.cpu6502.go();
                 if (DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1) {
                     // if fine Y < 7
                     if ((DataBus.p_vram_addr & 0x7000) != 0x7000) {
@@ -128,7 +125,6 @@ public class NesMobo {
             }
             //渲染图像
             nesRender.render(renderBuff);
-
         }
     }
 }
