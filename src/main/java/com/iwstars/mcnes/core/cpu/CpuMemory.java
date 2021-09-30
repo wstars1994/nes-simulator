@@ -93,14 +93,17 @@ public class CpuMemory {
             case 0x2005:
                 //写两次 第一次x 第二次y
                 if(!DataBus.p_write_toggle) {
+                    //设置fine_x
                     DataBus.p_scroll_x = (byte) (data&0x7);
-                    //将data的高5位为addr低5位赋值
+                    //设置coarse_x
                     DataBus.p_vram_temp_addr &= ~0x1F;
                     DataBus.p_vram_temp_addr |= (data>>3)&0x1F;
                 } else {
-                    //将data前5位放到addr低5位前
+                    //设置coarse_y
+                    DataBus.p_vram_temp_addr &= ~0x3E0;
                     DataBus.p_vram_temp_addr |= ((data>>3)<<5);
-                    //将低三位放到15位最前边
+                    //设置fine_y
+                    DataBus.p_vram_temp_addr &= ~0x7000;
                     DataBus.p_vram_temp_addr |= (data&0x7)<<12;
                 }
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
