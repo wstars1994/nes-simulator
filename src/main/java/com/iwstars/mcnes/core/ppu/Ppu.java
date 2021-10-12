@@ -137,7 +137,7 @@ public class Ppu {
             byte vFlip = (byte) ((attributeData>>7)&1);
             //图案水平翻转
             byte hFlip = (byte) ((attributeData>>6)&1);
-            short x = (short) (sprRam[i+3]&0xff);
+            short sprX = (short) (sprRam[i+3]&0xff);
             if(sl >= y && sl <= y + spriteHeight) {
                 //获取图案地址
                 if(spriteHeight == 16) {
@@ -148,20 +148,31 @@ public class Ppu {
                 byte spritePatternData = ppuMemory.read(spritePatternAddr);
                 //获取图案颜色数据
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
-                byte[] patternColorLowData = getPatternColorLowData(spritePatternData,colorData);
-                byte patternColorHighData = (byte) (attributeData & 0x03);
+
+                byte colorHigh = (byte) ((attributeData & 0x03)<<2);
                 //命中非透明背景 sprite hit
                 if(spritePatternData + colorData != 0 && DataBus.p_2001[1] != 0 &&DataBus.p_2001[2] != 0) {
                     DataBus.p_2002[6] = 1;
                 }
-                for (int i1 = 0; i1 < 8; i1++) {
-                    if(backgroundPriority == 0) {
-                        //获取4位颜色
-                        int colorAddr = 0x3f10 + (((patternColorHighData << 2) & 0xF) | ((patternColorLowData[7 - i1]) & 0x3));
-                        if(colorAddr != 0x3f10) {
-                            render[x + i1] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
+                int x = 0,x2 = 8,x3=1;
+                if(hFlip == 1) {
+                    x = 7;
+                    x2 = -1;
+                    x3 = -1;
+                }
+                for (;x!=x2; x+=x3) {
+                    int colorLow = ((spritePatternData & 0x80)>>7) | (((colorData & 0x80)>>7) << 1);
+                    if(colorLow != 0){
+                        if(backgroundPriority == 0) {
+                            //获取4位颜色
+                            int colorAddr = 0x3f10 | colorHigh | colorLow;
+                            if(colorAddr!=0x3f10) {
+                                render[sprX + x] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
+                            }
                         }
                     }
+                    spritePatternData<<=1;
+                    colorData<<=1;
                 }
 //                if(hFlip == 1) {
 //                    for (int j = 0; j < 4; j++) {
