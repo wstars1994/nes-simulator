@@ -140,7 +140,7 @@ public class Main {
         //显示
         frame.setVisible(true);
         //运行模拟器
-        String filePath = "3pig.nes";
+        String filePath = "1.nes";
         new Thread(() -> {
             //读取.nes文件数据
             NESRomData romData = this.loadData(new File(filePath));

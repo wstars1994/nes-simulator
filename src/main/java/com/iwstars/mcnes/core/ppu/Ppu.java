@@ -4,6 +4,8 @@ import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 /**
  * 图形处理单元
  * 16KB space
@@ -46,11 +48,13 @@ public class Ppu {
      */
     public short[][] preRender(int scanLineIndex) {
         short[][] render = new short[256+16][3];
+        //填充背景色
+        Arrays.fill(render,ppuMemory.palettes[ppuMemory.read(0x3F00)]);
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
         //渲染背景
         if(b2001[3] == 1) {
-            this.renderNameTable(scanLineIndex,render);
+            this.renderNameTable(render);
         }
         //渲染精灵
         if(b2001[4] == 1) {
@@ -63,17 +67,17 @@ public class Ppu {
 
     /**
      * 绘制命名表
-     * @param scanLineIndex 扫描线
+     * @see <a href="https://wiki.nesdev.org/w/index.php?title=PPU_scrolling">PPU_scrolling</a>
      * @param render
      */
-    private void renderNameTable(int scanLineIndex, short[][] render) {
+    private void renderNameTable(short[][] render) {
         byte fine_x = DataBus.p_scroll_x;
         byte fine_y = (byte) ((DataBus.p_vram_addr >> 12) & 7);
         short nameTableAddress  = (short) (0x2000 | (DataBus.p_vram_addr & 0x0FFF));
         short patternStartAddr = (short) (DataBus.p_2000[4] == 0 ?0x0000:0x1000);
         //32*30个Tile = (256*240 像素)
-        int ix = -fine_x;
-        for (int i=0;i<32;i++,ix+=8) {
+        for (int i=0;i<32;i++) {
+            //指示哪个tile
             byte coarse_x = (byte) (nameTableAddress&0x1F);
             byte coarse_y = (byte) ((nameTableAddress>>5)&0x1F);
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
@@ -84,23 +88,18 @@ public class Ppu {
             byte patternData = ppuMemory.read(patternAddress);
             //图案表颜色数据
             byte colorData = ppuMemory.read(patternAddress + 8);
-            //取每像素的低两位颜色
+            //取颜色低两位
             byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
-
-            int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00) | ((nameTableAddress >> 4) & 0x38) | ((nameTableAddress >> 2) & 0x07);
-            byte attributeData = ppuMemory.read(attributeAddress);
             //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节
-            byte patternColorHighData = getPatternColorHighData(attributeData,i,scanLineIndex);
-            //背景色
-            byte p0 = ppuMemory.read(0x3F00);
+            int attributeOffset = ((coarse_y & 2) == 0 ? 0 : 4) + ((coarse_x & 2) == 0 ? 0 : 2);
+            int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00) | (coarse_y>>2)<<3 | (coarse_x >> 2);
+            byte pchb = (byte) ((ppuMemory.read(attributeAddress)>>attributeOffset)&3);
             //合并 取最终4位颜色
             for (int j = 0; j <8; j++) {
                 int pclb = patternColorLowData[7 - j];
                 //透明色 显示背景色
-                if(pclb == 0) {
-                    render[i*8+j] = ppuMemory.palettes[p0];
-                }else {
-                    int colorAddr = 0x3f00 + (((patternColorHighData << 2) & 0xF) | (pclb & 0x3));
+                if(pclb != 0) {
+                    int colorAddr = 0x3f00 + (pchb<<2 | (pclb & 0x3));
                     int paletteIndex = ppuMemory.read(colorAddr);
                     render[i*8+j] = ppuMemory.palettes[paletteIndex];
                 }
@@ -124,7 +123,7 @@ public class Ppu {
      */
     private void renderSprite(int sl,short spritePatternStartAddr, byte spriteSize, short[][] render) {
         //获取精灵高度
-        int spriteHeight = spriteSize == 0?8:16;
+        byte spriteHeight = (byte) (spriteSize == 0?8:16);
         //获取内存中的精灵数据
         byte[] sprRam = ppuMemory.getSprRam();
         for (int i = 0; i < sprRam.length; i += 4) {
@@ -147,16 +146,6 @@ public class Ppu {
                 }
                 int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + (sl - y);
                 byte spritePatternData = ppuMemory.read(spritePatternAddr);
-//                if(vFlip == 1) {
-//                    byte[] patterBytes = MemUtil.toBits(spritePatternData);
-//                    for (int j = 0; j < 4; j++) {
-//                        int temp = patterBytes[j];
-//                        patterBytes[j] = patterBytes[7-j];
-//                        patterBytes[7-j] = (byte) temp;
-//                    }
-//                    spritePatternData = MemUtil.bitsToByte(patterBytes);
-//                }
-
                 //获取图案颜色数据
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
                 byte[] patternColorLowData = getPatternColorLowData(spritePatternData,colorData);
@@ -174,44 +163,22 @@ public class Ppu {
                         }
                     }
                 }
-                if(hFlip == 1) {
-                    for (int j = 0; j < 4; j++) {
-                        short[] temp = render[x + j];
-                        render[x + j] = render[(x+7)-j];
-                        render[(x+7)-j] =temp;
-                    }
-                }
-//
+//                if(hFlip == 1) {
+//                    for (int j = 0; j < 4; j++) {
+//                        short[] temp = render[x + j];
+//                        render[x + j] = render[(x+7)-j];
+//                        render[(x+7)-j] =temp;
+//                    }
+//                }
+//                if(vFlip == 1) {
+//                    for (int j = 0; j < 4; j++) {
+//                        short[] temp = render[x + j];
+//                        render[x + j] = render[(x+7)-j];
+//                        render[(x+7)-j] =temp;
+//                    }
+//                }
             }
         }
-    }
-
-    /**
-     * 从属性表获取图案的高两位颜色
-     * @param attributeData
-     * @param i
-     * @param line
-     * @return
-     */
-    private byte getPatternColorHighData(byte attributeData,int i,int line) {
-        byte[] attributeDatas = MemUtil.toBits(attributeData);
-        int x = i % 4;
-        int y = line % 32 / 8;
-        byte high2 = 0;
-        if(y<2) {
-            if(x<2) {
-                high2 = (byte) ((attributeDatas[0]) + (attributeDatas[1]<<1));
-            }else {
-                high2 = (byte) ((attributeDatas[2]) + (attributeDatas[3]<<1));
-            }
-        }else {
-            if(x<2) {
-                high2 = (byte) ((attributeDatas[4]) + (attributeDatas[5]<<1));
-            }else {
-                high2 = (byte) ((attributeDatas[6]) + (attributeDatas[7]<<1));
-            }
-        }
-        return high2;
     }
 
     /**
