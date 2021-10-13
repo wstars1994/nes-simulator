@@ -167,7 +167,16 @@ public class CpuRegister {
         return MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((addr & 0xFF) + 1));
     }
 
-    
+
+    private byte branch(byte data,boolean flag){
+        byte cpuCycle = 2;
+        if(flag) {
+            cpuCycle -= (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
+            cpuMemory.setPrgPc(cpuMemory.getPrgPc() + (data&0xFF));
+        }
+        return cpuCycle;
+    }
+
     //---------------------------寻址方式 结束-----------------------------------
 
     /**
@@ -834,8 +843,8 @@ public class CpuRegister {
         return 2;
     }
 
-    public int ROL_ZERO(byte addr) {
-        byte data = cpuMemory.read(addr&0xFF);
+    public int ROL_ZERO(int addr) {
+        byte data = cpuMemory.read(addr);
         byte rol = (byte) ((data << 1) | REG_S_C);
         setC1((byte)((data >> 7) & 1));
         setN(rol);
@@ -929,8 +938,8 @@ public class CpuRegister {
         return 3;
     }
 
-    public int ROR_ZERO( byte addr) {
-        byte read = cpuMemory.read(addr&0xFF);
+    public int ROR_ZERO(int addr) {
+        byte read = cpuMemory.read(addr);
         byte read2 = (byte) (((read & 0xff) >> 1) | (REG_S_C << 7));
         setC1((byte) (read&1));
         setN(read2);
@@ -956,8 +965,8 @@ public class CpuRegister {
         return 4;
     }
 
-    public int ASL_ZERO( byte addr) {
-        byte data = cpuMemory.read(addr&0xFF);
+    public int ASL_ZERO(int addr) {
+        byte data = cpuMemory.read(addr);
         this.setC1((byte) ((data >> 7) & 1));
         byte data1= (byte) (data << 1);
         this.setN(data1);
@@ -1110,17 +1119,12 @@ public class CpuRegister {
 
     public int ORA_ZERO_X(byte data) {
         int addr = zero(data,REG_X);
-        EOR_A(cpuMemory.read(addr));
+        ORA(cpuMemory.read(addr));
         return 4;
     }
 
     public int BVC(byte data) {
-        int cpuCycle = 2;
-        if(REG_S_V == 0) {
-            cpuCycle -= (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
-            cpuMemory.setPrgPc(cpuMemory.getPrgPc() + (data&0xFF));
-        }
-        return cpuCycle;
+        return branch(data,REG_S_V == 0);
     }
 
     public int SBC_ABS_X(byte low, byte high) {
@@ -1183,6 +1187,33 @@ public class CpuRegister {
 
     public int CPY_ABS(byte low, byte high) {
         CPY(cpuMemory.read(MemUtil.concatByte(low,high)));
+        return 4;
+    }
+
+    public int ROR_ABS(byte low, byte high) {
+        ROR_ZERO(MemUtil.concatByte(low,high));
+        return 6;
+    }
+
+    public int BVS(byte data) {
+        return branch(data,REG_S_V==1);
+    }
+
+    public int ROL_ABS_X(byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        ROL_ZERO(addr);
+        return 7;
+    }
+
+    public int ASL_ABS_X(byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        ASL_ZERO(addr);
+        return 7;
+    }
+
+    public int EOR_ABS_X(byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        EOR_A(cpuMemory.read(addr));
         return 4;
     }
 }

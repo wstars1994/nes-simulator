@@ -53,6 +53,8 @@ public class NesMobo {
         DataBus.p_2002[7] = 0;
     }
 
+    short[][] renderBuff = new short[(256+16)*240][3];
+
     /**
      * 主板通电
      */
@@ -60,8 +62,6 @@ public class NesMobo {
         int perFrameMillis = 1000 / 100;
         while (true)  {
             long begin = System.currentTimeMillis();
-            //256x240 分辨率
-            short[][] renderBuff = new short[(256+16)*240][3];
             //vblank结束后 如果有渲染 将t复制到v
             if(DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1){
                 DataBus.p_vram_addr = DataBus.p_vram_temp_addr;
@@ -70,10 +70,7 @@ public class NesMobo {
                 if(DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1){
                     DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & 0xfbe0) | (DataBus.p_vram_temp_addr & 0x041f));
                 }
-                short[][] shorts = ppu.preRender(i);
-                for(int r = 0; r < 256; r++) {
-                    renderBuff[i * 256 + r] = shorts[r];
-                }
+                ppu.preRender(i,renderBuff);
                 this.cpu6502.go();
                 if (DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1) {
                     // if fine Y < 7
@@ -109,13 +106,12 @@ public class NesMobo {
                 cpu6502.getCpuRegister().NMI();
             }
             //242-260
-            for (int i = 241; i < 262; i++) {
+            for (int i = 240; i < 262; i++) {
                 this.cpu6502.go();
             }
             this.endVBlank();
             //渲染图像
             nesRender.render(renderBuff);
-
             //模拟器运行延时
             long end = System.currentTimeMillis();
             if(end-begin<perFrameMillis){
@@ -125,8 +121,6 @@ public class NesMobo {
                     e.printStackTrace();
                 }
             }
-
-
         }
     }
 }

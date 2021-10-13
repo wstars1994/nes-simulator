@@ -4,8 +4,6 @@ import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 
-import java.util.Arrays;
-
 /**
  * 图形处理单元
  * 16KB space
@@ -46,23 +44,19 @@ public class Ppu {
     /**
      * 开始绘制扫描线
      */
-    public short[][] preRender(int scanLineIndex) {
-        short[][] render = new short[256+16][3];
-        //填充背景色
-        Arrays.fill(render,ppuMemory.palettes[ppuMemory.read(0x3F00)]);
+    public void preRender(int scanLineIndex, short[][] renderBuff) {
         byte[] b2000 = DataBus.p_2000;
         byte[] b2001 = DataBus.p_2001;
         //渲染背景
         if(b2001[3] == 1) {
-            this.renderNameTable(render);
+            this.renderNameTable(scanLineIndex,renderBuff);
         }
         //渲染精灵
         if(b2001[4] == 1) {
             short spritePatternAddr = (short) (b2000[3]==0 ? 0:0x1000);
             byte spriteSize = b2000[5];
-            this.renderSprite(scanLineIndex,spritePatternAddr,spriteSize,render);
+            this.renderSprite(scanLineIndex,spritePatternAddr,spriteSize,renderBuff);
         }
-        return render;
     }
 
     /**
@@ -70,7 +64,8 @@ public class Ppu {
      * @see <a href="https://wiki.nesdev.org/w/index.php?title=PPU_scrolling">PPU_scrolling</a>
      * @param render
      */
-    private void renderNameTable(short[][] render) {
+    private void renderNameTable(int scanLineIndex,short[][] render) {
+        byte bgColorIndex = ppuMemory.read(0x3F00);
         byte fine_x = DataBus.p_scroll_x;
         byte fine_y = (byte) ((DataBus.p_vram_addr >> 12) & 7);
         short nameTableAddress  = (short) (0x2000 | (DataBus.p_vram_addr & 0x0FFF));
@@ -97,20 +92,22 @@ public class Ppu {
             //合并 取最终4位颜色
             for (int j = 0; j <8; j++) {
                 int pclb = patternColorLowData[7 - j];
-                //透明色 显示背景色
+                int index = scanLineIndex * 256 + i * 8 + j - fine_x;
                 if(pclb != 0) {
-                    int colorAddr = 0x3f00 + (pchb<<2 | (pclb & 0x3));
+                    int colorAddr = 0x3f00 + (pchb<<2|(pclb&0x3));
                     int paletteIndex = ppuMemory.read(colorAddr);
-                    render[i*8+j] = ppuMemory.palettes[paletteIndex];
+                    render[index] = ppuMemory.palettes[paletteIndex];
+                }else{
+                    render[index] = ppuMemory.palettes[bgColorIndex];
                 }
             }
-//            // if coarse X == 31 (coarseX的最大值就是31即11111B,所以到最大值了要切换到下一个nametable)
+            // if coarse X == 31 (coarseX的最大值就是31即11111B,所以到最大值了要切换到下一个nametable)
             if ((nameTableAddress & 0x001F) == 0x1F) {
                 // coarse X = 0
                 nameTableAddress &= ~0x001F;
                 // switch horizontal nametable
                 nameTableAddress ^= 0x0400;
-            }else {
+            } else {
                 nameTableAddress++;
             }
         }
@@ -139,12 +136,17 @@ public class Ppu {
             byte hFlip = (byte) ((attributeData>>6)&1);
             short sprX = (short) (sprRam[i+3]&0xff);
             if(sl >= y && sl <= y + spriteHeight) {
+                int offset = sl - y;
+                //垂直翻转
+                if(vFlip == 1){
+                    offset = spriteHeight-offset-1;
+                }
                 //获取图案地址
                 if(spriteHeight == 16) {
                     byte[] bytes = MemUtil.toBits((byte) patternIndex);
                     spritePatternStartAddr = (short) (bytes[0] == 0 ? 0x0000:0x1000);
                 }
-                int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + (sl - y);
+                int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + offset;
                 byte spritePatternData = ppuMemory.read(spritePatternAddr);
                 //获取图案颜色数据
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
@@ -154,6 +156,7 @@ public class Ppu {
                 if(spritePatternData + colorData != 0 && DataBus.p_2001[1] != 0 &&DataBus.p_2001[2] != 0) {
                     DataBus.p_2002[6] = 1;
                 }
+                //水平翻转 01234567 -> 76543210
                 int x = 0,x2 = 8,x3=1;
                 if(hFlip == 1) {
                     x = 7;
@@ -167,27 +170,13 @@ public class Ppu {
                             //获取4位颜色
                             int colorAddr = 0x3f10 | colorHigh | colorLow;
                             if(colorAddr!=0x3f10) {
-                                render[sprX + x] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
+                                render[sl*256+ sprX + x] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
                             }
                         }
                     }
                     spritePatternData<<=1;
                     colorData<<=1;
                 }
-//                if(hFlip == 1) {
-//                    for (int j = 0; j < 4; j++) {
-//                        short[] temp = render[x + j];
-//                        render[x + j] = render[(x+7)-j];
-//                        render[(x+7)-j] =temp;
-//                    }
-//                }
-//                if(vFlip == 1) {
-//                    for (int j = 0; j < 4; j++) {
-//                        short[] temp = render[x + j];
-//                        render[x + j] = render[(x+7)-j];
-//                        render[(x+7)-j] =temp;
-//                    }
-//                }
             }
         }
     }
