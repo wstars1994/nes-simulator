@@ -155,7 +155,7 @@ public class CpuRegister {
     //---------------------------寻址方式 开始-----------------------------------
 
     int zero(byte addr,byte reg){
-        return (addr&0XFF) + (reg & 0xff);
+        return ((addr&0XFF) + (reg & 0xff))&0xff;
     }
 
     byte indirectY(byte data){
@@ -167,12 +167,11 @@ public class CpuRegister {
         return MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((addr & 0xFF) + 1));
     }
 
-
-    private byte branch(byte data,boolean flag){
+    private byte branch(byte data,boolean flag) {
         byte cpuCycle = 2;
         if(flag) {
-            cpuCycle -= (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
-            cpuMemory.setPrgPc(cpuMemory.getPrgPc() + (data&0xFF));
+            cpuCycle += (cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2;
+            cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
         }
         return cpuCycle;
     }
@@ -250,12 +249,7 @@ public class CpuRegister {
      * @return
      */
     public int BNE(byte data) {
-        if(REG_S_Z == 0) {
-            int clk = 2 + ((cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2);
-            cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
-            return clk;
-        }
-        return 2;
+        return branch(data,REG_S_Z == 0);
     }
 
     /**
@@ -640,12 +634,7 @@ public class CpuRegister {
     }
 
     public int BCC( byte data) {
-        if(REG_S_C == 0) {
-            int clk = 2 + ((cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2);
-            cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
-            return clk;
-        }
-        return 2;
+        return branch(data,REG_S_C == 0);
     }
 
     public int EOR_ZERO( byte addr) {
@@ -987,8 +976,8 @@ public class CpuRegister {
     }
 
     public int LDY_ZERO_X( byte addr) {
-        int data = zero(addr,REG_X);
-        LDY(cpuMemory.read(data&0xFF));
+        int data = zero(addr,REG_X)&0xff;
+        LDY(cpuMemory.read(data));
         return 4;
     }
 
@@ -1106,7 +1095,7 @@ public class CpuRegister {
     }
 
     public int ADC_ABS_X(byte low, byte high) {
-        int addr = MemUtil.concatByte(low, high) + REG_X;
+        int addr = MemUtil.concatByte(low, high) + (REG_X&0xFF);
         ADC(cpuMemory.read(addr));
         return 4;
     }

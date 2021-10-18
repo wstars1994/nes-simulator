@@ -46,13 +46,12 @@ public class Ppu {
      */
     public void preRender(int scanLineIndex, short[][] renderBuff) {
         byte[] b2000 = DataBus.p_2000;
-        byte[] b2001 = DataBus.p_2001;
         //渲染背景
-        if(b2001[3] == 1) {
+        if(DataBus.showBg()) {
             this.renderNameTable(scanLineIndex,renderBuff);
         }
         //渲染精灵
-        if(b2001[4] == 1) {
+        if(DataBus.showSpr()) {
             short spritePatternAddr = (short) (b2000[3]==0 ? 0:0x1000);
             byte spriteSize = b2000[5];
             this.renderSprite(scanLineIndex,spritePatternAddr,spriteSize,renderBuff);
@@ -153,7 +152,7 @@ public class Ppu {
 
                 byte colorHigh = (byte) ((attributeData & 0x03)<<2);
                 //命中非透明背景 sprite hit
-                if(spritePatternData + colorData != 0 && DataBus.p_2001[1] != 0 &&DataBus.p_2001[2] != 0) {
+                if(spritePatternData + colorData != 0) {
                     DataBus.p_2002[6] = 1;
                 }
                 //水平翻转 01234567 -> 76543210

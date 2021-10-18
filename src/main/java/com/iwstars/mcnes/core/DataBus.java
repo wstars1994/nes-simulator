@@ -3,9 +3,6 @@ package com.iwstars.mcnes.core;
 import com.iwstars.mcnes.core.cpu.CpuMemory;
 import com.iwstars.mcnes.core.ppu.PpuMemory;
 
-import java.util.LinkedList;
-import java.util.List;
-
 /**
  * @description: cpu与ppu通信
  * @author: WStars
@@ -74,4 +71,14 @@ public class DataBus {
     public static void writePpuSprRam(byte addr, byte data) {
         ppuMemory.writeSprRam(addr,data);
     }
+
+    /**
+     * 渲染背景
+     */
+    public static boolean showBg() {return p_2001[3] == 1;}
+    /**
+     * 渲染精灵
+     */
+    public static boolean showSpr() {return p_2001[4] == 1;}
+
 }

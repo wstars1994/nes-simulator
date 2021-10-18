@@ -38,16 +38,18 @@ public class Cpu6502{
         cpuRegister.setCpuMemory(cpuMemory);
     }
 
-    public void go(){
+    public void go(boolean once){
         this.runProgram();
         cpuCycle = 113;
+        if(once){
+            cpuCycle=0;
+        }
     }
     /**
      * 运行程序
      */
     private void runProgram(){
         Iterator<Byte> iterator = cpuMemory.iteratorPrgData();
-
         do{
             LogUtil.logLn("");
             int prgPc = cpuMemory.getPrgPc()+1;
@@ -61,8 +63,7 @@ public class Cpu6502{
                     cpuRegister.getReg_A()&0xFF,cpuRegister.getReg_X()&0xFF,cpuRegister.getReg_Y()&0xFF,cpuRegister.getReg_S()&0xFF,
                     cpuRegister.getN(),cpuRegister.getV(),cpuRegister.getB(),cpuRegister.getD(),cpuRegister.getI(),cpuRegister.getZ(),cpuRegister.getC());
             this.execInstrcution(insCode,iterator);
-        }
-        while (cpuCycle > 0);
+        }while (cpuCycle > 0);
     }
 
     /**
@@ -618,12 +619,7 @@ public class Cpu6502{
                 LogUtil.log("ADC_ZERO_X");
                 cpuCycle-= cpuRegister.ADC_ZERO_X(iterator.next());
                 break;
-//            //INC_ZERO_X
-//            case 0xF6:
-//                LogUtil.log("INC_ZERO_X");
-//                cpuCycle-= cpuRegister.INC_ZERO_X(iterator.next());
-//                break;
-//            //DEC_ZERO_X
+            //DEC_ZERO_X
             case 0xD6:
                 LogUtil.log("DEC_ZERO_X");
                 cpuCycle-= cpuRegister.DEC_ZERO_X(iterator.next());

@@ -47,6 +47,7 @@ public class NesMobo {
         DataBus.p_2002[7] = 1;
         //Sprite 0 Hit false
         DataBus.p_2002[6] = 0;
+
     }
     public void endVBlank(){
         //设置vblank false
@@ -63,16 +64,16 @@ public class NesMobo {
         while (true)  {
             long begin = System.currentTimeMillis();
             //vblank结束后 如果有渲染 将t复制到v
-            if(DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1){
+            if(DataBus.showBg()||DataBus.showSpr()){
                 DataBus.p_vram_addr = DataBus.p_vram_temp_addr;
             }
             for (int i = 0; i < 240; i++) {
-                if(DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1){
+                if(DataBus.showBg()||DataBus.showSpr()){
                     DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & 0xfbe0) | (DataBus.p_vram_temp_addr & 0x041f));
                 }
                 ppu.preRender(i,renderBuff);
-                this.cpu6502.go();
-                if (DataBus.p_2001[3] == 1 || DataBus.p_2001[4] == 1) {
+                this.cpu6502.go(false);
+                if (DataBus.showBg()||DataBus.showSpr()) {
                     // if fine Y < 7
                     if ((DataBus.p_vram_addr & 0x7000) != 0x7000) {
                         // increment fine Y
@@ -99,28 +100,40 @@ public class NesMobo {
                     }
                 }
             }
-            this.beginVBlank();
-            this.cpu6502.go();
-            //nmi
-            if(DataBus.p_2000[7] == 1){
-                cpu6502.getCpuRegister().NMI();
-            }
-            //242-260
+
             for (int i = 240; i < 262; i++) {
-                this.cpu6502.go();
+                if (i == 241) {
+                    this.beginVBlank();
+                    this.cpu6502.go(true);
+                    if(DataBus.p_2000[7] == 1){
+                        cpu6502.getCpuRegister().NMI();
+                    }
+                }
+                this.cpu6502.go(false);
             }
+
+//            this.beginVBlank();
+//            this.cpu6502.go();
+//            //nmi
+//            if(DataBus.p_2000[7] == 1){
+//                cpu6502.getCpuRegister().NMI();
+//            }
+//            //242-260
+//            for (int i = 241; i < 262; i++) {
+//                this.cpu6502.go();
+//            }
             this.endVBlank();
             //渲染图像
             nesRender.render(renderBuff);
-            //模拟器运行延时
-            long end = System.currentTimeMillis();
-            if(end-begin<perFrameMillis){
-                try {
-                    Thread.sleep(perFrameMillis-(end-begin));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+//            //模拟器运行延时
+//            long end = System.currentTimeMillis();
+//            if(end-begin<perFrameMillis){
+//                try {
+//                    Thread.sleep(perFrameMillis-(end-begin));
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
     }
 }
