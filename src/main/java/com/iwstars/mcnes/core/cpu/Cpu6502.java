@@ -39,11 +39,11 @@ public class Cpu6502{
     }
 
     public void go(boolean once){
-        this.runProgram();
-        cpuCycle = 113;
         if(once){
             cpuCycle=0;
         }
+        this.runProgram();
+        cpuCycle = 113;
     }
     /**
      * 运行程序
@@ -286,7 +286,7 @@ public class Cpu6502{
             //ROL
             case 0x2A:
                 LogUtil.log("ROL");
-                cpuCycle-= cpuRegister.ROL();
+                cpuCycle-= cpuRegister.ROL_A();
                 break;
             //AND_ABS_X
             case 0x3D:
@@ -740,8 +740,33 @@ public class Cpu6502{
                 LogUtil.log("EOR_ABS_X");
                 cpuCycle-= cpuRegister.EOR_ABS_X(iterator.next(),iterator.next());
                 break;
+            //CPX_ABS
+            case 0xEC:
+                LogUtil.log("CPX_ABS");
+                cpuCycle-= cpuRegister.CPX_ABS(iterator.next(),iterator.next());
+                break;
+            //ROR_ZERO_X
+            case 0x76:
+                LogUtil.log("ROR_ZERO_X");
+                cpuCycle-= cpuRegister.ROR_ZERO_X(iterator.next());
+                break;
+            //LSR_ZERO_X
+            case 0x56:
+                LogUtil.log("LSR_ZERO_X");
+                cpuCycle-= cpuRegister.LSR_ZERO_X(iterator.next());
+                break;
+            //ROL_ZERO_X
+            case 0x36:
+                LogUtil.log("ROL_ZERO_X");
+                cpuCycle-= cpuRegister.ROL_ZERO_X(iterator.next());
+                break;
+            //LDX_ZERO_Y
+            case 0xB6:
+                LogUtil.log("LDX_ZERO_Y");
+                cpuCycle-= cpuRegister.LDX_ZERO_Y(iterator.next());
+                break;
             default:
-                System.out.printf("%02X",insCode);
+                System.out.printf("%02X\n",insCode);
                 break;
         }
     }

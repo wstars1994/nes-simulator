@@ -70,7 +70,7 @@ public class Ppu {
         short nameTableAddress  = (short) (0x2000 | (DataBus.p_vram_addr & 0x0FFF));
         short patternStartAddr = (short) (DataBus.p_2000[4] == 0 ?0x0000:0x1000);
         //32*30个Tile = (256*240 像素)
-        for (int i=0;i<32;i++) {
+        for (int i=0;i<33;i++) {
             //指示哪个tile
             byte coarse_x = (byte) (nameTableAddress&0x1F);
             byte coarse_y = (byte) ((nameTableAddress>>5)&0x1F);
@@ -86,7 +86,7 @@ public class Ppu {
             byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
             //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节
             int attributeOffset = ((coarse_y & 2) == 0 ? 0 : 4) + ((coarse_x & 2) == 0 ? 0 : 2);
-            int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00) | (coarse_y>>2)<<3 | (coarse_x >> 2);
+            int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00) | ((coarse_y>>2)<<3) | (coarse_x >> 2);
             byte pchb = (byte) ((ppuMemory.read(attributeAddress)>>attributeOffset)&3);
             //合并 取最终4位颜色
             for (int j = 0; j <8; j++) {
@@ -123,7 +123,7 @@ public class Ppu {
         //获取内存中的精灵数据
         byte[] sprRam = ppuMemory.getSprRam();
         for (int i = 0; i < sprRam.length; i += 4) {
-            short y = (short) ((sprRam[i]&0xff));
+            short y = (short) ((sprRam[i]&0xff)+1);
             short patternIndex = (short) (sprRam[i+1]&0xff);
             //子图形数据
             byte attributeData = sprRam[i+2];
@@ -134,18 +134,17 @@ public class Ppu {
             //图案水平翻转
             byte hFlip = (byte) ((attributeData>>6)&1);
             short sprX = (short) (sprRam[i+3]&0xff);
-            if(sl >= y && sl <= y + spriteHeight) {
+            if(sl >= y && sl < y + spriteHeight) {
                 int offset = sl - y;
                 //垂直翻转
                 if(vFlip == 1){
                     offset = spriteHeight-offset-1;
                 }
                 //获取图案地址
-                if(spriteHeight == 16) {
-                    byte[] bytes = MemUtil.toBits((byte) patternIndex);
-                    spritePatternStartAddr = (short) (bytes[0] == 0 ? 0x0000:0x1000);
-                }
                 int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + offset;
+                if(spriteHeight == 16) {
+                    spritePatternAddr = (patternIndex & ~1) * 16 + ((patternIndex & 1) * 0x1000) + (offset >= 8 ? 16 : 0) + (offset & 7);
+                }
                 byte spritePatternData = ppuMemory.read(spritePatternAddr);
                 //获取图案颜色数据
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);

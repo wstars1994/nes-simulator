@@ -154,8 +154,8 @@ public class CpuRegister {
 
     //---------------------------寻址方式 开始-----------------------------------
 
-    int zero(byte addr,byte reg){
-        return ((addr&0XFF) + (reg & 0xff))&0xff;
+    int zero(byte data,byte reg){
+        return ((data&0XFF) + (reg & 0xff))&0xff;
     }
 
     byte indirectY(byte data){
@@ -258,12 +258,7 @@ public class CpuRegister {
      * @return
      */
     public int BCS(byte data) {
-        if(REG_S_C != 0) {
-            int clk = 2 + ((cpuMemory.getPrgPc() & 0xff00) == ((cpuMemory.getPrgPc() + data) & 0xff00) ? 1 : 2);
-            cpuMemory.setPrgPc(cpuMemory.getPrgPc() + data);
-            return clk;
-        }
-        return 2;
+        return branch(data,REG_S_C != 0);
     }
 
     /**
@@ -302,11 +297,10 @@ public class CpuRegister {
     }
 
     public int CPX(byte data) {
-        short regX = REG_X;
-        byte cmpData = (byte) (regX - data);
-        setN(cmpData);
-        setZ(cmpData);
-        setC(cmpData);
+        int cmpData = (REG_X&0xff) - (data&0xff);
+        setN((byte) (cmpData&0xff));
+        setZ((byte) (cmpData&0xff));
+        REG_S_C = (byte) ((cmpData & 0xff00) == 0 ? 1 : 0);
         return 2;
     }
 
@@ -583,7 +577,7 @@ public class CpuRegister {
         return 4;
     }
 
-    public int ROL() {
+    public int ROL_A() {
         byte regA = REG_A;
         REG_A = (byte) ((regA << 1) | REG_S_C);
         setC1((byte)((regA >> 7) & 1));
@@ -759,7 +753,7 @@ public class CpuRegister {
         return 3;
     }
 
-    public int LDX_ZERO( byte addr) {
+    public int LDX_ZERO(int addr) {
         LDX(cpuMemory.read(addr&0xFF));
         return 3;
     }
@@ -1057,10 +1051,10 @@ public class CpuRegister {
     public int INC_ZERO_X(byte data) {
         int addr = zero(data,REG_X);
         int incData = cpuMemory.read(addr) + 1;
-        cpuMemory.write(data, (byte) incData);
-        REG_S_N = (byte) ((incData >> 7) & 1);
-        REG_S_Z = (byte) (incData == 0 ? 1 : 0);
-        return 4;
+        cpuMemory.write(addr, (byte) incData);
+        setN((byte) incData);
+        setZ((byte) incData);
+        return 6;
     }
 
     public int ORA_ABS(byte low, byte high) {
@@ -1103,7 +1097,7 @@ public class CpuRegister {
     public int DEC_ZERO_X(byte data) {
         int addr = zero(data,REG_X);
         DEC_ZERO(addr);
-        return 4;
+        return 6;
     }
 
     public int ORA_ZERO_X(byte data) {
@@ -1203,6 +1197,31 @@ public class CpuRegister {
     public int EOR_ABS_X(byte low, byte high) {
         int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
         EOR_A(cpuMemory.read(addr));
+        return 4;
+    }
+
+    public int CPX_ABS(byte low, byte high) {
+        CPX(cpuMemory.read(MemUtil.concatByte(low,high)));
+        return 4;
+    }
+
+    public int ROR_ZERO_X(byte data) {
+        ROR_ZERO(zero(data,REG_X));
+        return 6;
+    }
+
+    public int LSR_ZERO_X(byte data) {
+        LSR_ZERO((byte) zero(data,REG_X));
+        return 6;
+    }
+
+    public int ROL_ZERO_X(byte data) {
+        ROL_ZERO(zero(data,REG_X));
+        return 6;
+    }
+
+    public int LDX_ZERO_Y(byte data) {
+        LDX_ZERO(zero(data,REG_Y));
         return 4;
     }
 }

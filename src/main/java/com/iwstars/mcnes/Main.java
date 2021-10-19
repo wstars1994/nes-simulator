@@ -74,30 +74,40 @@ public class Main {
     private byte getKeyIndex(int keyCode){
         byte key = -1;
         switch (keyCode){
-            case 87: //W UP
+            //W UP
+            case 87:
                 key = 4;
                 break;
-            case 83: //S DOWN
+            //S DOWN
+            case 83:
                 key = 5;
                 break;
-            case 65: //A LEFT
+            //A LEFT
+            case 65:
                 key = 6;
                 break;
-            case 68: //D RIGHT
+            //D RIGHT
+            case 68:
                 key = 7;
                 break;
-            case 49: //1 SELECT
+            //1 SELECT
+            case 49:
                 key = 2;
                 break;
-            case 50: //2 START
+            //2 START
+            case 50:
                 key = 3;
                 break;
-            case 74: //J A
+            //J A
+            case 74:
                 key = 0;
                 break;
-            case 75: //K B
+            //K B
+            case 75:
                 key = 1;
                 break;
+            default:
+                key = -1;
         }
         return key;
     }
@@ -120,7 +130,6 @@ public class Main {
                     DataBus.c_4016_datas[keyIndex] = 1;
                 }
             }
-
             @Override
             public void keyReleased(KeyEvent e) {
                 int keyCode = e.getKeyCode();
@@ -140,7 +149,7 @@ public class Main {
         //显示
         frame.setVisible(true);
         //运行模拟器
-        String filePath = "cltg.nes";
+        String filePath = "1.nes";
         new Thread(() -> {
             //读取.nes文件数据
             NESRomData romData = this.loadData(new File(filePath));
