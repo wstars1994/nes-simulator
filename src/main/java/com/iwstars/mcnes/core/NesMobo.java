@@ -57,17 +57,18 @@ public class NesMobo {
         }
     }
 
-    short[][] renderBuff = new short[(256+16)*240][3];
+
 
     /**
      * 主板通电
      */
     public void powerUp(){
-        int perFrameMillis = 1000 / 100;
+        int perFrameMillis = 1000 / 200;
         while (true)  {
             long begin = System.currentTimeMillis();
+            short[][] renderBuff = new short[(256+16)*240][3];
             for (int i = 0; i < 240; i++) {
-                if(DataBus.showBg()||DataBus.showSpr()){
+                if(DataBus.showBg() || DataBus.showSpr()){
                     DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & 0xfbe0) | (DataBus.p_vram_temp_addr & 0x041f));
                 }
                 ppu.preRender(i,renderBuff);

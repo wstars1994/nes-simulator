@@ -22,35 +22,8 @@ public class NesUIRender {
         this.frame = frame;
         image = new BufferedImage((256) * Main.videoScale, 240 * Main.videoScale, BufferedImage.TYPE_INT_ARGB);
     }
-//
-//    class ThreadRender implements Runnable{
-//
-//        private int h;
-//        private int w;
-//        private short[][] pixelColorBuff;
-//
-//        public ThreadRender(int h,int w,short[][] pixelColorBuff){
-//            this.h = h;
-//            this.w = w;
-//            this.pixelColorBuff = pixelColorBuff;
-//        }
-//
-//        @Override
-//        public void run() {
-//            for(int h=0; h<240*Main.videoScale; h++) {
-//                for(int w=0;w<(256)*Main.videoScale; w++) {
-//                    short[] pixels = pixelColorBuff[(w / Main.videoScale) + ((h / Main.videoScale) * 256)];
-//                    int rgb = ((pixels[0] << 24) |(pixels[0] << 16) | ((pixels[1] << 8) | pixels[2]));
-//                    int a = rgb == 0?0x00:0xFF;
-//                    image.setRGB(w, h, (a<<24) | rgb );
-//                }
-//            }
-//
-//        }
-//    }
 
     public void render(short[][] pixelColorBuff){
-//        new Thread(new ThreadRender(pixelColorBuff)).start();
         for(int h=0; h<240*Main.videoScale; h++) {
             for(int w=0;w<(256)*Main.videoScale; w++) {
                 short[] pixels = pixelColorBuff[(w / Main.videoScale) + ((h / Main.videoScale) * 256)];
@@ -59,6 +32,6 @@ public class NesUIRender {
                 image.setRGB(w, h, (a<<24) | rgb );
             }
         }
-        frame.getGraphics().drawImage(image, 2, 15, frame);
+        frame.getGraphics().drawImage(image, 2, 20, frame);
     }
 }

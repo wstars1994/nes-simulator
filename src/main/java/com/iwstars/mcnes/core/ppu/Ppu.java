@@ -163,14 +163,10 @@ public class Ppu {
                 }
                 for (;x!=x2; x+=x3) {
                     int colorLow = ((spritePatternData & 0x80)>>7) | (((colorData & 0x80)>>7) << 1);
-                    if(colorLow != 0){
-                        if(backgroundPriority == 0) {
-                            //获取4位颜色
-                            int colorAddr = 0x3f10 | colorHigh | colorLow;
-                            if(colorAddr!=0x3f10) {
-                                render[sl*256+ sprX + x] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
-                            }
-                        }
+                    if(colorLow != 0 &&backgroundPriority==0 ){
+                        //获取4位颜色
+                        int colorAddr = 0x3f10 | colorHigh | colorLow;
+                        render[sl*256+ sprX + x] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
                     }
                     spritePatternData<<=1;
                     colorData<<=1;

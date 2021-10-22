@@ -115,7 +115,7 @@ public class Main {
     private void launch() {
         frame = new Frame("MCNES");
         //设置窗口的大小和位置
-        frame.setSize(260 * videoScale, 255*videoScale);
+        frame.setSize(260 * videoScale, 265*videoScale);
         //不可最大化
         frame.setResizable(false);
         //居中
