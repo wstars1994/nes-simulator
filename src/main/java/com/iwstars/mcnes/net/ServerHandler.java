@@ -1,5 +1,6 @@
 package com.iwstars.mcnes.net;
 
+import com.iwstars.mcnes.Main;
 import com.iwstars.mcnes.core.DataBus;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -13,8 +14,22 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) {
-        byte keyIndex = getKeyIndex(Integer.parseInt(msg));
-        DataBus.c_4017_datas[keyIndex] = 1;
+        int keyIndex = Integer.parseInt(msg);
+        System.out.println(keyIndex);
+        boolean press = keyIndex < 10 && keyIndex>=0;
+        if(Main.controlMain){
+            if(press){
+                DataBus.c_4017_datas[keyIndex] = 1;
+            }else{
+                DataBus.c_4017_datas[keyIndex/10] = 0;
+            }
+        }else{
+            if(press){
+                DataBus.c_4016_datas[keyIndex] = 1;
+            }else{
+                DataBus.c_4016_datas[keyIndex/10] = 0;
+            }
+        }
     }
 
     private byte getKeyIndex(int keyCode){
@@ -58,11 +73,11 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
         return key;
     }
 
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
 
         System.out.println("new conn");
+        NesNetMain.channel = ctx.channel();
     }
 
     @Override

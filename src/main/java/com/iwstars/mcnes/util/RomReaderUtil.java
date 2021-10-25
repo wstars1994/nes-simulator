@@ -59,14 +59,9 @@ public class RomReaderUtil {
         return headerRomControl2Data;
     }
 
-    private static byte[] getMapper(byte b) {
-        byte []mapper= new byte[4];
-        int m = b >> 4;
-        mapper[0] = (byte) (m&0x1);
-        mapper[1] = (byte) ((m&0x11)>>1);
-        mapper[2] = (byte) ((m&0x111)>>2);
-        mapper[3] = (byte) ((m&0xF)>>3);
-        return mapper;
+    private static byte getMapper(byte b) {
+
+        return (byte) (b>>4);
     }
 
     public static byte[] readRomData(DataInputStream dataInputStream, byte number,int baseSize) throws IOException {

@@ -9,6 +9,9 @@ import com.iwstars.mcnes.rom.HeaderData;
 import com.iwstars.mcnes.rom.NESRomData;
 import com.iwstars.mcnes.ui.NesUIRender;
 import com.iwstars.mcnes.util.RomReaderUtil;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import lombok.Cleanup;
 
 import java.awt.*;
@@ -20,6 +23,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URL;
 
 /**
  * @description: 主程序入口
@@ -43,16 +47,16 @@ public class Main {
 
     /**
      * 加载.nes文件数据到内存
-     * @param nesFile
+     * @param filePath
      * @return
      */
-    public NESRomData loadData(File nesFile) {
+    public NESRomData loadData(String filePath) {
         NESRomData romData = new NESRomData();
         try {
-            @Cleanup InputStream fileInputStream = new FileInputStream(nesFile);
-            @Cleanup DataInputStream dataInputStream = new DataInputStream(fileInputStream);
+            @Cleanup DataInputStream dataInputStream = new DataInputStream(new FileInputStream(filePath));
             HeaderData headerData = RomReaderUtil.readHeader(dataInputStream);
             romData.setHeaderData(headerData);
+            System.out.println("Mapper #"+(headerData.getHeaderRomControlData().getRomMapperLow() | headerData.getHeaderRomControl2Data().getRomMapperHigh()<<4));
             //16k PRG-ROM
             romData.setRomPRG(RomReaderUtil.readRomData(dataInputStream,headerData.getRomPRGSize(),16));
             if(headerData.getRomPRGSize() == 1) {
@@ -124,6 +128,8 @@ public class Main {
         frame.setResizable(false);
         //居中
         frame.setLocationRelativeTo(null);
+        //显示
+        frame.setVisible(true);
 
         frame.addKeyListener(new KeyAdapter() {
             @Override
@@ -135,6 +141,9 @@ public class Main {
                         DataBus.c_4017_datas[keyIndex] = 1;
                     }else{
                         DataBus.c_4016_datas[keyIndex] = 1;
+                    }
+                    if(NesNetMain.channel!=null){
+                        NesNetMain.channel.writeAndFlush(keyIndex);
                     }
                 }
             }
@@ -148,6 +157,9 @@ public class Main {
                     }else{
                         DataBus.c_4016_datas[keyIndex] = 0;
                     }
+                    if(NesNetMain.channel!=null){
+                        NesNetMain.channel.writeAndFlush(keyIndex*10);
+                    }
                 }
             }
         });
@@ -158,13 +170,10 @@ public class Main {
                 System.exit(0);
             }
         });
-        //显示
-        frame.setVisible(true);
-        //运行模拟器
-        String filePath = "tank.nes";
+
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = this.loadData(new File(filePath));
+            NESRomData romData = this.loadData("elsfk.nes");
             //创建PPU
             Ppu ppu = new Ppu(romData.getRomCHR());
             //创建CPU
@@ -179,9 +188,9 @@ public class Main {
             nesMobo.setNesRender(new NesUIRender(frame));
             nesMobo.reset();
             //网络启动
-            NesNetMain.init();
+//            NesNetMain.init();
             //上电启动
-//            nesMobo.powerUp();
+            nesMobo.powerUp();
         }).start();
     }
 }

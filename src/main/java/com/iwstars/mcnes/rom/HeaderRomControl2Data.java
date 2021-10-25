@@ -18,7 +18,7 @@ public class HeaderRomControl2Data {
 
     /**
      * 4bit
-     * rom mapper的低四位
+     * rom mapper的高四位
      */
-    private byte[] romMapperHigh;
+    private byte romMapperHigh;
 }

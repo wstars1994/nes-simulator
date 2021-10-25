@@ -45,5 +45,5 @@ public class HeaderRomControl1Data {
      * 4bit
      * rom mapper的低四位
      */
-    private byte[] romMapperLow;
+    private byte romMapperLow;
 }

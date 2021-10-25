@@ -4,8 +4,6 @@ import com.iwstars.mcnes.Main;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DirectColorModel;
 
 /**
  * @description: 渲染controller
