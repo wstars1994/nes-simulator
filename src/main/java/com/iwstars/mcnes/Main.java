@@ -4,6 +4,7 @@ import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.core.NesMobo;
 import com.iwstars.mcnes.core.cpu.Cpu6502;
 import com.iwstars.mcnes.core.ppu.Ppu;
+import com.iwstars.mcnes.net.NesNetMain;
 import com.iwstars.mcnes.rom.HeaderData;
 import com.iwstars.mcnes.rom.NESRomData;
 import com.iwstars.mcnes.ui.NesUIRender;
@@ -37,6 +38,9 @@ public class Main {
     public static int videoScale = 1;
 
     private Frame frame;
+
+    public static boolean controlMain = true;
+
     /**
      * 加载.nes文件数据到内存
      * @param nesFile
@@ -127,7 +131,11 @@ public class Main {
                 int keyCode = e.getKeyCode();
                 byte keyIndex = getKeyIndex(keyCode);
                 if(keyIndex !=-1){
-                    DataBus.c_4016_datas[keyIndex] = 1;
+                    if(!controlMain){
+                        DataBus.c_4017_datas[keyIndex] = 1;
+                    }else{
+                        DataBus.c_4016_datas[keyIndex] = 1;
+                    }
                 }
             }
             @Override
@@ -135,7 +143,11 @@ public class Main {
                 int keyCode = e.getKeyCode();
                 byte keyIndex = getKeyIndex(keyCode);
                 if(keyIndex !=-1){
-                    DataBus.c_4016_datas[keyIndex] = 0;
+                    if(!controlMain){
+                        DataBus.c_4017_datas[keyIndex] = 0;
+                    }else{
+                        DataBus.c_4016_datas[keyIndex] = 0;
+                    }
                 }
             }
         });
@@ -149,7 +161,7 @@ public class Main {
         //显示
         frame.setVisible(true);
         //运行模拟器
-        String filePath = "1.nes";
+        String filePath = "tank.nes";
         new Thread(() -> {
             //读取.nes文件数据
             NESRomData romData = this.loadData(new File(filePath));
@@ -166,8 +178,10 @@ public class Main {
             nesMobo.setCpu6502(cpu6502);
             nesMobo.setNesRender(new NesUIRender(frame));
             nesMobo.reset();
+            //网络启动
+            NesNetMain.init();
             //上电启动
-            nesMobo.powerUp();
+//            nesMobo.powerUp();
         }).start();
     }
 }

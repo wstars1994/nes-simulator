@@ -55,6 +55,12 @@ public class DataBus {
     public static byte c_4016_datas[] = new byte[8];
 
     /**
+     *  Joypad 2
+     */
+    public static byte c_4017 = -1;
+    public static byte c_4017_datas[] = new byte[8];
+
+    /**
      * 向ppu写数据
      * @param addr
      * @param data

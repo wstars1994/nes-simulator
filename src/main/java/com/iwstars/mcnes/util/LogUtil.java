@@ -6,7 +6,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Formatter;
-import java.util.Locale;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * 日志控制输出
@@ -16,23 +16,28 @@ import java.util.Locale;
 public class LogUtil {
 
     static BufferedWriter bw;
+    static LinkedBlockingQueue<String> logQueue;
     static {
+        logQueue = new LinkedBlockingQueue<>();
         try {
             bw = new BufferedWriter(new FileWriter("D:\\workspace\\mcnes\\log.txt"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    public static void logLn(String info) {
-        if(Main.debug) {
-            try {
-                bw.newLine();
-            } catch (IOException e) {
-                e.printStackTrace();
+        new Thread(() -> {
+            while (true){
+                String poll = logQueue.poll();
+                if(poll!=null){
+                    if(poll.equals("ln")){
+                        System.out.println();
+                        continue;
+                    }
+                    System.out.print(poll);
+                }
             }
-            System.out.println(info);
-        }
+        }).start();
     }
+
     public static void log(String info) {
 //        if(Main.debug) {
 //            try {
@@ -44,14 +49,19 @@ public class LogUtil {
 //        }
     }
 
-    public static void logf(String  format,Object ...args) {
+    public static void logf(String format,Object ...args) {
         if(Main.debug) {
-//            System.out.printf(format,args);
-            Formatter formatter = new Formatter();
-            Formatter format1 = formatter.format(format, args);
             try {
-                bw.write(format1.toString());
-            } catch (IOException e) {
+                if(args==null){
+                    logQueue.put("ln");
+                    return;
+                }
+//            System.out.printf(format,args);
+                Formatter formatter = new Formatter();
+                Formatter format1 = formatter.format(format, args);
+                logQueue.put(format1.toString());
+//                bw.write(format1.toString());
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

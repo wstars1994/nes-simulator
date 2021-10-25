@@ -69,7 +69,7 @@ public class CpuMemory {
      * @param addr
      * @param data
      */
-    private byte write_count_4016 = 0,read_count_4016 = 0;
+    private byte write_count_4016 = 0,read_count_4016 = 0,write_count_4017 = 0,read_count_4017 = 0;
     public void write(int addr,byte data){
         LogUtil.logf(" | WR:[ADDR:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
 
@@ -135,16 +135,20 @@ public class CpuMemory {
                     DataBus.writePpuSprRam((byte) i,readData);
                 }
                 break;
-            //输入设备
+            //输入设备写入
             case 0x4016:
                 DataBus.c_4016 = 0;
+                DataBus.c_4017 = 0;
                 if(data == 1){
                     read_count_4016 = 0;
+                    read_count_4017 = 0;
                 }else{
                     for (byte i = 0; i < 8; i++) {
-                        byte c4016Data = DataBus.c_4016_datas[i];
-                        if(c4016Data == 1) {
+                        if(DataBus.c_4016_datas[i] == 1) {
                             DataBus.c_4016 = (byte) ((DataBus.c_4016) | 1<<i);
+                        }
+                        if(DataBus.c_4017_datas[i] == 1) {
+                            DataBus.c_4017 = (byte) ((DataBus.c_4017) | 1<<i);
                         }
                     }
                 }
@@ -191,15 +195,12 @@ public class CpuMemory {
                 break;
             case 0x4016:
                 byte returnNum = (byte) ((DataBus.c_4016 >> read_count_4016) & 1);
-
-//                if(DataBus.c_4016 > -1) {
-//                    returnNum = (byte) (read_count_4016 == DataBus.c_4016 ? 1:0);
-//                }
                 read_count_4016++;
                 return returnNum;
             case 0x4017:
-//                System.out.println("读取手柄2输入:" + this.data[addr]);
-                return 0;
+                byte returnNum2 = (byte) ((DataBus.c_4017 >> read_count_4017) & 1);
+                read_count_4017++;
+                return returnNum2;
         }
         return this.data[addr];
     }

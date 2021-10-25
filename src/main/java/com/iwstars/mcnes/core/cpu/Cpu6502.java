@@ -51,7 +51,7 @@ public class Cpu6502{
     private void runProgram(){
         Iterator<Byte> iterator = cpuMemory.iteratorPrgData();
         do{
-            LogUtil.logLn("");
+            LogUtil.logf("",null);
             int prgPc = cpuMemory.getPrgPc()+1;
             byte insCode = iterator.next();
 

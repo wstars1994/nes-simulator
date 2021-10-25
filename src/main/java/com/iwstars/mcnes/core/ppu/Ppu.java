@@ -92,12 +92,12 @@ public class Ppu {
             for (int j = 0; j <8; j++) {
                 int pclb = patternColorLowData[7 - j];
                 int index = scanLineIndex * 256 + i * 8 + j - fine_x;
-                if(pclb != 0) {
+                if(pclb!=0) {
                     int colorAddr = 0x3f00 + (pchb<<2|(pclb&0x3));
                     int paletteIndex = ppuMemory.read(colorAddr);
                     render[index] = ppuMemory.palettes[paletteIndex];
                 }else{
-                    render[index] = ppuMemory.palettes[bgColorIndex];
+                    render[index] = ppuMemory.palettes[bgColorIndex&0xff];
                 }
             }
             // if coarse X == 31 (coarseX的最大值就是31即11111B,所以到最大值了要切换到下一个nametable)
@@ -122,6 +122,10 @@ public class Ppu {
         byte spriteHeight = (byte) (spriteSize == 0?8:16);
         //获取内存中的精灵数据
         byte[] sprRam = ppuMemory.getSprRam();
+
+        byte bgColorIndex = ppuMemory.read(0x3F00);
+        short[] palette = ppuMemory.palettes[bgColorIndex & 0xff];
+
         for (int i = 0; i < sprRam.length; i += 4) {
             short y = (short) ((sprRam[i]&0xff)+1);
             short patternIndex = (short) (sprRam[i+1]&0xff);
@@ -150,23 +154,24 @@ public class Ppu {
                 byte colorData = ppuMemory.read(spritePatternAddr + 8);
 
                 byte colorHigh = (byte) ((attributeData & 0x03)<<2);
-                //命中非透明背景 sprite hit
-                if(spritePatternData + colorData != 0) {
+                //命中非透明背景 sprite0 hit
+                if(i==0&&spritePatternData+colorData!=0) {
                     DataBus.p_2002[6] = 1;
                 }
                 //水平翻转 01234567 -> 76543210
                 int x = 0,x2 = 8,x3=1;
                 if(hFlip == 1) {
-                    x = 7;
-                    x2 = -1;
-                    x3 = -1;
+                    x = 7; x2 = -1; x3 = -1;
                 }
                 for (;x!=x2; x+=x3) {
                     int colorLow = ((spritePatternData & 0x80)>>7) | (((colorData & 0x80)>>7) << 1);
-                    if(colorLow != 0 &&backgroundPriority==0 ){
+                    short[] shorts = render[sl * 256 + sprX + x];
+                    boolean i1 = shorts[0]==palette[0] && shorts[1]==palette[1]&&shorts[2]==palette[2];
+                    if(colorLow != 0 && (backgroundPriority == 0 || i1)){
                         //获取4位颜色
                         int colorAddr = 0x3f10 | colorHigh | colorLow;
-                        render[sl*256+ sprX + x] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
+                        if(colorAddr != 0x3f10)
+                            render[sl*256+ sprX + x] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
                     }
                     spritePatternData<<=1;
                     colorData<<=1;
@@ -189,13 +194,5 @@ public class Ppu {
             patternColorData[i] = (byte) (((colorDatas[i]<<1)&3) | (patternDatas[i]&1));
         }
         return patternColorData;
-    }
-
-    private void print8(byte data){
-        String s = Integer.toBinaryString(data & 0xFF);
-        while (s.length()<8) {
-            s="0"+s;
-        }
-        System.out.print(s);
     }
 }
