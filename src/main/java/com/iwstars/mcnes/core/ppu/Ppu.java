@@ -1,6 +1,7 @@
 package com.iwstars.mcnes.core.ppu;
 
 import com.iwstars.mcnes.core.DataBus;
+import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Getter;
 
@@ -67,7 +68,7 @@ public class Ppu {
         byte bgColorIndex = ppuMemory.read(0x3F00);
         byte fine_x = DataBus.p_scroll_x;
         byte fine_y = (byte) ((DataBus.p_vram_addr >> 12) & 7);
-        short nameTableAddress  = (short) (0x2000 | (DataBus.p_vram_addr & 0x0FFF));
+        short nameTableAddress  = (short) (0x2000 | (DataBus.p_vram_addr & 0xFFF));
         short patternStartAddr = (short) (DataBus.p_2000[4] == 0 ?0x0000:0x1000);
         //32*30个Tile = (256*240 像素)
         for (int i=0;i<33;i++) {
@@ -76,10 +77,13 @@ public class Ppu {
             byte coarse_y = (byte) ((nameTableAddress>>5)&0x1F);
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
             byte nameTableData = ppuMemory.read(nameTableAddress);
+            LogUtil.logf2("addr=%d,data=%d\n",nameTableAddress,nameTableData);
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
             int patternAddress = patternStartAddr + (nameTableData&0xff) * 16 + fine_y;
+
             //图案表数据
             byte patternData = ppuMemory.read(patternAddress);
+
             //图案表颜色数据
             byte colorData = ppuMemory.read(patternAddress + 8);
             //取颜色低两位
@@ -89,7 +93,7 @@ public class Ppu {
             int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00) | ((coarse_y>>2)<<3) | (coarse_x >> 2);
             byte pchb = (byte) ((ppuMemory.read(attributeAddress)>>attributeOffset)&3);
             //合并 取最终4位颜色
-            for (int j = 0; j <8; j++) {
+            for (int j=0; j<8; j++) {
                 int pclb = patternColorLowData[7 - j];
                 int index = scanLineIndex * 256 + i * 8 + j - fine_x;
                 if(pclb!=0) {
@@ -101,11 +105,8 @@ public class Ppu {
                 }
             }
             // if coarse X == 31 (coarseX的最大值就是31即11111B,所以到最大值了要切换到下一个nametable)
-            if ((nameTableAddress & 0x001F) == 0x1F) {
-                // coarse X = 0
-                nameTableAddress &= ~0x001F;
-                // switch horizontal nametable
-                nameTableAddress ^= 0x0400;
+            if ((nameTableAddress & 0x1F) == 0x1F) {
+                nameTableAddress = (short) ((nameTableAddress & ~0x1f) ^ 0x400);
             } else {
                 nameTableAddress++;
             }

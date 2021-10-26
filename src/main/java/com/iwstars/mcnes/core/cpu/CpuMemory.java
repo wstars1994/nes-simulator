@@ -97,11 +97,11 @@ public class CpuMemory {
                     DataBus.p_scroll_x = (byte) (data&0x7);
                     //设置coarse_x
                     DataBus.p_vram_temp_addr &= ~0x1F;
-                    DataBus.p_vram_temp_addr |= (data>>3)&0x1F;
+                    DataBus.p_vram_temp_addr |= ((data&0xff)>>3)&0x1F;
                 } else {
                     //设置coarse_y
                     DataBus.p_vram_temp_addr &= ~0x3E0;
-                    DataBus.p_vram_temp_addr |= ((data>>3)<<5);
+                    DataBus.p_vram_temp_addr |= (((data&0xff)>>3)<<5);
                     //设置fine_y
                     DataBus.p_vram_temp_addr &= ~0x7000;
                     DataBus.p_vram_temp_addr |= (data&0x7)<<12;
@@ -124,7 +124,7 @@ public class CpuMemory {
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
             case 0x2007:
-                DataBus.writePpuMemory(DataBus.p_vram_addr& 0x3fff,data);
+                DataBus.writePpuMemory(DataBus.p_vram_addr,data);
                 DataBus.p_vram_addr += (DataBus.p_2000[2]==0?1:32);
                 break;
             //OAM DMA register (high byte)
@@ -174,7 +174,9 @@ public class CpuMemory {
      * @return
      */
     public byte read(int addr){
-        LogUtil.logf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
+        if(addr<0x8000){
+            LogUtil.logf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
+        }
         switch (addr) {
             //读PPUSTATUS状态寄存器
             case 0x2002:

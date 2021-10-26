@@ -4,6 +4,7 @@ import com.iwstars.mcnes.core.cpu.Cpu6502;
 import com.iwstars.mcnes.core.cpu.CpuMemory;
 import com.iwstars.mcnes.core.ppu.Ppu;
 import com.iwstars.mcnes.ui.NesUIRender;
+import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
 import lombok.Setter;
 
@@ -56,8 +57,6 @@ public class NesMobo {
             DataBus.p_vram_addr = DataBus.p_vram_temp_addr;
         }
     }
-
-
 
     /**
      * 主板通电

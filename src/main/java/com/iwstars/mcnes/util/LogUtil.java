@@ -52,18 +52,23 @@ public class LogUtil {
     public static void logf(String format,Object ...args) {
         if(Main.debug) {
             try {
-                if(args==null){
-                    logQueue.put("ln");
-                    return;
-                }
-//            System.out.printf(format,args);
                 Formatter formatter = new Formatter();
                 Formatter format1 = formatter.format(format, args);
-                logQueue.put(format1.toString());
-//                bw.write(format1.toString());
+                bw.write(format1.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
+
+    public static void logf2(String format,Object ...args) {
+        try {
+            Formatter formatter = new Formatter();
+            Formatter format1 = formatter.format(format, args);
+            bw.write(format1.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

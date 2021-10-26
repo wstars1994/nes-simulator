@@ -15,7 +15,6 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) {
         int keyIndex = Integer.parseInt(msg);
-        System.out.println(keyIndex);
         boolean press = keyIndex < 10 && keyIndex>=0;
         if(Main.controlMain){
             if(press){

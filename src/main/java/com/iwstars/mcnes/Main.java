@@ -173,7 +173,7 @@ public class Main {
 
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = this.loadData("elsfk.nes");
+            NESRomData romData = this.loadData("bf.nes");
             //创建PPU
             Ppu ppu = new Ppu(romData.getRomCHR());
             //创建CPU
