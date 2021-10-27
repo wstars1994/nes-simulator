@@ -1,9 +1,7 @@
 package com.iwstars.mcnes.core.ppu;
 
 import com.iwstars.mcnes.core.DataBus;
-import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
-import lombok.Getter;
 
 /**
  * 图形处理单元
@@ -28,7 +26,6 @@ import lombok.Getter;
  * @author WStars
  * @date 2020/4/18 13:46
  */
-@Getter
 public class Ppu {
 
     private PpuMemory ppuMemory;
@@ -37,9 +34,12 @@ public class Ppu {
      * 初始化PPU  从nes文件读取到的CHR数据
      * @param patternData 图案表数据
      */
-    public Ppu(byte[] patternData){
-        ppuMemory = new PpuMemory();
-        ppuMemory.writePattern(patternData);
+    public Ppu(byte[] patternData,byte mirroringType){
+        ppuMemory = new PpuMemory(patternData,mirroringType);
+    }
+
+    public PpuMemory getPpuMemory() {
+        return ppuMemory;
     }
 
     /**
@@ -77,7 +77,6 @@ public class Ppu {
             byte coarse_y = (byte) ((nameTableAddress>>5)&0x1F);
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
             byte nameTableData = ppuMemory.read(nameTableAddress);
-            LogUtil.logf2("addr=%d,data=%d\n",nameTableAddress,nameTableData);
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
             int patternAddress = patternStartAddr + (nameTableData&0xff) * 16 + fine_y;
 
@@ -96,6 +95,9 @@ public class Ppu {
             for (int j=0; j<8; j++) {
                 int pclb = patternColorLowData[7 - j];
                 int index = scanLineIndex * 256 + i * 8 + j - fine_x;
+                if(index<0){
+                    index = 0;
+                }
                 if(pclb!=0) {
                     int colorAddr = 0x3f00 + (pchb<<2|(pclb&0x3));
                     int paletteIndex = ppuMemory.read(colorAddr);
@@ -171,8 +173,9 @@ public class Ppu {
                     if(colorLow != 0 && (backgroundPriority == 0 || i1)){
                         //获取4位颜色
                         int colorAddr = 0x3f10 | colorHigh | colorLow;
-                        if(colorAddr != 0x3f10)
+                        if(colorAddr != 0x3f10){
                             render[sl*256+ sprX + x] = ppuMemory.palettes[ppuMemory.read(colorAddr)];
+                        }
                     }
                     spritePatternData<<=1;
                     colorData<<=1;

@@ -34,6 +34,14 @@ public class PpuMemory{
      */
     private byte[] sprRam = new byte[256];
 
+
+    private byte mirroringType;
+
+    public PpuMemory(byte[] patternData,byte mirroringType){
+        System.arraycopy(patternData,0,ppuData,0,patternData.length);
+        this.mirroringType = mirroringType;
+    }
+
     /**
      * 调色板 http://nesdev.com/NESDoc.pdf (Appendix F)
      */
@@ -50,7 +58,7 @@ public class PpuMemory{
     };
 
     public void write(int addr, byte data) {
-        LogUtil.logf(" | PWR:[addr:%02X INDEX:%d DATA:%d]\n",addr&0xFFFF,addr&0xFFFF,data);
+        LogUtil.logf(" | PWR:[addr:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
         //写入 $3F00-3FFF 的 D7-D6 字节被忽略.
         if(addr >= 0x3F00 && addr <= 0x3FFF) {
             data = (byte) (data & 0x3f);
@@ -64,18 +72,21 @@ public class PpuMemory{
     }
 
     public byte read(int addr) {
-        if(addr>=0x2800 && addr<=0x2FFF){
-            addr -= 0x800;
+        switch (this.mirroringType){
+            //H
+            case 0:
+                if(addr>=0x2400&&addr<0x2800 || addr>=0x2C00&&addr<0x3000){
+                    addr-=0x400;
+                }
+                break;
+            //V
+            case 1:
+                if(addr>=0x2800&&addr<0x3000){
+                    addr-=0x800;
+                }
+                break;
         }
         return this.ppuData[addr];
-    }
-
-    /**
-     * 写入图案表
-     * @param data
-     */
-    public void writePattern(byte[] data) {
-        System.arraycopy(data,0,ppuData,0,data.length);
     }
 
     /**

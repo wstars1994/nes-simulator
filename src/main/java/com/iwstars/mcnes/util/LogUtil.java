@@ -52,22 +52,13 @@ public class LogUtil {
     public static void logf(String format,Object ...args) {
         if(Main.debug) {
             try {
+                System.out.printf(format,args);
                 Formatter formatter = new Formatter();
                 Formatter format1 = formatter.format(format, args);
                 bw.write(format1.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    public static void logf2(String format,Object ...args) {
-        try {
-            Formatter formatter = new Formatter();
-            Formatter format1 = formatter.format(format, args);
-            bw.write(format1.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

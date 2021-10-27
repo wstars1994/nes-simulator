@@ -4,16 +4,13 @@ import com.iwstars.mcnes.core.cpu.Cpu6502;
 import com.iwstars.mcnes.core.cpu.CpuMemory;
 import com.iwstars.mcnes.core.ppu.Ppu;
 import com.iwstars.mcnes.ui.NesUIRender;
-import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
-import lombok.Setter;
 
 /**
  * @description: nes模拟板
  * @author: WStars
  * @date: 2020-04-19 10:06
  */
-@Setter
 public class NesMobo {
 
     /**
@@ -63,8 +60,8 @@ public class NesMobo {
      */
     public void powerUp(){
         int perFrameMillis = 1000 / 60;
+        long begin = System.currentTimeMillis();
         while (true)  {
-            long begin = System.currentTimeMillis();
             short[][] renderBuff = new short[(256+16)*240][3];
             for (int i = 0; i < 240; i++) {
                 if(DataBus.showBg() || DataBus.showSpr()){
@@ -99,13 +96,14 @@ public class NesMobo {
             nesRender.render(renderBuff);
             //模拟器运行延时
             long end = System.currentTimeMillis();
-            if(end-begin<perFrameMillis){
+            if(end-begin < perFrameMillis){
                 try {
                     Thread.sleep(perFrameMillis-(end-begin));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
+            begin = end;
         }
     }
 
@@ -136,5 +134,17 @@ public class NesMobo {
                 DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & ~0x03E0) | (y << 5));
             }
         }
+    }
+
+    public void setCpu6502(Cpu6502 cpu6502) {
+        this.cpu6502 = cpu6502;
+    }
+
+    public void setPpu(Ppu ppu) {
+        this.ppu = ppu;
+    }
+
+    public void setNesRender(NesUIRender nesRender) {
+        this.nesRender = nesRender;
     }
 }

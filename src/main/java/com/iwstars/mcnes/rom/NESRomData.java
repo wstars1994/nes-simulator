@@ -1,13 +1,10 @@
 package com.iwstars.mcnes.rom;
 
-import lombok.Data;
-
 /**
  * @description: .nes rom数据
  * @author: WStars
  * @date: 2020-04-16 15:15
  */
-@Data
 public class NESRomData {
 
     /**
@@ -24,4 +21,29 @@ public class NESRomData {
      * 图案数据 size =  8k *  headerData.romCHRSize
      */
     private byte[] romCHR;
+
+
+    public HeaderData getHeaderData() {
+        return headerData;
+    }
+
+    public void setHeaderData(HeaderData headerData) {
+        this.headerData = headerData;
+    }
+
+    public byte[] getRomPRG() {
+        return romPRG;
+    }
+
+    public void setRomPRG(byte[] romPRG) {
+        this.romPRG = romPRG;
+    }
+
+    public byte[] getRomCHR() {
+        return romCHR;
+    }
+
+    public void setRomCHR(byte[] romCHR) {
+        this.romCHR = romCHR;
+    }
 }

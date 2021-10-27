@@ -3,16 +3,13 @@ package com.iwstars.mcnes;
 import com.iwstars.mcnes.core.DataBus;
 import com.iwstars.mcnes.core.NesMobo;
 import com.iwstars.mcnes.core.cpu.Cpu6502;
+import com.iwstars.mcnes.core.mapper.IMapper;
 import com.iwstars.mcnes.core.ppu.Ppu;
 import com.iwstars.mcnes.net.NesNetMain;
 import com.iwstars.mcnes.rom.HeaderData;
 import com.iwstars.mcnes.rom.NESRomData;
 import com.iwstars.mcnes.ui.NesUIRender;
 import com.iwstars.mcnes.util.RomReaderUtil;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import lombok.Cleanup;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -20,10 +17,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.URL;
 
 /**
  * @description: 主程序入口
@@ -53,10 +47,10 @@ public class Main {
     public NESRomData loadData(String filePath) {
         NESRomData romData = new NESRomData();
         try {
-            @Cleanup DataInputStream dataInputStream = new DataInputStream(new FileInputStream(filePath));
+            DataInputStream dataInputStream = new DataInputStream(new FileInputStream(filePath));
             HeaderData headerData = RomReaderUtil.readHeader(dataInputStream);
+            headerData.setMapperNo((byte) (headerData.getControlData1().getRomMapperLow() | headerData.getControlData2().getRomMapperHigh()<<4));
             romData.setHeaderData(headerData);
-            System.out.println("Mapper #"+(headerData.getHeaderRomControlData().getRomMapperLow() | headerData.getHeaderRomControl2Data().getRomMapperHigh()<<4));
             //16k PRG-ROM
             romData.setRomPRG(RomReaderUtil.readRomData(dataInputStream,headerData.getRomPRGSize(),16));
             if(headerData.getRomPRGSize() == 1) {
@@ -75,7 +69,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        videoScale = 1;
         new Main().launch();
     }
 
@@ -173,14 +166,26 @@ public class Main {
 
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = this.loadData("bf.nes");
-            //创建PPU
-            Ppu ppu = new Ppu(romData.getRomCHR());
+            NESRomData romData = this.loadData("chd.nes");
+            HeaderData headerData = romData.getHeaderData();
+            byte romPRGSize = headerData.getRomPRGSize();
+            byte romCHRSize = headerData.getRomCHRSize();
+            System.out.println("Game MapperNo: "+headerData.getMapperNo());
+            byte fourScreen = headerData.getControlData1().getFourScreen();
+            System.out.println("Game Four-Screen Mirroring: "+ (fourScreen==0?"F":"T"));
+            byte mirrorType = headerData.getControlData1().getMirrorType();
+            System.out.println("Game Mirroring: "+ (mirrorType==0?"H":"V"));
+            System.out.println("PRG ROM Size: "+romPRGSize);
+            System.out.println("CHR ROM Size: "+romCHRSize);
             //创建CPU
             Cpu6502 cpu6502 = new Cpu6502(romData.getRomPRG());
+            //创建PPU
+            Ppu ppu = new Ppu(romData.getRomCHR(), headerData.getControlData1().getMirrorType());
             //挂载到总线
             DataBus.cpuMemory = cpu6502.getCpuMemory();
             DataBus.ppuMemory = ppu.getPpuMemory();
+
+            DataBus.cpuMemory.setMapper(IMapper.getMapper(headerData.getMapperNo()));
             //创建主板
             NesMobo nesMobo = new NesMobo();
             nesMobo.setPpu(ppu);

@@ -34,8 +34,8 @@ public class RomReaderUtil {
         headerData.setMagicEof(dataInputStream.readByte());
         headerData.setRomPRGSize(dataInputStream.readByte());
         headerData.setRomCHRSize(dataInputStream.readByte());
-        headerData.setHeaderRomControlData(readHeaderRomControl1Data(dataInputStream));
-        headerData.setHeaderRomControl2Data(readHeaderRomControl2Data(dataInputStream));
+        headerData.setControlData1(readHeaderRomControl1Data(dataInputStream));
+        headerData.setControlData2(readHeaderRomControl2Data(dataInputStream));
         headerData.setZero(dataInputStream.readLong());
         return headerData;
     }
@@ -43,10 +43,10 @@ public class RomReaderUtil {
     private static HeaderRomControl1Data readHeaderRomControl1Data(DataInputStream dataInputStream) throws IOException {
         HeaderRomControl1Data headerRomControl1Data = new HeaderRomControl1Data();
         byte b = dataInputStream.readByte();
-        headerRomControl1Data.setMirrorType(b&0x1);
-        headerRomControl1Data.setSRAMEnabled((b&0x11)>>1);
-        headerRomControl1Data.setTrainerPresent((b&0x111)>>2);
-        headerRomControl1Data.setVram4((b&0xF)>>3);
+        headerRomControl1Data.setMirrorType((byte) (b&0x1));
+        headerRomControl1Data.setSRAMEnabled((byte) ((b>>1)&0x1));
+        headerRomControl1Data.setTrainerPresent((byte) ((b>>2)&0x1));
+        headerRomControl1Data.setFourScreen((byte) ((b>>3)&0x1));
         headerRomControl1Data.setRomMapperLow(getMapper(b));
         return headerRomControl1Data;
     }

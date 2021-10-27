@@ -1,7 +1,6 @@
 package com.iwstars.mcnes.core.cpu;
 
 import com.iwstars.mcnes.util.LogUtil;
-import lombok.Getter;
 
 import java.util.Iterator;
 
@@ -10,7 +9,6 @@ import java.util.Iterator;
  * @author: WStars
  * @date: 2020-04-18 20:12
  */
-@Getter
 public class Cpu6502{
 
     /**
@@ -22,6 +20,7 @@ public class Cpu6502{
     public static int cpuCycle = 113;
 
     private static int runCycleNum = 0;
+
     /**
      * CPU内存数据
      */
@@ -32,10 +31,17 @@ public class Cpu6502{
     private CpuRegister cpuRegister;
 
 
+    public CpuMemory getCpuMemory() {
+        return cpuMemory;
+    }
+
+    public CpuRegister getCpuRegister() {
+        return cpuRegister;
+    }
+
     public Cpu6502(byte[] prgData){
         cpuMemory.write(0x8000,prgData);
-        cpuRegister = new CpuRegister();
-        cpuRegister.setCpuMemory(cpuMemory);
+        cpuRegister = new CpuRegister(cpuMemory);
     }
 
     public void go(boolean once){
@@ -55,7 +61,7 @@ public class Cpu6502{
             int prgPc = cpuMemory.getPrgPc()+1;
             byte insCode = iterator.next();
 
-            LogUtil.logf("PC:[%06d] | CYC:[%03d] | PC:[%X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
+            LogUtil.logf("NO:[%06d] | CYC:[%03d] | PC:[%04X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
                     ++runCycleNum,
                     cpuCycle,
                     prgPc&0xFFFF,
@@ -764,6 +770,21 @@ public class Cpu6502{
             case 0xB6:
                 LogUtil.log("LDX_ZERO_Y");
                 cpuCycle-= cpuRegister.LDX_ZERO_Y(iterator.next());
+                break;
+            //LDX_ZERO_Y
+            case 0x9C:
+                LogUtil.log("LDX_ZERO_Y");
+                cpuCycle-= cpuRegister.LDX_ZERO_Y(iterator.next());
+                break;
+            //EOR_INDIRECT_Y
+            case 0x51:
+                LogUtil.log("EOR_INDIRECT_Y");
+                cpuCycle-= cpuRegister.EOR_INDIRECT_Y(iterator.next());
+                break;
+            //STX_ZERO_Y
+            case 0x96:
+                LogUtil.log("STX_ZERO_Y");
+                cpuCycle-= cpuRegister.STX_ZERO_Y(iterator.next());
                 break;
             default:
                 System.out.printf("%02X\n",insCode);

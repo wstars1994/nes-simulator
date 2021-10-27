@@ -1,10 +1,9 @@
 package com.iwstars.mcnes.core.cpu;
 
 import com.iwstars.mcnes.core.DataBus;
+import com.iwstars.mcnes.core.mapper.IMapper;
 import com.iwstars.mcnes.util.LogUtil;
 import com.iwstars.mcnes.util.MemUtil;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Iterator;
 
@@ -28,8 +27,6 @@ import java.util.Iterator;
  * @author WStars
  * @date 2020/4/18 15:25
  */
-@Setter
-@Getter
 public class CpuMemory {
 
     /**
@@ -40,7 +37,20 @@ public class CpuMemory {
     /**
      * cpu内存
      */
-    private byte[] data = new byte[0x10000];
+    private byte[] data;
+
+    private byte switchBank = -1;
+
+    private IMapper mapper;
+
+
+    public int getPrgPc() {
+        return prgPc;
+    }
+
+    public void setPrgPc(int prgPc) {
+        this.prgPc = prgPc;
+    }
 
     /**
      * PRG数据迭代器
@@ -56,7 +66,10 @@ public class CpuMemory {
 
             @Override
             public Byte next() {
-                return data[prgPc++];
+                if(mapper!=null){
+                    return mapper.read(prgPc++);
+                }
+                return readMem(prgPc++);
             }
 
             @Override
@@ -70,7 +83,7 @@ public class CpuMemory {
      * @param data
      */
     private byte write_count_4016 = 0,read_count_4016 = 0,write_count_4017 = 0,read_count_4017 = 0;
-    public void write(int addr,byte data){
+    public void write(int addr,byte data) {
         LogUtil.logf(" | WR:[ADDR:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
 
         switch (addr) {
@@ -154,7 +167,11 @@ public class CpuMemory {
                 }
                 break;
             default:
-                this.data[addr&0xFFFF] = data;
+                if(mapper!=null){
+                    mapper.write(addr,data);
+                    break;
+                }
+                this.writeMem(addr,data);
                 break;
         }
     }
@@ -165,7 +182,15 @@ public class CpuMemory {
      * @param prgData
      */
     public void write(int addr,byte[] prgData){
+        data = new byte[0x8000+prgData.length];
         System.arraycopy(prgData,0,data,addr,prgData.length);
+    }
+
+    public byte readMem(int addr){
+        return this.data[addr];
+    }
+    public void writeMem(int addr,byte data){
+        this.data[addr&0xffff] = data;
     }
 
     /**
@@ -204,6 +229,13 @@ public class CpuMemory {
                 read_count_4017++;
                 return returnNum2;
         }
-        return this.data[addr];
+        if(mapper!=null){
+            return mapper.read(addr);
+        }
+        return this.readMem(addr);
+    }
+
+    public void setMapper(IMapper mapper) {
+        this.mapper = mapper;
     }
 }

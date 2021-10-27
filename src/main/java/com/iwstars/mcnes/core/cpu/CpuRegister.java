@@ -1,17 +1,20 @@
 package com.iwstars.mcnes.core.cpu;
 
 import com.iwstars.mcnes.util.MemUtil;
-import lombok.Setter;
 
 /**
  * @description: CPU寄存器
  * @author: WStars
  * @date: 2020-04-19 10:48
  */
-@Setter
 public class CpuRegister {
     
     private CpuMemory cpuMemory;
+
+    public CpuRegister(CpuMemory cpuMemory) {
+        this.cpuMemory = cpuMemory;
+    }
+
     /**
      * A累加器,X,Y
      */
@@ -291,7 +294,7 @@ public class CpuRegister {
         return 3;
     }
 
-    public int STX_ZERO( byte addr) {
+    public int STX_ZERO(int addr) {
         cpuMemory.write(addr&0xFF, REG_X);
         return 3;
     }
@@ -383,11 +386,11 @@ public class CpuRegister {
      */
     public int BRK() {
         setB((byte) 1);
+        setI((byte) 1);
         short pc = (short) (cpuMemory.getPrgPc() + 2);
         this.push16Stack(pc);
         pushStack(REG_S_MERGE());
         cpuMemory.setPrgPc(cpuMemory.read(0xFFFE));
-        setI((byte) 1);
         return 7;
     }
 
@@ -1222,6 +1225,11 @@ public class CpuRegister {
 
     public int LDX_ZERO_Y(byte data) {
         LDX_ZERO(zero(data,REG_Y));
+        return 4;
+    }
+
+    public int STX_ZERO_Y(byte data) {
+        STX_ZERO(zero(data,REG_Y));
         return 4;
     }
 }

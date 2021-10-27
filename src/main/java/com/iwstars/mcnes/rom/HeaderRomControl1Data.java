@@ -1,13 +1,10 @@
 package com.iwstars.mcnes.rom;
 
-import lombok.Data;
-
 /**
  * @description: 头控制数据 从低位到高位
  * @author: WStars
  * @date: 2020-04-16 15:24
  */
-@Data
 public class HeaderRomControl1Data {
 
     /**
@@ -15,7 +12,7 @@ public class HeaderRomControl1Data {
      * 0 : Horizontal
      * 1 : Vertical
      */
-    private int mirrorType;
+    private byte mirrorType;
 
     /**
      * 1bit
@@ -23,7 +20,7 @@ public class HeaderRomControl1Data {
      * 1有存档功能
      * 0没有
      */
-    private int SRAMEnabled;
+    private byte SRAMEnabled;
 
     /**
      * 1bit
@@ -31,7 +28,7 @@ public class HeaderRomControl1Data {
      * 1有
      * 0没有
      */
-    private int trainerPresent;
+    private byte trainerPresent;
 
     /**
      * 1bit
@@ -39,11 +36,51 @@ public class HeaderRomControl1Data {
      * 1是
      * 0否
      */
-    private int vram4;
+    private byte fourScreen;
 
     /**
      * 4bit
      * rom mapper的低四位
      */
     private byte romMapperLow;
+
+    public byte getMirrorType() {
+        return mirrorType;
+    }
+
+    public void setMirrorType(byte mirrorType) {
+        this.mirrorType = mirrorType;
+    }
+
+    public byte getSRAMEnabled() {
+        return SRAMEnabled;
+    }
+
+    public void setSRAMEnabled(byte SRAMEnabled) {
+        this.SRAMEnabled = SRAMEnabled;
+    }
+
+    public byte getTrainerPresent() {
+        return trainerPresent;
+    }
+
+    public void setTrainerPresent(byte trainerPresent) {
+        this.trainerPresent = trainerPresent;
+    }
+
+    public byte getFourScreen() {
+        return fourScreen;
+    }
+
+    public void setFourScreen(byte fourScreen) {
+        this.fourScreen = fourScreen;
+    }
+
+    public byte getRomMapperLow() {
+        return romMapperLow;
+    }
+
+    public void setRomMapperLow(byte romMapperLow) {
+        this.romMapperLow = romMapperLow;
+    }
 }
