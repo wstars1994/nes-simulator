@@ -207,8 +207,8 @@ public class CpuRegister {
     /**
      * 禁止中断
      */
-    public int SEI() {
-        setI((byte) 1);
+    public int F_I(byte data) {
+        setI(data);
         return 2;
     }
 
@@ -839,8 +839,8 @@ public class CpuRegister {
         return 5;
     }
 
-    public int LSR_ZERO(byte addr) {
-        byte data = cpuMemory.read(addr&0xFF);
+    public int LSR_ZERO(int addr) {
+        byte data = cpuMemory.read(addr);
         setC1((byte) (data&1));
         byte lsr = (byte) ((data & 0xff) >> 1);
         setN(lsr);
@@ -1214,7 +1214,7 @@ public class CpuRegister {
     }
 
     public int LSR_ZERO_X(byte data) {
-        LSR_ZERO((byte) zero(data,REG_X));
+        LSR_ZERO(zero(data,REG_X));
         return 6;
     }
 
@@ -1231,5 +1231,16 @@ public class CpuRegister {
     public int STX_ZERO_Y(byte data) {
         STX_ZERO(zero(data,REG_Y));
         return 4;
+    }
+
+    public int CLI() {
+        setI((byte) 0);
+        return 2;
+    }
+
+    public int LSR_ABS_X(byte low, byte high) {
+        int addr = MemUtil.concatByte(low, high) + (REG_X & 0xff);
+        LSR_ZERO(addr);
+        return 7;
     }
 }

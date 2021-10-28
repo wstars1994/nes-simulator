@@ -123,7 +123,6 @@ public class Main {
         frame.setLocationRelativeTo(null);
         //显示
         frame.setVisible(true);
-
         frame.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -166,7 +165,7 @@ public class Main {
 
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = this.loadData("chd.nes");
+            NESRomData romData = this.loadData("elsfk2.nes");
             HeaderData headerData = romData.getHeaderData();
             byte romPRGSize = headerData.getRomPRGSize();
             byte romCHRSize = headerData.getRomCHRSize();
@@ -179,13 +178,15 @@ public class Main {
             System.out.println("CHR ROM Size: "+romCHRSize);
             //创建CPU
             Cpu6502 cpu6502 = new Cpu6502(romData.getRomPRG());
+            DataBus.cpuMemory = cpu6502.getCpuMemory();
             //创建PPU
             Ppu ppu = new Ppu(romData.getRomCHR(), headerData.getControlData1().getMirrorType());
             //挂载到总线
-            DataBus.cpuMemory = cpu6502.getCpuMemory();
             DataBus.ppuMemory = ppu.getPpuMemory();
-
-            DataBus.cpuMemory.setMapper(IMapper.getMapper(headerData.getMapperNo()));
+            //设置mapper
+            IMapper mapper = IMapper.getMapper(headerData.getMapperNo(), romPRGSize, romCHRSize, romData.getRomCHR());
+            DataBus.cpuMemory.setMapper(mapper);
+            DataBus.ppuMemory.setMapper(mapper);
             //创建主板
             NesMobo nesMobo = new NesMobo();
             nesMobo.setPpu(ppu);

@@ -66,10 +66,7 @@ public class CpuMemory {
 
             @Override
             public Byte next() {
-                if(mapper!=null){
-                    return mapper.read(prgPc++);
-                }
-                return readMem(prgPc++);
+                return mapper.read(prgPc++);
             }
 
             @Override
@@ -167,11 +164,7 @@ public class CpuMemory {
                 }
                 break;
             default:
-                if(mapper!=null){
-                    mapper.write(addr,data);
-                    break;
-                }
-                this.writeMem(addr,data);
+                mapper.write(addr,data);
                 break;
         }
     }
@@ -182,7 +175,7 @@ public class CpuMemory {
      * @param prgData
      */
     public void write(int addr,byte[] prgData){
-        data = new byte[0x8000+prgData.length];
+        data = new byte[addr+prgData.length];
         System.arraycopy(prgData,0,data,addr,prgData.length);
     }
 
@@ -229,10 +222,7 @@ public class CpuMemory {
                 read_count_4017++;
                 return returnNum2;
         }
-        if(mapper!=null){
-            return mapper.read(addr);
-        }
-        return this.readMem(addr);
+        return mapper.read(addr);
     }
 
     public void setMapper(IMapper mapper) {

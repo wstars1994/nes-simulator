@@ -1,5 +1,6 @@
 package com.iwstars.mcnes.core.ppu;
 
+import com.iwstars.mcnes.core.mapper.IMapper;
 import com.iwstars.mcnes.util.LogUtil;
 
 /**
@@ -27,18 +28,22 @@ import com.iwstars.mcnes.util.LogUtil;
  */
 public class PpuMemory{
 
-    private byte[] ppuData = new byte[65535];
-
+    private byte[] ppuData = new byte[65536];
     /**
      * 精灵数据
      */
     private byte[] sprRam = new byte[256];
 
-
     private byte mirroringType;
 
+    private IMapper mapper;
+
     public PpuMemory(byte[] patternData,byte mirroringType){
-        System.arraycopy(patternData,0,ppuData,0,patternData.length);
+        if(patternData.length>8*1024){
+            System.arraycopy(patternData,0,ppuData,0,8*1024);
+        }else{
+            System.arraycopy(patternData,0,ppuData,0,patternData.length);
+        }
         this.mirroringType = mirroringType;
     }
 
@@ -86,7 +91,7 @@ public class PpuMemory{
                 }
                 break;
         }
-        return this.ppuData[addr];
+        return this.mapper.readPpu(addr);
     }
 
     /**
@@ -104,5 +109,13 @@ public class PpuMemory{
      */
     public byte[] getSprRam() {
         return sprRam;
+    }
+
+    public byte readMem(int addr) {
+        return this.ppuData[addr];
+    }
+
+    public void setMapper(IMapper mapper) {
+        this.mapper = mapper;
     }
 }

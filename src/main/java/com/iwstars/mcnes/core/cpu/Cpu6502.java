@@ -82,7 +82,7 @@ public class Cpu6502{
             //SEI 禁止中断
             case 0x78:
                 LogUtil.log("SEI");
-                cpuCycle-= cpuRegister.SEI();
+                cpuCycle-= cpuRegister.F_I((byte) 1);
                 break;
             //CLD 清除十进制模式状态标记
             case 0xD8:
@@ -472,7 +472,7 @@ public class Cpu6502{
             //LSR_ZERO
             case 0x46:
                 LogUtil.log("LSR_ZERO");
-                cpuCycle-= cpuRegister.LSR_ZERO(iterator.next());
+                cpuCycle-= cpuRegister.LSR_ZERO(iterator.next()&0xff);
                 break;
             //DEC_ABS_X
             case 0xDE:
@@ -785,6 +785,16 @@ public class Cpu6502{
             case 0x96:
                 LogUtil.log("STX_ZERO_Y");
                 cpuCycle-= cpuRegister.STX_ZERO_Y(iterator.next());
+                break;
+            //CLI
+            case 0x58:
+                LogUtil.log("CLI");
+                cpuCycle-= cpuRegister.F_I((byte) 0);
+                break;
+            //LSR_ABS_X
+            case 0x5E:
+                LogUtil.log("LSR_ABS_X");
+                cpuCycle-= cpuRegister.LSR_ABS_X(iterator.next(),iterator.next());
                 break;
             default:
                 System.out.printf("%02X\n",insCode);
