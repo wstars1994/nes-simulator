@@ -12,14 +12,14 @@ import com.iwstars.mcnes.core.DataBus;
 public class Mapper087 implements IMapper {
 
     private byte switchCHRBank = 0;
-    private byte[] cardChr;
+    private byte[] cardChrBank;
     private byte romChrSize;
 
     public Mapper087(byte romPRGSize, byte romChrSize, byte[] romCHR) {
         this.romChrSize = romChrSize;
         if(romChrSize > 1){
-            cardChr = new byte[(romChrSize-1)*8*1024];
-            System.arraycopy(romCHR,1*8*1024,cardChr,0,cardChr.length);
+            cardChrBank = new byte[(romChrSize-1)*8*1024];
+            System.arraycopy(romCHR,1*8*1024,cardChrBank,0,cardChrBank.length);
         }
     }
 
@@ -49,7 +49,7 @@ public class Mapper087 implements IMapper {
     @Override
     public byte readPpu(int addr) {
         if(switchCHRBank>0&&addr>=0x0000&&addr<=0x1FFF){
-            return cardChr[addr+(switchCHRBank-1)*8*1024];
+            return cardChrBank[addr+(switchCHRBank-1)*8*1024];
         }
         return DataBus.ppuMemory.readMem(addr);
     }

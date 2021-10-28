@@ -58,7 +58,7 @@ public class Cpu6502{
         Iterator<Byte> iterator = cpuMemory.iteratorPrgData();
         do{
             LogUtil.logf("\n","");
-            int prgPc = cpuMemory.getPrgPc()+1;
+            int prgPc = cpuMemory.getPrgPc();
             byte insCode = iterator.next();
 
             LogUtil.logf("NO:[%06d] | CYC:[%03d] | PC:[%04X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",

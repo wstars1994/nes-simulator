@@ -8,6 +8,8 @@ public interface IMapper {
                 return new Mapper000();
             case 2:
                 return new Mapper002(romPRGSize,romChrSize);
+            case 3:
+                return new Mapper003(romPRGSize,romChrSize,romCHR);
             case 66:
                 return new Mapper066(romPRGSize,romChrSize,romCHR);
             case 67:

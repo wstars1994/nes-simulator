@@ -165,7 +165,7 @@ public class Main {
 
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = this.loadData("elsfk2.nes");
+            NESRomData romData = this.loadData("赤色要塞.nes");
             HeaderData headerData = romData.getHeaderData();
             byte romPRGSize = headerData.getRomPRGSize();
             byte romCHRSize = headerData.getRomCHRSize();

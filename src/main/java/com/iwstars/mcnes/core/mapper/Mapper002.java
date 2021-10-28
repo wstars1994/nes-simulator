@@ -31,10 +31,10 @@ public class Mapper002 implements IMapper {
     @Override
     public byte read(int addr) {
         if(addr>=0xC000 && addr<=0xFFFF){
-            addr-=0xC000;
-            addr = 0x8000 + (romPRGSize-1)*16*1024+addr;
+            addr -= 0xC000;
+            addr += 0x8000 + (romPRGSize-1)*16*1024;
         }else if(addr>=0x8000 && addr<=0xBFFF && switchBank>=0){
-            addr = addr+switchBank*16*1024;
+            addr += switchBank*16*1024;
         }
         return DataBus.cpuMemory.readMem(addr);
     }
@@ -46,6 +46,6 @@ public class Mapper002 implements IMapper {
 
     @Override
     public byte readPpu(int addr) {
-        return DataBus.ppuMemory.read(addr);
+        return DataBus.ppuMemory.readMem(addr);
     }
 }

@@ -6,15 +6,17 @@ import com.iwstars.mcnes.core.DataBus;
  * Mapper #66
  * @author WStars
  * @date 2021/10/28 10:29
- * @see <a href="https://wiki.nesdev.org/w/index.php?title=GxROM">INES_Mapper_066</a>
- * 调式游戏: AV麻将
+ * @see <a href="https://wiki.nesdev.org/w/index.php?title=INES_Mapper_003">INES_Mapper_003</a>
+ * 调式游戏: Bump 'n' Jump
  */
-public class Mapper066 implements IMapper {
+public class Mapper003 implements IMapper {
 
-    private byte switchPRGBank = 0,switchCHRBank = 0;
+    private byte switchCHRBank = 0;
     private byte[] cardChrBank;
+    private byte romChrSize;
 
-    public Mapper066(byte romPRGSize, byte romChrSize, byte[] romCHR) {
+    public Mapper003(byte romPRGSize, byte romChrSize, byte[] romCHR) {
+        this.romChrSize = romChrSize;
         if(romChrSize > 1){
             cardChrBank = new byte[(romChrSize-1)*8*1024];
             System.arraycopy(romCHR,1*8*1024,cardChrBank,0,cardChrBank.length);
@@ -24,8 +26,11 @@ public class Mapper066 implements IMapper {
     @Override
     public void write(int addr, byte data) {
         if(addr>=0x8000 && addr<=0xFFFF){
-            switchCHRBank = (byte) (data&0x3);
-            switchPRGBank = (byte) ((data>>4)&0x1);
+            if(this.romChrSize>2){
+                switchCHRBank = (byte) (data&0x3);
+            }else{
+                switchCHRBank = (byte) (data&0x1);
+            }
             return;
         }
         DataBus.cpuMemory.writeMem(addr,data);
@@ -33,9 +38,6 @@ public class Mapper066 implements IMapper {
 
     @Override
     public byte read(int addr) {
-        if(switchPRGBank>0&&addr>=0x8000 && addr<=0xFFFF){
-            addr += switchPRGBank*32*1024;
-        }
         return DataBus.cpuMemory.readMem(addr);
     }
 

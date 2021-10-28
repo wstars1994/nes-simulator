@@ -13,13 +13,13 @@ public class Mapper067 implements IMapper {
 
     private byte switchBank = 0;
     private byte romPRGSize;
-    private byte[] cardChr;
+    private byte[] cardChrBank;
 
     public Mapper067(byte romPRGSize, byte romChrSize,byte[] romCHR) {
         this.romPRGSize = romPRGSize;
         if(romChrSize > 1){
-            cardChr = new byte[(romChrSize-1)*8*1024];
-            System.arraycopy(romCHR,1*8*1024,cardChr,0,cardChr.length);
+            cardChrBank = new byte[(romChrSize-1)*8*1024];
+            System.arraycopy(romCHR,1*8*1024, cardChrBank,0, cardChrBank.length);
         }
     }
 
@@ -46,6 +46,7 @@ public class Mapper067 implements IMapper {
                 break;
             //PRG bank ($F800)
             case 0xF800:
+                System.out.println("change");
                 break;
         }
         DataBus.cpuMemory.writeMem(addr,data);
@@ -53,11 +54,13 @@ public class Mapper067 implements IMapper {
 
     @Override
     public byte read(int addr) {
-        if(addr >= 0xC000 && addr <= 0xFFFF){
-            addr-=0xC000;
-            addr = 0x8000 + (romPRGSize-1)*16*1024+addr;
-        }else if(addr>=0x8000 && addr<=0xBFFF && switchBank>0){
-            addr = addr + switchBank*16*1024;
+        if(romPRGSize>2){
+            if(addr >= 0xC000 && addr <= 0xFFFF){
+                addr-=0xC000;
+                addr = 0x8000 + (romPRGSize-1)*16*1024+addr;
+            }else if(addr>=0x8000 && addr<=0xBFFF && switchBank>0){
+                addr = addr + switchBank*16*1024;
+            }
         }
         return DataBus.cpuMemory.readMem(addr);
     }

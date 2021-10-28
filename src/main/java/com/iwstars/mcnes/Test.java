@@ -19,9 +19,6 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) {
-        int addr = 65534;
-        addr-=0xC000;
-        addr = 0x8000+7*16*1024+addr;
-        System.out.println(addr);
+        System.out.println(-1&0xff);
     }
 }
