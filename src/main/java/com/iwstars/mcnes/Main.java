@@ -162,7 +162,7 @@ public class Main {
                 System.exit(0);
             }
         });
-
+        debug = true;
         new Thread(() -> {
             //读取.nes文件数据
             NESRomData romData = this.loadData("赤色要塞.nes");

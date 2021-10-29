@@ -52,7 +52,7 @@ public class LogUtil {
     public static void logf(String format,Object ...args) {
         if(Main.debug) {
             try {
-                System.out.printf(format,args);
+//                System.out.printf(format,args);
                 Formatter formatter = new Formatter();
                 Formatter format1 = formatter.format(format, args);
                 bw.write(format1.toString());

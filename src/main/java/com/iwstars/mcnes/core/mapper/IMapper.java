@@ -7,7 +7,7 @@ public interface IMapper {
             case 0:
                 return new Mapper000();
             case 2:
-                return new Mapper002(romPRGSize,romChrSize);
+                return new Mapper002(romPRGSize);
             case 3:
                 return new Mapper003(romPRGSize,romChrSize,romCHR);
             case 66:
