@@ -165,7 +165,7 @@ public class Main {
         debug = false;
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = this.loadData("俄罗斯方块.nes");
+            NESRomData romData = this.loadData("../俄罗斯方块.nes");
             HeaderData headerData = romData.getHeaderData();
             byte romPRGSize = headerData.getRomPRGSize();
             byte romCHRSize = headerData.getRomCHRSize();
