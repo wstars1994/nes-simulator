@@ -34,7 +34,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.iwstars.mcnes.Main</mainClass>
+                            <mainClass>com.wxclog.Boot</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
