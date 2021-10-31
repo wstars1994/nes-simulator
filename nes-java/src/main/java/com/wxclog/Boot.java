@@ -107,7 +107,7 @@ public class Boot {
         Const.debug = false;
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = this.loadData("../影子传说.nes");
+            NESRomData romData = this.loadData("../绿色兵团.nes");
             HeaderData headerData = romData.getHeaderData();
             byte romPRGSize = headerData.getRomPRGSize();
             byte romCHRSize = headerData.getRomCHRSize();

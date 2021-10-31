@@ -63,14 +63,18 @@ public class NesMobo {
         while (true)  {
             long begin = System.currentTimeMillis();
             short[][] renderBuff = new short[(256+16)*240][3];
+            short[][] frameData = new short[240][3];
+            byte[][] frameSpriteData = new byte[240][2];
             for (int i = 0; i < 240; i++) {
                 if(DataBus.showBg() || DataBus.showSpr()){
                     DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & 0xfbe0) | (DataBus.p_vram_temp_addr & 0x041f));
                 }
-                ppu.preRender(i,renderBuff);
+                ppu.preRender(i,frameData,frameSpriteData);
                 this.cpu6502.go();
                 this.coarseY();
             }
+            ppu.renderNameTable(frameData,renderBuff);
+            ppu.renderSprite(renderBuff,frameSpriteData);
             this.beginVBlank();
             this.cpu6502.go();
             //nmi
