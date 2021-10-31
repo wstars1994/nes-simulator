@@ -1,5 +1,4 @@
-# WNES-JAVA
+# NES-JAVA
+NES emulator implemented in Java.
 
-#### 介绍
-用java语言实现的nes模拟器
-开发中
+

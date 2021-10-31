@@ -1,0 +1,3 @@
+D:/workspace/wnes/cmake-build-debug-mingw/CMakeFiles/wnes.dir
+D:/workspace/wnes/cmake-build-debug-mingw/CMakeFiles/edit_cache.dir
+D:/workspace/wnes/cmake-build-debug-mingw/CMakeFiles/rebuild_cache.dir
