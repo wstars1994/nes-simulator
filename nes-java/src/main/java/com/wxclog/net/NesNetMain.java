@@ -72,12 +72,13 @@ public class NesNetMain {
             workGroup.shutdownGracefully();
         }
     }
+
     private static void initClient(){
         try{
             final EventLoopGroup group = new NioEventLoopGroup();
             Bootstrap b = new Bootstrap();
-            b.group(group).channel(NioSocketChannel.class)  // 使用NioSocketChannel来作为连接用的channel类
-                    .handler(new ChannelInitializer<SocketChannel>() { // 绑定连接初始化器
+            b.group(group).channel(NioSocketChannel.class)
+                    .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
                             System.out.println("正在连接中...");
@@ -106,7 +107,7 @@ public class NesNetMain {
                 if (future.isSuccess()) {
                     System.out.println("连接服务器成功");
                     channel = future.channel();
-                } else {
+                }else{
                     System.out.println("连接服务器失败");
                     future.cause().printStackTrace();
                     group.shutdownGracefully(); //关闭线程组
