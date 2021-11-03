@@ -61,7 +61,7 @@ public class RomReaderUtil {
 
     private static byte getMapper(byte b) {
 
-        return (byte) (b>>4);
+        return (byte) ((b>>4)&0xf);
     }
 
     public static byte[] readRomData(DataInputStream dataInputStream, byte number,int baseSize) throws IOException {

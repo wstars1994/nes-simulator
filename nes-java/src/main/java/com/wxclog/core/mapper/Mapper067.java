@@ -11,7 +11,7 @@ import com.wxclog.core.DataBus;
  */
 public class Mapper067 implements IMapper {
 
-    private byte switchBank = 0;
+    private byte switchPrgBank = 0;
     private byte romPRGSize;
     private byte[] cardChrBank;
 
@@ -25,28 +25,34 @@ public class Mapper067 implements IMapper {
 
     @Override
     public void write(int addr, byte data) {
-        switch (addr){
-            //Interrupt Acknowledge ($8000)
-            case 0x8000:
-                break;
+
+
+        //MASK: $F800
+        switch (addr&0xF800){
             //CHR bank 0…3 ($8800..$BFFF)
             case 0x8800:
             case 0x9800:
             case 0xA800:
             case 0xB800:
+                System.out.println("CHR switch");
                 break;
             //IRQ load ($C800, write twice)
             case 0xC800:
+                System.out.println("IRQ load");
                 break;
             //IRQ enable ($D800)
             case 0xD800:
+                System.out.println("IRQ enable ($D800)");
                 break;
             //Mirroring ($E800)
             case 0xE800:
+                System.out.println("IRQ enable ($E800)");
                 break;
             //PRG bank ($F800)
             case 0xF800:
-                System.out.println("change");
+                if(romPRGSize>2){
+                    switchPrgBank = (byte) (data & 0xf);
+                }
                 break;
         }
         DataBus.cpuMemory.writeMem(addr,data);
@@ -58,8 +64,8 @@ public class Mapper067 implements IMapper {
             if(addr >= 0xC000 && addr <= 0xFFFF){
                 addr-=0xC000;
                 addr = 0x8000 + (romPRGSize-1)*16*1024+addr;
-            }else if(addr>=0x8000 && addr<=0xBFFF && switchBank>0){
-                addr = addr + switchBank*16*1024;
+            }else if(addr>=0x8000 && addr<=0xBFFF && switchPrgBank>0){
+                addr = addr + switchPrgBank*16*1024;
             }
         }
         return DataBus.cpuMemory.readMem(addr);

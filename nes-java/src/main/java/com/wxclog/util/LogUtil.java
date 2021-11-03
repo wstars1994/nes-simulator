@@ -3,6 +3,8 @@ package com.wxclog.util;
 import com.wxclog.core.Const;
 
 import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Formatter;
 
 /**
@@ -12,7 +14,14 @@ import java.util.Formatter;
  */
 public class LogUtil {
 
-    static BufferedWriter bw;
+    private static BufferedWriter bw;
+    static {
+        try {
+            bw = new BufferedWriter(new FileWriter("log.txt"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void logf(String format,Object ...args) {
         if(Const.debug) {

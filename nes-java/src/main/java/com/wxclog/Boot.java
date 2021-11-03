@@ -39,7 +39,7 @@ public class Boot {
         try {
             DataInputStream dataInputStream = new DataInputStream(new FileInputStream(filePath));
             HeaderData headerData = RomReaderUtil.readHeader(dataInputStream);
-            headerData.setMapperNo((byte) (headerData.getControlData1().getRomMapperLow() | headerData.getControlData2().getRomMapperHigh()<<4));
+            headerData.setMapperNo((byte) (headerData.getControlData1().getRomMapperLow() | (headerData.getControlData2().getRomMapperHigh()<<4)));
             romData.setHeaderData(headerData);
             //16k PRG-ROM
             romData.setRomPRG(RomReaderUtil.readRomData(dataInputStream,headerData.getRomPRGSize(),16));
@@ -107,7 +107,7 @@ public class Boot {
         Const.debug = false;
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = this.loadData("../俄罗斯方块.nes");
+            NESRomData romData = this.loadData("../赤色要塞.nes");
             HeaderData headerData = romData.getHeaderData();
             byte romPRGSize = headerData.getRomPRGSize();
             byte romCHRSize = headerData.getRomCHRSize();

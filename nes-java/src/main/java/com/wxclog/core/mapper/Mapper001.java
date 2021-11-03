@@ -3,17 +3,17 @@ package com.wxclog.core.mapper;
 import com.wxclog.core.DataBus;
 
 /**
- * Mapper #2
+ * Mapper #1
  * @author WStars
  * @date 2021/10/28 10:29
- * @see <a href="https://wiki.nesdev.org/w/index.php?title=UxROM">INES_Mapper_002</a>
+ * @see <a href="https://wiki.nesdev.org/w/index.php?title=MMC1">INES_Mapper_001</a>
  */
-public class Mapper002 implements IMapper {
+public class Mapper001 implements IMapper {
 
     private byte switchBank = 0;
     private byte romPRGSize;
 
-    public Mapper002(byte romPRGSize) {
+    public Mapper001(byte romPRGSize) {
         this.romPRGSize = romPRGSize;
     }
 
