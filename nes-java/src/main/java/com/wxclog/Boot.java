@@ -104,10 +104,10 @@ public class Boot {
             }
         });
         //调试模式 打印运行日志
-        Const.debug = false;
+        Const.debug = true;
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = this.loadData("../赤色要塞.nes");
+            NESRomData romData = this.loadData("../超级玛丽.nes");
             HeaderData headerData = romData.getHeaderData();
             byte romPRGSize = headerData.getRomPRGSize();
             byte romCHRSize = headerData.getRomCHRSize();

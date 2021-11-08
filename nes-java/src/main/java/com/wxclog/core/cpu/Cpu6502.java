@@ -53,7 +53,8 @@ public class Cpu6502{
             LogUtil.logf("\n");
             int prgPc = cpuMemory.getPrgPc();
             byte insCode = iterator.next();
-            LogUtil.logf("PC:[%06d] | CYC:[%03d] | PC:[%04X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
+//            LogUtil.logf("PC:[%06d] | CYC:[%03d] | PC:[%04X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
+            LogUtil.logf("PC:[%d] | CYC:[%d] | PC:[%X] | OPC:[%X] | R:[A:%X X:%X Y:%X S:%X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
                     ++runCycleNum,
                     cpuCycle,
                     prgPc&0xFFFF,

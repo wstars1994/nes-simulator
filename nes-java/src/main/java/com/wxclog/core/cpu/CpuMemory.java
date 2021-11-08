@@ -76,7 +76,7 @@ public class CpuMemory {
      */
     private byte write_count_4016 = 0,read_count_4016 = 0,write_count_4017 = 0,read_count_4017 = 0;
     public void write(int addr,byte data) {
-        LogUtil.logf(" | WR:[ADDR:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
+//        LogUtil.logf(" | WR:[ADDR:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
 
         switch (addr) {
             case 0x2000:
@@ -142,21 +142,21 @@ public class CpuMemory {
                 break;
             //输入设备写入
             case 0x4016:
-                DataBus.c_4016 = 0;
-                DataBus.c_4017 = 0;
-                if(data == 1){
-                    read_count_4016 = 0;
-                    read_count_4017 = 0;
-                }else{
-                    for (byte i = 0; i < 8; i++) {
-                        if(DataBus.c_4016_datas[i] == 1) {
-                            DataBus.c_4016 = (byte) ((DataBus.c_4016) | 1<<i);
-                        }
-                        if(DataBus.c_4017_datas[i] == 1) {
-                            DataBus.c_4017 = (byte) ((DataBus.c_4017) | 1<<i);
-                        }
-                    }
-                }
+//                DataBus.c_4016 = 0;
+//                DataBus.c_4017 = 0;
+//                if(data == 1){
+//                    read_count_4016 = 0;
+//                    read_count_4017 = 0;
+//                }else{
+//                    for (byte i = 0; i < 8; i++) {
+//                        if(DataBus.c_4016_datas[i] == 1) {
+//                            DataBus.c_4016 = (byte) ((DataBus.c_4016) | 1<<i);
+//                        }
+//                        if(DataBus.c_4017_datas[i] == 1) {
+//                            DataBus.c_4017 = (byte) ((DataBus.c_4017) | 1<<i);
+//                        }
+//                    }
+//                }
                 break;
             default:
                 Const.mapper.write(addr,data);
@@ -188,7 +188,7 @@ public class CpuMemory {
      */
     public byte read(int addr){
         if(addr<0x8000){
-            LogUtil.logf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
+//            LogUtil.logf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
         }
         switch (addr) {
             //读PPUSTATUS状态寄存器
@@ -208,14 +208,14 @@ public class CpuMemory {
                     return res;
                 }
                 break;
-            case 0x4016:
-                byte returnNum = (byte) ((DataBus.c_4016 >> read_count_4016) & 1);
-                read_count_4016++;
-                return returnNum;
-            case 0x4017:
-                byte returnNum2 = (byte) ((DataBus.c_4017 >> read_count_4017) & 1);
-                read_count_4017++;
-                return returnNum2;
+//            case 0x4016:
+//                byte returnNum = (byte) ((DataBus.c_4016 >> read_count_4016) & 1);
+//                read_count_4016++;
+//                return returnNum;
+//            case 0x4017:
+//                byte returnNum2 = (byte) ((DataBus.c_4017 >> read_count_4017) & 1);
+//                read_count_4017++;
+//                return returnNum2;
         }
         return Const.mapper.read(addr);
     }
