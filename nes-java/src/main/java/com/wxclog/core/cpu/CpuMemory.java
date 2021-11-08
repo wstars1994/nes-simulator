@@ -188,7 +188,7 @@ public class CpuMemory {
      */
     public byte read(int addr){
         if(addr<0x8000){
-//            LogUtil.logf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
+            //LogUtil.logf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
         }
         switch (addr) {
             //读PPUSTATUS状态寄存器
