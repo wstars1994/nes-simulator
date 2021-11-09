@@ -777,7 +777,7 @@ void exec_instruction() {
             case 0xF0:
                 data = read_program(prgPc++);
                 if (flag_z) {
-                    cpu_cycle -= 2 + (prgPc & 0xff00) == ((prgPc + data) & 0xff00) ? 1 : 2;
+                    cpu_cycle -= 2 + ((prgPc & 0xff00) == ((prgPc + data) & 0xff00) ? 1 : 2);
                     prgPc+=data;
                     break;
                 }

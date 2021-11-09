@@ -1,3 +1,0 @@
-D:/Microcontrollers/STM32_SDCARD/cmake-build-debug-mingw-stm32/CMakeFiles/STM32_SDCARD.elf.dir
-D:/Microcontrollers/STM32_SDCARD/cmake-build-debug-mingw-stm32/CMakeFiles/edit_cache.dir
-D:/Microcontrollers/STM32_SDCARD/cmake-build-debug-mingw-stm32/CMakeFiles/rebuild_cache.dir

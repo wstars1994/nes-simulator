@@ -76,7 +76,7 @@ public class CpuMemory {
      */
     private byte write_count_4016 = 0,read_count_4016 = 0,write_count_4017 = 0,read_count_4017 = 0;
     public void write(int addr,byte data) {
-//        LogUtil.logf(" | WR:[ADDR:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
+        LogUtil.logf(" | WR:[ADDR:%d INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
 
         switch (addr) {
             case 0x2000:
@@ -188,7 +188,7 @@ public class CpuMemory {
      */
     public byte read(int addr){
         if(addr<0x8000){
-            //LogUtil.logf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
+            LogUtil.logf(" | RD:[addr:%d INDEX:%d]",addr,addr);
         }
         switch (addr) {
             //读PPUSTATUS状态寄存器
