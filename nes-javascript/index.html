@@ -50,14 +50,19 @@
 			},
 			methods: {
 				start(){
-					fileStream = streamSaver.createWriteStream('filename.txt');
-					writer = fileStream.getWriter()
+					if(this.debug){
+						fileStream = streamSaver.createWriteStream('filename.txt');
+						writer = fileStream.getWriter()
+					}
+					
 					worker.postMessage({type:1,data:this.res});
 				},
 				stop() {
 					worker.terminate();
 					console.log('stop');
-					// writer.close()
+					if(this.debug){
+						writer.close()
+					}
 				},
 				workerOnMessage(event){
 					if(this.debug){

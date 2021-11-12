@@ -163,7 +163,13 @@ function to8Signed(data){
 }
 
 function set_reg_a(data){
-	c_reg_a = to8Signed(data);
+	c_reg_a = to8Signed(data&0xff);
+}
+function set_reg_x(data){
+	c_reg_x = to8Signed(data&0xff);
+}
+function set_reg_y(data){
+	c_reg_y = to8Signed(data&0xff);
 }
 
 //栈操作----------------------------------
@@ -311,7 +317,11 @@ function start() {
 
 function read_program(addr) {
 	if (addr < 0x8000) {
-		return c_mem[addr];
+		let data = c_mem[addr];
+		if(data == undefined){
+			data = 0;
+		}
+		return data;
 	}
 	return prgData[addr - 0x8000];
 }
@@ -363,7 +373,7 @@ function read(addr) {
 	}
 }
 function write(addr, data) {
-	data = to8Signed(data);
+	data = to8Signed(data&0xFF);
 	if(debug){
 		self.postMessage(String.format(" | WR:[ADDR:{0} INDEX:{1} DATA:{2}]",addr&0xFFFF,addr&0xFFFF,data));
 	}
@@ -401,7 +411,7 @@ function write(addr, data) {
 			break;
 			//OAM DMA register (high let)
 		case 0x4014:
-			start = data * 0x100;
+			start = data<<8;
 			for (var i = 0; i < 256; i++) {
 				let readData = read(start++);
 				p_write_spr(i, readData);
@@ -422,6 +432,9 @@ function p_write(addr,data){
             p_mem[0x3F00]=data;
         }
     }
+	if(debug){
+		self.postMessage(String.format(" | PWR:[addr:{0} INDEX:{1} DATA:{2}]",addr&0xFFFF,addr&0xFFFF,data));
+	}
     //printf(" | PWR:[addr:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
     p_mem[addr] = data;
 }
@@ -534,7 +547,7 @@ function execInstrcution() {
 				cpu_cycle -= 4;
 				break;
 			case 0xA2:
-				c_reg_x = read_program(prgPc++);
+				set_reg_x(read_program(prgPc++))
 				set_nz(c_reg_x);
 				cpu_cycle -= 2;
 				break;
@@ -562,7 +575,12 @@ function execInstrcution() {
 				cpu_cycle -= 2;
 				break;
 			case 0xBD:
-				set_reg_a(read(ams_abs_x('x', c_reg_x)));
+				let addr = ams_abs_x('x', c_reg_x);
+				data = read(addr);
+				if(data==undefined){
+					debugger
+				}
+				set_reg_a(data);
 				set_nz(c_reg_a);
 				cpu_cycle -= 4;
 				break;
@@ -706,7 +724,7 @@ function execInstrcution() {
 				break;
 				//LDX_ABS
 			case 0xAE:
-				c_reg_x = read(ams_abs());
+				set_reg_x(read(ams_abs()));
 				set_nz(c_reg_x);
 				cpu_cycle -= 4;
 				break;
@@ -718,7 +736,7 @@ function execInstrcution() {
 				break;
 				//LDX_ABS_Y
 			case 0xBE:
-				c_reg_x = read(ams_abs_x('y', c_reg_y));
+				set_reg_x(read(ams_abs_x('y', c_reg_y)));
 				set_nz(c_reg_x);
 				cpu_cycle -= 4;
 				break;
@@ -927,7 +945,7 @@ function execInstrcution() {
 				break;
 				//LDX_ZERO
 			case 0xA6:
-				c_reg_x = read(read_program(prgPc++) & 0xFF);
+				set_reg_x(read(read_program(prgPc++) & 0xFF));
 				set_nz(c_reg_x);
 				cpu_cycle -= 3;
 				break;
@@ -975,7 +993,7 @@ function execInstrcution() {
 				//LDY_ZERO
 			case 0xA4:
 				data = read(read_program(prgPc++) & 0xFF);
-				c_reg_y = data;
+				set_reg_y(data);
 				set_nz(c_reg_y);
 				cpu_cycle -= 3;
 				break;
@@ -1017,7 +1035,7 @@ function execInstrcution() {
 				//LDY_ABS_X
 			case 0xBC:
 				data = read(ams_abs_x('x', c_reg_x));
-				c_reg_y = data;
+				set_reg_y(data);
 				set_nz(c_reg_y);
 				cpu_cycle -= 4;
 				break;
