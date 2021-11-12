@@ -50,10 +50,10 @@ public class Ppu {
         if(DataBus.showBg()) {
             this.renderNameTable(scanLineIndex,frameData);
         }
-        //渲染精灵
-        if(DataBus.showSpr()) {
-            this.renderSpriteData(scanLineIndex,spriteScanData);
-        }
+//        //渲染精灵
+//        if(DataBus.showSpr()) {
+//            this.renderSpriteData(scanLineIndex,spriteScanData);
+//        }
     }
 
     /**
