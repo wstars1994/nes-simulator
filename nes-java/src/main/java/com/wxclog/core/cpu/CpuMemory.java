@@ -142,21 +142,21 @@ public class CpuMemory {
                 break;
             //输入设备写入
             case 0x4016:
-//                DataBus.c_4016 = 0;
-//                DataBus.c_4017 = 0;
-//                if(data == 1){
-//                    read_count_4016 = 0;
-//                    read_count_4017 = 0;
-//                }else{
-//                    for (byte i = 0; i < 8; i++) {
-//                        if(DataBus.c_4016_datas[i] == 1) {
-//                            DataBus.c_4016 = (byte) ((DataBus.c_4016) | 1<<i);
-//                        }
-//                        if(DataBus.c_4017_datas[i] == 1) {
-//                            DataBus.c_4017 = (byte) ((DataBus.c_4017) | 1<<i);
-//                        }
-//                    }
-//                }
+                DataBus.c_4016 = 0;
+                DataBus.c_4017 = 0;
+                if(data == 1){
+                    read_count_4016 = 0;
+                    read_count_4017 = 0;
+                }else{
+                    for (byte i = 0; i < 8; i++) {
+                        if(DataBus.c_4016_datas[i] == 1) {
+                            DataBus.c_4016 = (byte) ((DataBus.c_4016) | 1<<i);
+                        }
+                        if(DataBus.c_4017_datas[i] == 1) {
+                            DataBus.c_4017 = (byte) ((DataBus.c_4017) | 1<<i);
+                        }
+                    }
+                }
                 break;
             default:
                 Const.mapper.write(addr,data);
@@ -208,14 +208,14 @@ public class CpuMemory {
                     return res;
                 }
                 break;
-//            case 0x4016:
-//                byte returnNum = (byte) ((DataBus.c_4016 >> read_count_4016) & 1);
-//                read_count_4016++;
-//                return returnNum;
-//            case 0x4017:
-//                byte returnNum2 = (byte) ((DataBus.c_4017 >> read_count_4017) & 1);
-//                read_count_4017++;
-//                return returnNum2;
+            case 0x4016:
+                byte returnNum = (byte) ((DataBus.c_4016 >> read_count_4016) & 1);
+                read_count_4016++;
+                return returnNum;
+            case 0x4017:
+                byte returnNum2 = (byte) ((DataBus.c_4017 >> read_count_4017) & 1);
+                read_count_4017++;
+                return returnNum2;
         }
         return Const.mapper.read(addr);
     }

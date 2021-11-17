@@ -104,7 +104,7 @@ public class Boot {
             }
         });
         //调试模式 打印运行日志
-        Const.debug = true;
+        Const.debug = false;
         new Thread(() -> {
             //读取.nes文件数据
             NESRomData romData = this.loadData("../超级玛丽.nes");
