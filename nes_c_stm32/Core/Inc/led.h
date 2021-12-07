@@ -1,13 +1,11 @@
 //
-// Created by WStars on 2021/8/29.
+// Created by WStars on 2021/12/5.
 //
 
-#ifndef STM32_SDCARD_LCD_H
-#define STM32_SDCARD_LCD_H
+#ifndef SPITEST_LED_H
+#define SPITEST_LED_H
 
-#endif //STM32_SDCARD_LCD_H
+#endif //SPITEST_LED_H
 
-#include "gpio.h"
-
-void led_open(void);
-void led_close(void);
+#define LED_ON LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_13)
+#define LED_OFF LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);

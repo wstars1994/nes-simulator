@@ -740,7 +740,7 @@ typedef struct
 
 #define UID_BASE                     0x1FFF7A10UL           /*!< Unique device ID register base address */
 #define FLASHSIZE_BASE               0x1FFF7A22UL           /*!< FLASH Size register base address       */
-#define PACKAGE_BASE                 0x1FFF7BF0UL           /*!< Package size register base address     */
+#define PACKAGE_BASE                 0x1FFF7BF0UL           /*!< Package render_size register base address     */
 /**
   * @}
   */
@@ -817,7 +817,15 @@ typedef struct
 /** @addtogroup Exported_constants
   * @{
   */
-  
+
+/** @addtogroup Hardware_Constant_Definition
+  * @{
+  */
+#define LSI_STARTUP_TIME                40U /*!< LSI Maximum startup time in us */
+/**
+  * @}
+  */
+
   /** @addtogroup Peripheral_Registers_Bits_Definition
   * @{
   */
@@ -2374,6 +2382,9 @@ typedef struct
 #define FLASH_CR_EOPIE_Pos             (24U)                                   
 #define FLASH_CR_EOPIE_Msk             (0x1UL << FLASH_CR_EOPIE_Pos)            /*!< 0x01000000 */
 #define FLASH_CR_EOPIE                 FLASH_CR_EOPIE_Msk                      
+#define FLASH_CR_ERRIE_Pos             (25U)
+#define FLASH_CR_ERRIE_Msk             (0x1UL << FLASH_CR_ERRIE_Pos)
+#define FLASH_CR_ERRIE                 FLASH_CR_ERRIE_Msk
 #define FLASH_CR_LOCK_Pos              (31U)                                   
 #define FLASH_CR_LOCK_Msk              (0x1UL << FLASH_CR_LOCK_Pos)             /*!< 0x80000000 */
 #define FLASH_CR_LOCK                  FLASH_CR_LOCK_Msk                       
@@ -5417,7 +5428,7 @@ typedef struct
 
 #define SDIO_DCTRL_DBLOCKSIZE_Pos      (4U)                                    
 #define SDIO_DCTRL_DBLOCKSIZE_Msk      (0xFUL << SDIO_DCTRL_DBLOCKSIZE_Pos)     /*!< 0x000000F0 */
-#define SDIO_DCTRL_DBLOCKSIZE          SDIO_DCTRL_DBLOCKSIZE_Msk               /*!<DBLOCKSIZE[3:0] bits (Data block size) */
+#define SDIO_DCTRL_DBLOCKSIZE          SDIO_DCTRL_DBLOCKSIZE_Msk               /*!<DBLOCKSIZE[3:0] bits (Data block render_size) */
 #define SDIO_DCTRL_DBLOCKSIZE_0        (0x1UL << SDIO_DCTRL_DBLOCKSIZE_Pos)     /*!< 0x0010 */
 #define SDIO_DCTRL_DBLOCKSIZE_1        (0x2UL << SDIO_DCTRL_DBLOCKSIZE_Pos)     /*!< 0x0020 */
 #define SDIO_DCTRL_DBLOCKSIZE_2        (0x4UL << SDIO_DCTRL_DBLOCKSIZE_Pos)     /*!< 0x0040 */
@@ -7815,7 +7826,7 @@ typedef struct
 /********************  Bit definition for USB_OTG_DIEPCTL register  ********************/
 #define USB_OTG_DIEPCTL_MPSIZ_Pos                (0U)                          
 #define USB_OTG_DIEPCTL_MPSIZ_Msk                (0x7FFUL << USB_OTG_DIEPCTL_MPSIZ_Pos) /*!< 0x000007FF */
-#define USB_OTG_DIEPCTL_MPSIZ                    USB_OTG_DIEPCTL_MPSIZ_Msk     /*!< Maximum packet size              */
+#define USB_OTG_DIEPCTL_MPSIZ                    USB_OTG_DIEPCTL_MPSIZ_Msk     /*!< Maximum packet render_size              */
 #define USB_OTG_DIEPCTL_USBAEP_Pos               (15U)                         
 #define USB_OTG_DIEPCTL_USBAEP_Msk               (0x1UL << USB_OTG_DIEPCTL_USBAEP_Pos) /*!< 0x00008000 */
 #define USB_OTG_DIEPCTL_USBAEP                   USB_OTG_DIEPCTL_USBAEP_Msk    /*!< USB active endpoint              */
@@ -7864,7 +7875,7 @@ typedef struct
 /********************  Bit definition for USB_OTG_HCCHAR register  ********************/
 #define USB_OTG_HCCHAR_MPSIZ_Pos                 (0U)                          
 #define USB_OTG_HCCHAR_MPSIZ_Msk                 (0x7FFUL << USB_OTG_HCCHAR_MPSIZ_Pos) /*!< 0x000007FF */
-#define USB_OTG_HCCHAR_MPSIZ                     USB_OTG_HCCHAR_MPSIZ_Msk      /*!< Maximum packet size */
+#define USB_OTG_HCCHAR_MPSIZ                     USB_OTG_HCCHAR_MPSIZ_Msk      /*!< Maximum packet render_size */
 
 #define USB_OTG_HCCHAR_EPNUM_Pos                 (11U)                         
 #define USB_OTG_HCCHAR_EPNUM_Msk                 (0xFUL << USB_OTG_HCCHAR_EPNUM_Pos) /*!< 0x00007800 */
@@ -8063,7 +8074,7 @@ typedef struct
 
 #define USB_OTG_DIEPTSIZ_XFRSIZ_Pos              (0U)                          
 #define USB_OTG_DIEPTSIZ_XFRSIZ_Msk              (0x7FFFFUL << USB_OTG_DIEPTSIZ_XFRSIZ_Pos) /*!< 0x0007FFFF */
-#define USB_OTG_DIEPTSIZ_XFRSIZ                  USB_OTG_DIEPTSIZ_XFRSIZ_Msk   /*!< Transfer size */
+#define USB_OTG_DIEPTSIZ_XFRSIZ                  USB_OTG_DIEPTSIZ_XFRSIZ_Msk   /*!< Transfer render_size */
 #define USB_OTG_DIEPTSIZ_PKTCNT_Pos              (19U)                         
 #define USB_OTG_DIEPTSIZ_PKTCNT_Msk              (0x3FFUL << USB_OTG_DIEPTSIZ_PKTCNT_Pos) /*!< 0x1FF80000 */
 #define USB_OTG_DIEPTSIZ_PKTCNT                  USB_OTG_DIEPTSIZ_PKTCNT_Msk   /*!< Packet count */
@@ -8073,7 +8084,7 @@ typedef struct
 /********************  Bit definition for USB_OTG_HCTSIZ register  ********************/
 #define USB_OTG_HCTSIZ_XFRSIZ_Pos                (0U)                          
 #define USB_OTG_HCTSIZ_XFRSIZ_Msk                (0x7FFFFUL << USB_OTG_HCTSIZ_XFRSIZ_Pos) /*!< 0x0007FFFF */
-#define USB_OTG_HCTSIZ_XFRSIZ                    USB_OTG_HCTSIZ_XFRSIZ_Msk     /*!< Transfer size */
+#define USB_OTG_HCTSIZ_XFRSIZ                    USB_OTG_HCTSIZ_XFRSIZ_Msk     /*!< Transfer render_size */
 #define USB_OTG_HCTSIZ_PKTCNT_Pos                (19U)                         
 #define USB_OTG_HCTSIZ_PKTCNT_Msk                (0x3FFUL << USB_OTG_HCTSIZ_PKTCNT_Pos) /*!< 0x1FF80000 */
 #define USB_OTG_HCTSIZ_PKTCNT                    USB_OTG_HCTSIZ_PKTCNT_Msk     /*!< Packet count */
@@ -8113,7 +8124,7 @@ typedef struct
 
 #define USB_OTG_DOEPCTL_MPSIZ_Pos                (0U)                          
 #define USB_OTG_DOEPCTL_MPSIZ_Msk                (0x7FFUL << USB_OTG_DOEPCTL_MPSIZ_Pos) /*!< 0x000007FF */
-#define USB_OTG_DOEPCTL_MPSIZ                    USB_OTG_DOEPCTL_MPSIZ_Msk     /*!< Maximum packet size */          /*!<Bit 1 */
+#define USB_OTG_DOEPCTL_MPSIZ                    USB_OTG_DOEPCTL_MPSIZ_Msk     /*!< Maximum packet render_size */          /*!<Bit 1 */
 #define USB_OTG_DOEPCTL_USBAEP_Pos               (15U)                         
 #define USB_OTG_DOEPCTL_USBAEP_Msk               (0x1UL << USB_OTG_DOEPCTL_USBAEP_Pos) /*!< 0x00008000 */
 #define USB_OTG_DOEPCTL_USBAEP                   USB_OTG_DOEPCTL_USBAEP_Msk    /*!< USB active endpoint */
@@ -8188,7 +8199,7 @@ typedef struct
 
 #define USB_OTG_DOEPTSIZ_XFRSIZ_Pos              (0U)                          
 #define USB_OTG_DOEPTSIZ_XFRSIZ_Msk              (0x7FFFFUL << USB_OTG_DOEPTSIZ_XFRSIZ_Pos) /*!< 0x0007FFFF */
-#define USB_OTG_DOEPTSIZ_XFRSIZ                  USB_OTG_DOEPTSIZ_XFRSIZ_Msk   /*!< Transfer size */
+#define USB_OTG_DOEPTSIZ_XFRSIZ                  USB_OTG_DOEPTSIZ_XFRSIZ_Msk   /*!< Transfer render_size */
 #define USB_OTG_DOEPTSIZ_PKTCNT_Pos              (19U)                         
 #define USB_OTG_DOEPTSIZ_PKTCNT_Msk              (0x3FFUL << USB_OTG_DOEPTSIZ_PKTCNT_Pos) /*!< 0x1FF80000 */
 #define USB_OTG_DOEPTSIZ_PKTCNT                  USB_OTG_DOEPTSIZ_PKTCNT_Msk   /*!< Packet count */
