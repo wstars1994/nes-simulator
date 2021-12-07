@@ -75,6 +75,8 @@ public class NesMobo {
             }
             ppu.renderNameTable(frameData,renderBuff);
             ppu.renderSprite(renderBuff,frameSpriteData);
+            //渲染图像
+            nesRender.render(renderBuff);
             this.beginVBlank();
             this.cpu6502.go();
             //nmi
@@ -86,8 +88,7 @@ public class NesMobo {
                 this.cpu6502.go();
             }
             this.endVBlank();
-            //渲染图像
-            nesRender.render(renderBuff);
+
             this.delay(begin,perFrameMillis);
         }
     }
