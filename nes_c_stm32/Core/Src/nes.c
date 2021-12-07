@@ -354,8 +354,8 @@ void render_name_table(int lineStartIndex){
         short patternStartAddr = frameData[line][2];
         for (int i=0;i<32;i++) {
             //指示哪个tile
-            byte coarse_x = (byte) (nameTableAddress&0x1F);
-            byte coarse_y = (byte) ((nameTableAddress>>5)&0x1F);
+            byte coarse_x = nameTableAddress&0x1F;
+            byte coarse_y = (nameTableAddress>>5)&0x1F;
             //1 读取name table数据,其实就是Tile图案表索引  (图案+颜色 = 8字节+8字节=16字节)
             byte nameTableData = p_read(nameTableAddress);
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
@@ -364,18 +364,13 @@ void render_name_table(int lineStartIndex){
             byte patternData = p_read(patternAddress);
             //图案表颜色数据
             byte colorData = p_read(patternAddress + 8);
-            //取颜色低两位
-            byte patternColorLowData[8];
-            for(int n=7;n>=0;n--) {
-                patternColorLowData[n] = ((get_bit(colorData,n)<<1)&3) | (get_bit(patternData,n)&1);
-            }
             //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节
             int attributeOffset = ((coarse_y & 2) == 0 ? 0 : 4) + ((coarse_x & 2) == 0 ? 0 : 2);
             int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00) | ((coarse_y>>2)<<3) | (coarse_x >> 2);
             byte pchb = (p_read(attributeAddress)>>attributeOffset)&3;
             //合并 取最终4位颜色
             for (int j=0; j<8; j++) {
-                int pclb = patternColorLowData[7 - j];
+                int pclb = ((get_bit(colorData,7 - j)<<1)&3) | (get_bit(patternData,7 - j)&1);
                 int index = line * 256 + i * 8 + j - fine_x;
                 if(index<0){
                     index = 0;
@@ -513,7 +508,7 @@ void render_sprite(int lineStartIndex) {
 void render_name_table2(int scanLineIndex){
     frameData[scanLineIndex][0] = p_vram_addr;
     frameData[scanLineIndex][1] = p_scroll_x;
-    frameData[scanLineIndex][2] = get_bit(p_reg_2000,4) == 0 ?0x0000:0x1000;
+    frameData[scanLineIndex][2] = get_bit(p_reg_2000,4)?0x1000:0;
 }
 void ppu_render(int line) {
     //渲染背景
@@ -1227,8 +1222,9 @@ void NES_Start() {
     LCD_SetRegion(30,0,255+30,LCD_HEIGHT);
     LL_DMA_ConfigAddresses(DMA2,LL_DMA_STREAM_2,(uint32_t)&render, LL_SPI_DMA_GetRegAddr(SPI1),LL_DMA_GetDataTransferDirection(DMA2, LL_DMA_STREAM_2));
     LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_2, sizeof(render));
-
+    int ll=0;
     while (1) {
+
         for (int l = 0; l < 240; l++) {
             if(showBg() || showSpr()){
                 p_vram_addr = (p_vram_addr & 0xfbe0) | (p_vram_temp_addr & 0x041f);
@@ -1237,15 +1233,31 @@ void NES_Start() {
             exec_instruction();
             coarseY();
         }
+
         if(showBg() || showSpr()) {
             LCD_CS_CLR
             LCD_DC_SET
+            short *pixels = palettes[17];
+
+            if(ll%2==0){
+                pixels = palettes[17];
+            }else{
+                pixels = palettes[45];
+            }
+
             for (int i = 0; i < 3; ++i) {
                 render_name_table(i);
 //                render_sprite(i);
+
+                for (int j = 0; j < 5<<13; j+=2) {
+                    render[j] = (pixels[0] & 0xf8)| ((pixels[1] & 0xfc)>>5);
+                    render[j+1] = ((pixels[1] & 0xfc)<<3)+(pixels[2]>>3);
+                }
+
                 LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_2);
                 LL_mDelay(7);
             }
+            ll++;
             LCD_CS_SET
         }
         //设置vblank true
