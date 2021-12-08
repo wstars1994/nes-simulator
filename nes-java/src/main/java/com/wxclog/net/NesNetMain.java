@@ -1,13 +1,11 @@
 package com.wxclog.net;
 
-import com.wxclog.core.Const;
+import com.wxclog.ui.ServerEventListener;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -23,57 +21,7 @@ public class NesNetMain {
 
     public static Channel channel;
 
-    public static void init(){
-        new Thread(()->{
-            if(Const.gamepadMain){
-                initServer();
-            }else{
-                initClient();
-            }
-        }).start();
-    }
-
-    private static void initServer(){
-        NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        NioEventLoopGroup workGroup = new NioEventLoopGroup(4);
-        try {
-            ServerBootstrap bootstrap = new ServerBootstrap();
-            bootstrap
-                    .group(bossGroup, workGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            ChannelPipeline p = socketChannel.pipeline();
-                            p.addLast(new MessageToByteEncoder() {
-                                @Override
-                                protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
-                                    out.writeBytes(msg.toString().getBytes());
-                                }
-                            });
-                            p.addLast(new ByteToMessageDecoder() {
-                                @Override
-                                protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-                                    byte datas[] = new byte[in.readableBytes()];
-                                    in.readBytes(datas);
-                                    out.add(new String(datas));
-                                }
-                            });
-                            p.addLast(new ServerHandler());
-                        }
-                    });
-            Channel ch = bootstrap.bind(7777).sync().channel();
-            System.out.println("Netty服务启动成功,port:"+7777);
-            ch.closeFuture().sync();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            bossGroup.shutdownGracefully();
-            workGroup.shutdownGracefully();
-        }
-    }
-
-    private static void initClient(){
+    public static void connectServer(ServerEventListener serverEventListener){
         try{
             final EventLoopGroup group = new NioEventLoopGroup();
             Bootstrap b = new Bootstrap();
@@ -97,16 +45,18 @@ public class NesNetMain {
                                     out.add(new String(datas));
                                 }
                             });
-                            pipeline.addLast(new ServerHandler());
+                            pipeline.addLast(new ServerHandler(serverEventListener));
                         }
                     });
             //发起异步连接请求，绑定连接端口和host信息
-            final ChannelFuture future = b.connect("192.168.1.142", 7777).sync();
+            final ChannelFuture future = b.connect("127.0.0.1", 7777).sync();
 
             future.addListener((ChannelFutureListener) arg0 -> {
                 if (future.isSuccess()) {
                     System.out.println("连接服务器成功");
                     channel = future.channel();
+                    serverEventListener.event(-1,"SUCCESS");
+                    channel.writeAndFlush("{\"type\":0}");
                 }else{
                     System.out.println("连接服务器失败");
                     future.cause().printStackTrace();
@@ -114,7 +64,20 @@ public class NesNetMain {
                 }
             });
         }catch (Exception e){
-
+ 
         }
     }
+
+    public static void send(int type,String data){
+        switch (type){
+            case 1:
+                channel.writeAndFlush("{\"type\":"+type+"}");
+                break;
+            case 2:
+                channel.writeAndFlush("{\"type\":"+type+",\"roomId\": }");
+                break;
+        }
+
+    }
+
 }

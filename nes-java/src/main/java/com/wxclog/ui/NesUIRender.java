@@ -2,7 +2,7 @@ package com.wxclog.ui;
 
 import com.wxclog.core.Const;
 
-import java.awt.*;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 
 /**
@@ -12,11 +12,11 @@ import java.awt.image.BufferedImage;
  */
 public class NesUIRender {
 
-    private Frame frame;
+    private JFrame frame;
     private BufferedImage image;
 
 
-    public NesUIRender(Frame frame) {
+    public NesUIRender(JFrame frame) {
         this.frame = frame;
         image = new BufferedImage((256) * Const.videoScale, 240 * Const.videoScale, BufferedImage.TYPE_INT_ARGB);
     }

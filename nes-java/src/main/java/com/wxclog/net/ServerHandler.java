@@ -1,7 +1,6 @@
 package com.wxclog.net;
 
-import com.wxclog.core.Const;
-import com.wxclog.core.DataBus;
+import com.wxclog.ui.ServerEventListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -12,23 +11,31 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
+    private ServerEventListener serverEventListener;
+
+    public ServerHandler(ServerEventListener serverEventListener) {
+        this.serverEventListener = serverEventListener;
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) {
-        int keyIndex = Integer.parseInt(msg);
-        boolean press = keyIndex < 10 && keyIndex>=0;
-        if(Const.gamepadMain) {
-            if(press){
-                DataBus.c_4017_datas[keyIndex] = 1;
-            }else{
-                DataBus.c_4017_datas[keyIndex/10] = 0;
-            }
-        }else{
-            if(press){
-                DataBus.c_4016_datas[keyIndex] = 1;
-            }else{
-                DataBus.c_4016_datas[keyIndex/10] = 0;
-            }
-        }
+        serverEventListener.event(0,msg);
+
+//        int keyIndex = Integer.parseInt(msg);
+//        boolean press = keyIndex < 10 && keyIndex>=0;
+//        if(Const.gamepadMain) {
+//            if(press){
+//                DataBus.c_4017_datas[keyIndex] = 1;
+//            }else{
+//                DataBus.c_4017_datas[keyIndex/10] = 0;
+//            }
+//        }else{
+//            if(press){
+//                DataBus.c_4016_datas[keyIndex] = 1;
+//            }else{
+//                DataBus.c_4016_datas[keyIndex/10] = 0;
+//            }
+//        }
     }
 
     private byte getKeyIndex(int keyCode){

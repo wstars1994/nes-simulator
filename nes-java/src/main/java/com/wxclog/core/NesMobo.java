@@ -59,7 +59,7 @@ public class NesMobo {
      * 主板通电
      */
     public void powerUp(){
-        byte perFrameMillis = 1000 / 80;
+        byte perFrameMillis = 1000 / 60;
         while (true)  {
             long begin = System.currentTimeMillis();
             short[][] renderBuff = new short[(256+16)*240][3];

@@ -1,5 +1,7 @@
 package com.wxclog;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.wxclog.core.Const;
 import com.wxclog.core.DataBus;
 import com.wxclog.core.NesMobo;
@@ -9,12 +11,13 @@ import com.wxclog.core.ppu.Ppu;
 import com.wxclog.net.NesNetMain;
 import com.wxclog.rom.HeaderData;
 import com.wxclog.rom.NESRomData;
+import com.wxclog.ui.NesKeyAdapter;
 import com.wxclog.ui.NesUIRender;
 import com.wxclog.util.RomReaderUtil;
 
-import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
@@ -27,7 +30,7 @@ import java.io.FileInputStream;
  */
 public class Boot {
 
-    private Frame frame;
+    private JFrame frame;
 
     /**
      * 加载.nes文件数据到内存
@@ -59,43 +62,12 @@ public class Boot {
     }
 
     private void launch() {
-        frame = new Frame("NES游戏机");
+        frame = new JFrame("FC");
         frame.setSize(260 * Const.videoScale, 260*Const.videoScale);
         frame.setResizable(false);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        frame.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                int keyCode = e.getKeyCode();
-                byte keyIndex = getKeyIndex(keyCode);
-                if(keyIndex !=-1){
-                    if(!Const.gamepadMain){
-                        DataBus.c_4017_datas[keyIndex] = 1;
-                    }else{
-                        DataBus.c_4016_datas[keyIndex] = 1;
-                    }
-                    if(NesNetMain.channel!=null){
-                        NesNetMain.channel.writeAndFlush(keyIndex);
-                    }
-                }
-            }
-            @Override
-            public void keyReleased(KeyEvent e) {
-                int keyCode = e.getKeyCode();
-                byte keyIndex = getKeyIndex(keyCode);
-                if(keyIndex !=-1){
-                    if(!Const.gamepadMain){
-                        DataBus.c_4017_datas[keyIndex] = 0;
-                    }else{
-                        DataBus.c_4016_datas[keyIndex] = 0;
-                    }
-                    if(NesNetMain.channel != null){
-                        NesNetMain.channel.writeAndFlush(keyIndex*10);
-                    }
-                }
-            }
-        });
+        frame.addKeyListener(new NesKeyAdapter());
         //退出
         frame.addWindowListener(new WindowAdapter(){
             @Override
@@ -103,8 +75,66 @@ public class Boot {
                 System.exit(0);
             }
         });
+        JPanel modelSelectPanel = new JPanel();
+        modelSelectPanel.setLayout(null);
+
+        JButton singleBtn = new JButton("单机");
+        singleBtn.setBounds(20,60,70,70);
+        JButton multiBtn = new JButton("联机");
+        multiBtn.setBounds(155,60,70,70);
+        modelSelectPanel.add(singleBtn);
+        modelSelectPanel.add(multiBtn);
+        frame.add(modelSelectPanel);
+
+        singleBtn.addActionListener(e -> {
+            modelSelectPanel.setVisible(false);
+            this.run();
+        });
+        multiBtn.addActionListener(e -> {
+            modelSelectPanel.setVisible(false);
+
+            JPanel multiPanel = new JPanel();
+            JButton createRoom = new JButton("创建房间");
+            JLabel loadLabel = new JLabel("正在连接服务器");
+            multiPanel.add(loadLabel);
+            createRoom.addActionListener(e1 -> NesNetMain.send(1,null));
+            frame.add(multiPanel);
+
+            new Thread(()->{
+                NesNetMain.connectServer((type, data) -> {
+                    System.out.println(type+"   "+data);
+                    switch (type){
+                        case -1:
+                            loadLabel.setText("连接成功,开始获取房间列表");
+                            multiPanel.add(createRoom);
+                            break;
+                        case 0:
+                            loadLabel.setVisible(false);
+                            JSONObject list = JSONObject.parseObject(data);
+                            JSONArray roomList = list.getJSONArray("roomList");
+                            for (Object o : roomList) {
+                                JSONObject room = (JSONObject) o;
+                                JButton roomBtn = new JButton(room.getString("roomId"));
+                                roomBtn.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        String actionCommand = e.getActionCommand();
+                                        NesNetMain.send(2,actionCommand);
+                                    }
+                                });
+                                multiPanel.add(roomBtn);
+                                multiPanel.updateUI();
+                            }
+                            break;
+                    }
+                });
+            }).start();
+        });
+    }
+
+    private void run(){
         //调试模式 打印运行日志
-        Const.debug = false;
+//        Const.debug = false;
         new Thread(() -> {
             //读取.nes文件数据
             NESRomData romData = this.loadData("../超级玛丽.nes");
@@ -138,14 +168,6 @@ public class Boot {
         }).start();
     }
 
-    private byte getKeyIndex(int keyCode){
-        byte key = -1;
-        Integer data = Const.gamepadMapping.get(keyCode);
-        if(data != null){
-            return data.byteValue();
-        }
-        return key;
-    }
 
     public static void main(String[] args) {
         new Boot().launch();
