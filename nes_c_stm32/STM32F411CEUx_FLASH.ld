@@ -9,10 +9,10 @@
 **  Abstract    : Linker script for STM32F411CEUx series
 **                512Kbytes FLASH and 128Kbytes RAM
 **
-**                Set heap size, stack size and stack location according
+**                Set heap render_size, stack render_size and stack location according
 **                to application requirements.
 **
-**                Set memory bank area and size if external memory is used.
+**                Set memory bank area and render_size if external memory is used.
 **
 **  Target      : STMicroelectronics STM32
 **
