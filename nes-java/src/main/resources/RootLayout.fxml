@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.web.*?>
+<?import java.lang.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="mainContainer" prefHeight="240.0" prefWidth="256.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.wxclog.Boot">
+   <children>
+      <WebView fx:id="webView" prefHeight="240.0" prefWidth="256.0" />
+      <Pane fx:id="multiPanel" layoutX="-272.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-272.0" AnchorPane.rightAnchor="272.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <FlowPane prefHeight="240.0" prefWidth="256.0">
+               <children>
+                  <Button fx:id="createRoomBtn" mnemonicParsing="false" onAction="#createRoomClick" prefHeight="23.0" prefWidth="88.0" text="创建房间" />
+                  <Button fx:id="refreshRoomBtn" mnemonicParsing="false" onAction="#refreshRoomClick" prefHeight="23.0" prefWidth="90.0" text="刷新房间" />
+                  <Button fx:id="backHomeBtn" mnemonicParsing="false" onAction="#backHomeBtnClick" prefHeight="23.0" prefWidth="78.0" text="返回" />
+               </children>
+            </FlowPane>
+            <VBox fx:id="tipPanel" alignment="CENTER" layoutX="22.0" layoutY="40.0" prefHeight="180.0" prefWidth="214.0">
+               <children>
+                  <Label fx:id="connectionLabel" alignment="CENTER" contentDisplay="CENTER" text="正在连接服务器" />
+               </children>
+            </VBox>
+            <ListView fx:id="roomList" layoutY="25.0" prefHeight="215.0" prefWidth="256.0" visible="false" />
+         </children>
+      </Pane>
+      <Pane fx:id="modelSelectPanel" layoutX="30.0" layoutY="23.0" style="-fx-background-color: #ffffff;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Button fx:id="multiPlayerBtn" focusTraversable="false" layoutX="164.0" layoutY="103.0" mnemonicParsing="false" onAction="#multiPlayerBtnClick" prefHeight="50.0" prefWidth="67.0" text="联机" />
+            <Button fx:id="singlePlayerBtn" focusTraversable="false" layoutX="26.0" layoutY="103.0" mnemonicParsing="false" onAction="#singlePlayerBtnClick" prefHeight="50.0" prefWidth="67.0" text="单机" />
+         </children>
+      </Pane>
+      <Canvas fx:id="renderCanvas" height="240.0" visible="false" width="256.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+   </children>
+</AnchorPane>

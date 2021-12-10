@@ -3,7 +3,7 @@ package com.wxclog.core;
 import com.wxclog.core.cpu.Cpu6502;
 import com.wxclog.core.cpu.CpuMemory;
 import com.wxclog.core.ppu.Ppu;
-import com.wxclog.ui.NesUIRender;
+import com.wxclog.ui.NesPpuRender;
 import com.wxclog.util.MemUtil;
 
 /**
@@ -24,7 +24,7 @@ public class NesMobo {
     /**
      * 屏幕输出
      */
-    private NesUIRender nesRender;
+    private NesPpuRender nesRender;
 
     /**
      * 复位
@@ -59,12 +59,13 @@ public class NesMobo {
      * 主板通电
      */
     public void powerUp(){
-        byte perFrameMillis = 1000 / 60;
+        byte perFrameMillis = 1000 / 80;
+
         while (true)  {
-            long begin = System.currentTimeMillis();
             short[][] renderBuff = new short[(256+16)*240][3];
             short[][] frameData = new short[240][3];
             byte[][] frameSpriteData = new byte[240][2];
+            long begin = System.currentTimeMillis();
             for (int i = 0; i < 240; i++) {
                 if(DataBus.showBg() || DataBus.showSpr()){
                     DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & 0xfbe0) | (DataBus.p_vram_temp_addr & 0x041f));
@@ -73,10 +74,13 @@ public class NesMobo {
                 this.cpu6502.go();
                 this.coarseY();
             }
-            ppu.renderNameTable(frameData,renderBuff);
-            ppu.renderSprite(renderBuff,frameSpriteData);
-            //渲染图像
-            nesRender.render(renderBuff);
+            if(DataBus.showBg() || DataBus.showSpr()) {
+                ppu.renderNameTable(frameData,renderBuff);
+                ppu.renderSprite(renderBuff,frameSpriteData);
+                //渲染图像
+                nesRender.render(renderBuff);
+            }
+
             this.beginVBlank();
             this.cpu6502.go();
             //nmi
@@ -142,7 +146,7 @@ public class NesMobo {
         this.ppu = ppu;
     }
 
-    public void setNesRender(NesUIRender nesRender) {
+    public void setNesRender(NesPpuRender nesRender) {
         this.nesRender = nesRender;
     }
 }

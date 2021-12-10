@@ -7,8 +7,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.*;
 
 import java.util.List;
 
@@ -25,29 +24,19 @@ public class NesNetMain {
         try{
             final EventLoopGroup group = new NioEventLoopGroup();
             Bootstrap b = new Bootstrap();
-            b.group(group).channel(NioSocketChannel.class)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
-                            System.out.println("正在连接中...");
-                            ChannelPipeline pipeline = ch.pipeline();
-                            pipeline.addLast(new MessageToByteEncoder() {
-                                @Override
-                                protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
-                                    out.writeBytes(msg.toString().getBytes());
-                                }
-                            });
-                            pipeline.addLast(new ByteToMessageDecoder() {
-                                @Override
-                                protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-                                    byte datas[] = new byte[in.readableBytes()];
-                                    in.readBytes(datas);
-                                    out.add(new String(datas));
-                                }
-                            });
-                            pipeline.addLast(new ServerHandler(serverEventListener));
-                        }
-                    });
+            b.group(group)
+                .channel(NioSocketChannel.class)
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    public void initChannel(SocketChannel ch) throws Exception {
+                        System.out.println("正在连接中...");
+                        ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast(new LengthFieldBasedFrameDecoder(Short.MAX_VALUE,0,4));
+                        pipeline.addLast(new MessageDecoder());
+                        pipeline.addLast(new MessageEncoder());
+                        pipeline.addLast(new ServerHandler(serverEventListener));
+                    }
+                });
             //发起异步连接请求，绑定连接端口和host信息
             final ChannelFuture future = b.connect("127.0.0.1", 7777).sync();
 
@@ -55,7 +44,7 @@ public class NesNetMain {
                 if (future.isSuccess()) {
                     System.out.println("连接服务器成功");
                     channel = future.channel();
-                    serverEventListener.event(-1,"SUCCESS");
+                    serverEventListener.event(-1,"{\"type\":-1}");
                     channel.writeAndFlush("{\"type\":0}");
                 }else{
                     System.out.println("连接服务器失败");
@@ -69,15 +58,23 @@ public class NesNetMain {
     }
 
     public static void send(int type,String data){
+        System.out.println(type);
         switch (type){
+            case 0:
             case 1:
+            case 3:
                 channel.writeAndFlush("{\"type\":"+type+"}");
                 break;
             case 2:
-                channel.writeAndFlush("{\"type\":"+type+",\"roomId\": }");
+                channel.writeAndFlush("{\"type\":"+type+",\"roomId\": \""+data+"\"}");
                 break;
         }
 
     }
 
+    public static void close() {
+        if(channel!=null && channel.isOpen()){
+            channel.close();
+        }
+    }
 }

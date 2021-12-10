@@ -1,5 +1,6 @@
 package com.wxclog.net;
 
+import com.alibaba.fastjson.JSONObject;
 import com.wxclog.ui.ServerEventListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -19,7 +20,13 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) {
-        serverEventListener.event(0,msg);
+        JSONObject res = JSONObject.parseObject(msg);
+        System.out.println(msg);
+        Integer type = res.getInteger("type");
+        if(type !=null){
+            serverEventListener.event(type,msg);
+        }
+
 
 //        int keyIndex = Integer.parseInt(msg);
 //        boolean press = keyIndex < 10 && keyIndex>=0;
