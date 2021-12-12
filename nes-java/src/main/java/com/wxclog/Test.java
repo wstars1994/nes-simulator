@@ -19,6 +19,6 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) {
-        System.out.println((byte)(-127&0xff));
+        System.out.println((0xF8<<8)|(0xFC<<3)|(0xff>>3));
     }
 }

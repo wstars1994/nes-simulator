@@ -64,6 +64,7 @@ public class Ppu {
      */
     private short[][] renderNameTable(int scanLineIndex,short scanData[][]) {
         scanData[scanLineIndex][0] = DataBus.p_vram_addr;
+//        System.out.println("line:"+scanLineIndex+",vram:"+DataBus.p_vram_addr);
         scanData[scanLineIndex][1] = DataBus.p_scroll_x;
         scanData[scanLineIndex][2] = (short) (DataBus.p_2000[4] == 0 ?0x0000:0x1000);
         return scanData;
@@ -76,6 +77,7 @@ public class Ppu {
             byte fine_y = (byte) ((scanData[line][0] >> 12) & 7);
             short nameTableAddress  = (short) (0x2000 | (scanData[line][0] & 0xFFF));
             short patternStartAddr = scanData[line][2];
+//            System.out.println("line:"+line+",fine_x:"+fine_x+",fine_y:"+fine_y+",nameTable:"+nameTableAddress+",patternStartAddr:"+patternStartAddr);
             for (int i=0;i<32;i++) {
                 //指示哪个tile
                 byte coarse_x = (byte) (nameTableAddress&0x1F);
@@ -96,7 +98,7 @@ public class Ppu {
                 byte pchb = (byte) ((ppuMemory.read(attributeAddress)>>attributeOffset)&3);
                 //合并 取最终4位颜色
                 for (int j=0; j<8; j++) {
-                    int pclb = patternColorLowData[7 - j];
+                    byte pclb = patternColorLowData[7 - j];
                     int index = line * 256 + i * 8 + j - fine_x;
                     if(index<0){
                         index = 0;
