@@ -63,7 +63,7 @@ short p_vram_addr,p_vram_temp_addr;
 short frameData[240][3];
 byte frameSpriteData[240][2];
 
-int8_t render[256*80*2];
+uint16_t render[256*120];
 
 int program_length;
 
@@ -345,13 +345,77 @@ void interrupt_nmi() {
 
 //ppu操作
 
+
+void render_sprite(int sl,int lineStartIndex) {
+    byte spriteHeight = frameSpriteData[sl][0];
+    short spritePatternStartAddr = frameSpriteData[sl][1] ? 0x1000:0;
+    if(spriteHeight != 0){
+        byte bgColorIndex = p_read(0x3F00);
+        short *palette = palettes[bgColorIndex & 0xff];
+        //获取内存中的精灵数据
+        for (int i = 0; i < 256; i += 4) {
+            short y = (p_spr_ram[i]&0xff)+1;
+            short patternIndex = (short) (p_spr_ram[i+1]&0xff);
+            //子图形数据
+            byte attributeData = p_spr_ram[i+2];
+            //背景层级
+            byte backgroundPriority = (attributeData>>5)&1;
+            //图案垂直翻转
+            byte vFlip = (attributeData>>7)&1;
+            //图案水平翻转
+            byte hFlip = (attributeData>>6)&1;
+            if(sl >= y && sl < y + spriteHeight) {
+                byte sprX = p_spr_ram[i+3]&0xff;
+                int offset = sl - y;
+                //垂直翻转
+                if(vFlip == 1){
+                    offset = spriteHeight-offset-1;
+                }
+                //获取图案地址
+                int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + offset;
+                if(spriteHeight == 16) {
+                    spritePatternAddr = (patternIndex & ~1) * 16 + ((patternIndex & 1) * 0x1000) + (offset >= 8 ? 16 : 0) + (offset & 7);
+                }
+                byte spritePatternData = p_read(spritePatternAddr);
+                //获取图案颜色数据
+                byte colorData = p_read(spritePatternAddr + 8);
+                byte colorHigh = (attributeData & 0x03)<<2;
+                //水平翻转 01234567 -> 76543210
+                int x = 0,x2 = 8,x3=1;
+                if(hFlip == 1) {
+                    x = 7; x2 = -1; x3 = -1;
+                }
+                int index = sl*256-lineStartIndex*256*120;
+
+                for (;x!=x2; x+=x3) {
+                    int colorLow = ((spritePatternData & 0x80)>>7) | (((colorData & 0x80)>>7) << 1);
+                    uint16_t bg = render[index + sprX + x];
+                    uint16_t sprg = ((palette[0] & 0xf8)<<8)|((palette[1] & 0xfc)<<3)|(palette[2]>>3);
+                    if(colorLow && (backgroundPriority == 0||sprg==bg)){
+//                            //获取4位颜色
+                        uint16_t colorAddr = 0x3f10 | colorHigh | colorLow;
+                        if(colorAddr != 0x3f10){
+                            short *sprite = palettes[p_read(colorAddr)];
+                            uint16_t sprg_color = ((sprite[0] & 0xf8)<<8)|((sprite[1] & 0xfc)<<3)|(sprite[2]>>3);
+                            render[index + sprX + x] = sprg_color;
+                        }
+                    }
+                    spritePatternData<<=1;
+                    colorData<<=1;
+                }
+            }
+        }
+    }
+}
+
 void render_name_table(int lineStartIndex){
-    byte bgColorIndex = p_read(0x3F00);
-    for (int line=lineStartIndex*80;line<lineStartIndex*80+80;line++){
+    byte bgColorIndex = p_read(0x3F00)&0xff;
+    for (int line=lineStartIndex*120;line<(lineStartIndex+1)*120;line++){
         byte fine_x = frameData[line][1];
         byte fine_y = (frameData[line][0] >> 12) & 7;
         short nameTableAddress  = 0x2000 | (frameData[line][0] & 0xFFF);
         short patternStartAddr = frameData[line][2];
+        int baseIndex1 = line * 256 - fine_x;
         for (int i=0;i<32;i++) {
             //指示哪个tile
             byte coarse_x = nameTableAddress&0x1F;
@@ -365,26 +429,21 @@ void render_name_table(int lineStartIndex){
             //图案表颜色数据
             byte colorData = p_read(patternAddress + 8);
             //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节
-            int attributeOffset = ((coarse_y & 2) == 0 ? 0 : 4) + ((coarse_x & 2) == 0 ? 0 : 2);
+            int attributeOffset = ((coarse_y & 2) ? 4 : 0) + ((coarse_x & 2)? 2 : 0);
             int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00) | ((coarse_y>>2)<<3) | (coarse_x >> 2);
             byte pchb = (p_read(attributeAddress)>>attributeOffset)&3;
             //合并 取最终4位颜色
+            int baseIndex = baseIndex1+i*8;
             for (int j=0; j<8; j++) {
                 int pclb = ((get_bit(colorData,7 - j)<<1)&3) | (get_bit(patternData,7 - j)&1);
-                int index = line * 256 + i * 8 + j - fine_x;
-                if(index<0){
-                    index = 0;
-                }
-                int paletteIndex;
-                if(pclb!=0) {
+                int index = baseIndex + j;
+                int paletteIndex = bgColorIndex;
+                if(pclb) {
                     int colorAddr = 0x3f00 + (pchb<<2|(pclb&0x3));
                     paletteIndex = p_read(colorAddr);
-                }else{
-                    paletteIndex = bgColorIndex&0xff;
                 }
                 short *pixels = palettes[paletteIndex];
-                render[(index-lineStartIndex*256*80)*2] = (pixels[0] & 0xf8)| ((pixels[1] & 0xfc)>>5);
-                render[(index-lineStartIndex*256*80)*2+1] = ((pixels[1] & 0xfc)<<3)+(pixels[2]>>3);
+                render[index-lineStartIndex*256*120] = ((pixels[0] & 0xf8)<<8)|((pixels[1] & 0xfc)<<3)|(pixels[2]>>3);
             }
             // if coarse X == 31 (coarseX的最大值就是31即11111B,所以到最大值了要切换到下一个nametable)
             if ((nameTableAddress & 0x1F) == 0x1F) {
@@ -393,6 +452,9 @@ void render_name_table(int lineStartIndex){
                 nameTableAddress++;
             }
         }
+
+        render_sprite(line,lineStartIndex);
+
     }
 }
 
@@ -433,75 +495,7 @@ void renderSprite(int sl) {
     }
 }
 
-void render_sprite(int lineStartIndex) {
-    for (int sl=lineStartIndex*80;sl<lineStartIndex*80+80;sl++){
-        byte spriteHeight = frameSpriteData[sl][0];
-        short spritePatternStartAddr = frameSpriteData[sl][1] ? 0x1000:0;
-        if(spriteHeight != 0){
-            byte bgColorIndex = p_read(0x3F00);
-            short *palette = palettes[bgColorIndex & 0xff];
-            //获取内存中的精灵数据
-            for (int i = 0; i < 256; i += 4) {
-                short y = (short) ((p_spr_ram[i]&0xff)+1);
-                short patternIndex = (short) (p_spr_ram[i+1]&0xff);
-                //子图形数据
-                byte attributeData = p_spr_ram[i+2];
-                //背景层级
-                byte backgroundPriority = (attributeData>>5)&1;
-                //图案垂直翻转
-                byte vFlip = (attributeData>>7)&1;
-                //图案水平翻转
-                byte hFlip = (attributeData>>6)&1;
 
-                if(sl >= y && sl < y + spriteHeight) {
-                    short sprX = p_spr_ram[i+3]&0xff;
-                    int offset = sl - y;
-                    //垂直翻转
-                    if(vFlip == 1){
-                        offset = spriteHeight-offset-1;
-                    }
-                    //获取图案地址
-                    int spritePatternAddr = spritePatternStartAddr + patternIndex * 16 + offset;
-                    if(spriteHeight == 16) {
-                        spritePatternAddr = (patternIndex & ~1) * 16 + ((patternIndex & 1) * 0x1000) + (offset >= 8 ? 16 : 0) + (offset & 7);
-                    }
-                    byte spritePatternData = p_read(spritePatternAddr);
-                    //获取图案颜色数据
-                    byte colorData = p_read(spritePatternAddr + 8);
-                    byte colorHigh = (attributeData & 0x03)<<2;
-                    //水平翻转 01234567 -> 76543210
-                    int x = 0,x2 = 8,x3=1;
-                    if(hFlip == 1) {
-                        x = 7; x2 = -1; x3 = -1;
-                    }
-                    for (;x!=x2; x+=x3) {
-                        int colorLow = ((spritePatternData & 0x80)>>7) | (((colorData & 0x80)>>7) << 1);
-
-                        int8_t b_rg = render[(sl-lineStartIndex*256*80+ sprX + x)*2 ];
-                        int8_t b_gb = render[(sl-lineStartIndex*256*80+ sprX + x)*2 +1];
-
-                        int8_t s_rg = (palette[0] & 0xf8)| ((palette[1] & 0xfc)>>5);
-                        int8_t s_gb =  ((palette[1] & 0xfc)<<3)+(palette[2]>>3);
-
-                        if(colorLow != 0 && (backgroundPriority == 0||(b_rg==s_rg && b_gb==s_gb))){
-//                            //获取4位颜色
-                            int colorAddr = 0x3f10 | colorHigh | colorLow;
-                            if(colorAddr != 0x3f10){
-                                short *sprite = palettes[p_read(colorAddr)];
-                                int8_t s_rg = (sprite[0] & 0xf8)| ((sprite[1] & 0xfc)>>5);
-                                int8_t s_gb =  ((sprite[1] & 0xfc)<<3)+(sprite[2]>>3);
-                                render[(sl-lineStartIndex*256*80+ sprX + x)*2] = s_rg;
-                                render[(sl-lineStartIndex*256*80+ sprX + x)*2 + 1] = s_gb;
-                            }
-                        }
-                        spritePatternData<<=1;
-                        colorData<<=1;
-                    }
-                }
-            }
-        }
-    }
-}
 
 
 
@@ -526,6 +520,7 @@ uint8_t stop = 1;
 void exec_instruction() {
     cpu_cycle = 113;
     byte data,data2,data3;
+    byte addr;
     int abs_data = 0;
     while (cpu_cycle >= 0) {
         byte opc = read_program(prgPc++);
@@ -1167,6 +1162,61 @@ void exec_instruction() {
                 ams_and(data);
                 cpu_cycle-=3;
                 break;
+                //PLP
+            case 0x28:
+                flag_set(pop8_stack());
+                cpu_cycle-=4;
+                break;
+                //ASL_ZERO
+            case 0x06:
+                addr = read_program(prgPc++);
+                data = read(addr);
+                flag_c=(data >> 7) & 1;
+                data2 = data << 1;
+                set_nz(data2);
+                write(addr, data2);
+                cpu_cycle-=5;
+                break;
+                //AND_INDIRECT_Y
+            case 0x31:
+                data = read_program(prgPc++);
+                ams_and(indirect_y(data));
+                cpu_cycle-=5;
+                break;
+                //LDY_ZERO_X
+            case 0xB4:
+                addr = read_program(prgPc++);
+                int data = ams_zero(addr,c_reg_x);
+                data2 = read(data);
+                c_reg_y = data2;
+                set_nz(c_reg_y);
+                cpu_cycle-=4;
+                break;
+                //EOR_ABS
+            case 0x4D:
+                abs_data = ams_abs();
+                data = read(abs_data);
+                flag_c=(data >> 7) & 1;
+                data2 = data << 1;
+                set_nz(data2);
+                write(addr, data2);
+                cpu_cycle-=5;
+                break;
+                //TSX
+            case 0xBA:
+                c_reg_x = c_reg_s;
+                set_nz(c_reg_x);
+                cpu_cycle-=2;
+                break;
+                //DEC_ZERO_X
+            case 0xD6:
+                data = read_program(prgPc++);
+                int addr = ams_zero(data,c_reg_x);
+                data2 = read(addr) - 1;
+                write(addr,data2);
+                set_nz(data2);
+                cpu_cycle-=6;
+                break;
             default:
                 cpu_cycle-=0;
                 printf("unknown ins %X\n",opc&0xFF);
@@ -1221,10 +1271,8 @@ void NES_Start() {
 
     LCD_SetRegion(30,0,255+30,LCD_HEIGHT);
     LL_DMA_ConfigAddresses(DMA2,LL_DMA_STREAM_2,(uint32_t)&render, LL_SPI_DMA_GetRegAddr(SPI1),LL_DMA_GetDataTransferDirection(DMA2, LL_DMA_STREAM_2));
-    LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_2, sizeof(render));
-    int ll=0;
+    LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_2, 256*120);
     while (1) {
-
         for (int l = 0; l < 240; l++) {
             if(showBg() || showSpr()){
                 p_vram_addr = (p_vram_addr & 0xfbe0) | (p_vram_temp_addr & 0x041f);
@@ -1233,32 +1281,15 @@ void NES_Start() {
             exec_instruction();
             coarseY();
         }
-
         if(showBg() || showSpr()) {
             LCD_CS_CLR
             LCD_DC_SET
-            short *pixels = palettes[17];
-
-            if(ll%2==0){
-                pixels = palettes[17];
-            }else{
-                pixels = palettes[45];
-            }
-
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 2; ++i) {
                 render_name_table(i);
-//                render_sprite(i);
-
-                for (int j = 0; j < 5<<13; j+=2) {
-                    render[j] = (pixels[0] & 0xf8)| ((pixels[1] & 0xfc)>>5);
-                    render[j+1] = ((pixels[1] & 0xfc)<<3)+(pixels[2]>>3);
-                }
-
                 LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_2);
-                LL_mDelay(7);
+                LL_mDelay(10);
             }
-            ll++;
-            LCD_CS_SET
+            LCD_CS_SET;
         }
         //设置vblank true
         set_bit(&p_reg_2002,1,7);

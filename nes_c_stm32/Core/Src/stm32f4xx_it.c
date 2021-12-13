@@ -22,6 +22,7 @@
 #include "main.h"
 #include "stm32f4xx_it.h"
 #include "led.h"
+#include "ILI9341.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -206,9 +207,8 @@ void SysTick_Handler(void)
 void DMA2_Stream2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream2_IRQn 0 */
+    if(LL_DMA_IsActiveFlag_TC2(DMA2)) {
 
-    if(LL_DMA_IsActiveFlag_TC2(DMA2))
-    {
         LL_DMA_ClearFlag_TC2(DMA2);
     }
 
