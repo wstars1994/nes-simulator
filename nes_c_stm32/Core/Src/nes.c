@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stm32f4xx_ll_dma.h>
+#include <stdbool.h>
 #include "nes.h"
 #include "ILI9341.h"
 //#include "sdcard.h"
@@ -229,6 +230,15 @@ int concat16(byte low, byte high){
     return (low & 0xFF) | ((high&0xff)<<8);
 }
 
+int ams_branch(byte data, int branch) {
+    byte cpu_cycle = 2;
+    if(branch) {
+        cpu_cycle+= (prgPc & 0xff00) == ((prgPc+ data) & 0xff00) ? 1 : 2;
+        prgPc+=data;
+    }
+    return cpu_cycle;
+}
+
 void ams_immed(byte *reg){
     *reg = read_program(prgPc++);
 }
@@ -277,25 +287,83 @@ byte st_x(int addr,byte reg){
 
 int indirect(){
     byte data = read_program(prgPc++);
-    byte r1 = read(data);
-    byte r2 = read(data+1);
+    byte r1 = read(data&0xff);
+    byte r2 = read((data&0xff)+1);
     return concat16(r1,r2);
 }
 
-byte indirect_y(byte data){
-    byte low = read(data & 0xFF);
-    byte high = read((data & 0xFF) + 1);
-    int addr = concat16(low,high)+ (c_reg_y & 0xFF);
-    return read(addr);
+byte indirect_y(){
+    return read(indirect() + (c_reg_y & 0xFF));
 }
-int indirect_x(byte data){
-    byte addr = (byte) ((data & 0xFF) + (c_reg_x & 0xFF));
-    return concat16(read(data&0xFF), read((addr & 0xFF) + 1));
+byte indirect_x(){
+    byte data = read_program(prgPc++);
+    byte addr = (data & 0xFF) + (c_reg_x & 0xFF);
+    return read(concat16(read(data), read(addr + 1)));
 }
 
 void ams_and(byte data){
     c_reg_a &= data;
     set_nz(c_reg_a);
+}
+
+void ams_eor_a(byte data){
+    c_reg_a ^= data;
+    set_nz(c_reg_a);
+}
+
+void ams_ora(byte data){
+    c_reg_a |= data;
+    set_nz(c_reg_a);
+}
+
+void ams_cpy(byte data){
+    short cmpData = (short) ((c_reg_y&0xFF) - (data&0xFF));
+    set_nz(cmpData);
+    flag_c = (cmpData & 0xff00) == 0;
+}
+
+void ams_lda(byte data){
+    set_nz(data);
+    c_reg_a = data;
+}
+
+void ams_ror(int addr) {
+    byte data = read(addr);
+    byte read2 = ((data & 0xff) >> 1) | (flag_c << 7);
+    flag_c = data&1;
+    set_nz(read2);
+    write(addr,read2);
+}
+
+void ams_rol(int addr) {
+    byte data = read(addr);
+    byte read2 = ((data & 0xff) << 1) | flag_c;
+    flag_c = (data>>7)&1;
+    set_nz(read2);
+    write(addr,read2);
+}
+
+void ams_asl(int addr){
+    byte data = read(addr);
+    flag_c=(data >> 7) & 1;
+    byte data2 = data << 1;
+    set_nz(data2);
+    write(addr, data2);
+}
+
+void ams_cpx(byte data){
+    //TODO 可能有问题
+    byte cmpData = c_reg_x - data;
+    set_nz(cmpData);
+    flag_c = (cmpData & 0xff00) == 0?1:0;
+}
+
+void ams_lsr(int addr){
+    byte data = read(addr);
+    flag_c = data&1;
+    byte data2 = (data & 0xff) >> 1;
+    set_nz(data2);
+    write(addr,data2);
 }
 
 //栈操作----------------------------------
@@ -517,6 +585,7 @@ void ppu_render(int line) {
 //执行指令
 byte cpu_cycle = 113;
 uint8_t stop = 1;
+
 void exec_instruction() {
     cpu_cycle = 113;
     byte data,data2,data3;
@@ -625,14 +694,14 @@ void exec_instruction() {
             case 0x86:
                 cpu_cycle -= st_x(read_program(prgPc++)&0xff,c_reg_x);
                 break;
+                //CPX
             case 0xE0:
-                data = c_reg_x - read_program(prgPc++);
-                set_nz(data);
-                flag_c = (data & 0xff00) == 0?1:0;
+                ams_cpx(read_program(prgPc++));
                 cpu_cycle -= 2;
                 break;
+                //STA_INDIRECT_Y
             case 0x91:
-                write(indirect()+(c_reg_y&0xff),c_reg_a);
+                write(indirect_y(),c_reg_a);
                 cpu_cycle -= 6;
                 break;
             case 0x88:
@@ -643,9 +712,7 @@ void exec_instruction() {
                 //CPY
             case 0xC0:
                 data = read_program(prgPc++);
-                short cmpData = (short) ((c_reg_y&0xFF) - (data&0xFF));
-                set_nz(cmpData);
-                flag_c = (cmpData & 0xff00) == 0;
+                ams_cpy(data);
                 cpu_cycle -= 2;
                 break;
                 //RTS
@@ -676,8 +743,7 @@ void exec_instruction() {
                 //ORA
             case 0x09:
                 data = read_program(prgPc++);
-                c_reg_a |= data;
-                set_nz(c_reg_a);
+                ams_ora(data);
                 cpu_cycle -= 2;
                 break;
                 //AND
@@ -721,7 +787,7 @@ void exec_instruction() {
                 break;
                 //LDA_INDIRECT_Y
             case 0xB1:
-                c_reg_a = indirect_y(read_program(prgPc++));
+                c_reg_a = indirect_y();
                 set_nz(c_reg_a);
                 cpu_cycle-= 5;
                 break;
@@ -786,12 +852,7 @@ void exec_instruction() {
                 //BEQ
             case 0xF0:
                 data = read_program(prgPc++);
-                if (flag_z) {
-                    cpu_cycle -= 2 + ((prgPc & 0xff00) == ((prgPc + data) & 0xff00) ? 1 : 2);
-                    prgPc+=data;
-                    break;
-                }
-                cpu_cycle-=2;
+                cpu_cycle-= ams_branch(data,flag_z);
                 break;
                 //INX
             case 0xE8:
@@ -812,12 +873,7 @@ void exec_instruction() {
                 //BCC
             case 0x90:
                 data = read_program(prgPc++);
-                if(flag_c == 0) {
-                    cpu_cycle -= 2 + ((prgPc & 0xff00) == ((prgPc + data) & 0xff00) ? 1 : 2);
-                    prgPc+=data;
-                    break;
-                }
-                cpu_cycle -=2;
+                cpu_cycle-= ams_branch(data,flag_c==0);
                 break;
                 //DEC_ABS
             case 0xCE:
@@ -838,8 +894,7 @@ void exec_instruction() {
                 //EOR_ZERO
             case 0x45:
                 data = read( read_program(prgPc++)&0xFF);
-                c_reg_a ^= data;
-                set_nz(c_reg_a);
+                ams_eor_a(data);
                 cpu_cycle-=3;
                 break;
                 //CLC
@@ -949,12 +1004,7 @@ void exec_instruction() {
                 //BMI
             case 0x30:
                 data = read_program(prgPc++);
-                if(flag_n == 1) {
-                    cpu_cycle-= 2 + (prgPc & 0xff00) == ((prgPc+ data) & 0xff00) ? 1 : 2;
-                    prgPc+=data;
-                    break;
-                }
-                cpu_cycle-= 2;
+                cpu_cycle-= ams_branch(data,flag_n);
                 break;
                 //ADC_ABS_Y
             case 0x79:
@@ -1040,20 +1090,14 @@ void exec_instruction() {
                 break;
                 //LSR_ABS
             case 0x4E:
-                abs_data = ams_abs();
-                data = read(abs_data);
-                flag_c = data&1;
-                data2 = (data & 0xff) >> 1;
-                set_nz(data2);
-                write(abs_data,data2);
+                ams_lsr(ams_abs());
                 cpu_cycle-=6;
                 break;
                 //ROR_A
             case 0x6A:
                 data = ((c_reg_a & 0xff) >> 1) | (flag_c << 7);
                 flag_c=c_reg_a&1;
-                set_nz(data);
-                c_reg_a = data;
+                ams_lda(data);
                 cpu_cycle-=2;
                 break;
                 //ROL_ABS
@@ -1085,8 +1129,7 @@ void exec_instruction() {
                 //LDA_ZERO_X
             case 0xB5:
                 data = read(ams_zero(read_program(prgPc++),c_reg_x));
-                c_reg_a = data;
-                set_nz(c_reg_a);
+                ams_lda(data);
                 cpu_cycle-=4;
                 break;
                 //STA_ZERO_X
@@ -1169,18 +1212,12 @@ void exec_instruction() {
                 break;
                 //ASL_ZERO
             case 0x06:
-                addr = read_program(prgPc++);
-                data = read(addr);
-                flag_c=(data >> 7) & 1;
-                data2 = data << 1;
-                set_nz(data2);
-                write(addr, data2);
+                ams_asl(read_program(prgPc++)&0xff);
                 cpu_cycle-=5;
                 break;
                 //AND_INDIRECT_Y
             case 0x31:
-                data = read_program(prgPc++);
-                ams_and(indirect_y(data));
+                ams_and(indirect_y());
                 cpu_cycle-=5;
                 break;
                 //LDY_ZERO_X
@@ -1216,6 +1253,187 @@ void exec_instruction() {
                 write(addr,data2);
                 set_nz(data2);
                 cpu_cycle-=6;
+                break;
+                //EOR_ZERO_X
+            case 0x55:
+                addr = read_program(prgPc++);
+                ams_eor_a(read(ams_zero(addr, c_reg_x)));
+                cpu_cycle-=4;
+                break;
+                //AND_ZERO_X
+            case 0x35:
+                addr = read_program(prgPc++);
+                ams_and(read(ams_zero(addr, c_reg_x)));
+                cpu_cycle-=4;
+                break;
+                //STY_ZERO_X
+            case 0x94:
+                addr = read_program(prgPc++);
+                data = ams_zero(addr, c_reg_x);
+                write(data,c_reg_y);
+                cpu_cycle-=4;
+                break;
+                //INC_ZERO_X
+            case 0xF6:
+                addr = ams_zero(read_program(prgPc++), c_reg_x);
+                data = read(addr) + 1;
+                write(addr, data);
+                set_nz(data);
+                cpu_cycle-=6;
+                break;
+                //ORA_ZERO_X
+            case 0x15:
+                addr = read_program(prgPc++);
+                ams_ora(read(addr));
+                cpu_cycle-=4;
+                break;
+                //BVC
+            case 0x50:
+                data = read_program(prgPc++);
+                cpu_cycle-=ams_branch(data,!flag_v);
+                break;
+                //SBC_ABS_X
+            case 0xFD:
+                addr = ams_abs_x(c_reg_x);
+                ams_sbc(read(addr));
+                cpu_cycle-=4;
+                break;
+                //CPY_ZERO
+            case 0xC4:
+                data = read(read_program(prgPc++)&0xFF);
+                ams_cpy(data);
+                cpu_cycle-=3;
+                break;
+                //ORA_INDIRECT_Y
+            case 0x11:
+                ams_ora(indirect_y());
+                cpu_cycle-=5;
+                break;
+                //ORA_ABS_Y
+            case 0x19:
+                addr = ams_abs_x(c_reg_y);
+                ams_ora(read(addr));
+                cpu_cycle-=4;
+                break;
+                //ADC_INDIRECT_Y
+            case 0x71:
+                ams_adc(indirect_y());
+                cpu_cycle-=5;
+                break;
+                //ORA_ABS_X
+            case 0x1D:
+                addr = ams_abs_x(c_reg_x);
+                ams_ora(read(addr));
+                cpu_cycle-=4;
+                break;
+                //CMP_INDIRECT_Y
+            case 0xD1:
+                ams_cmp(indirect_y());
+                cpu_cycle-=5;
+                break;
+                //SBC_INDIRECT_Y
+            case 0xF1:
+                ams_sbc(indirect_y());
+                cpu_cycle-=5;
+                break;
+                //LDA_INDIRECT_X
+            case 0xA1:
+                ams_lda(indirect_x());
+                cpu_cycle-=6;
+                break;
+                //STA_INDIRECT_X
+            case 0x81:
+                st_x(indirect_x()&0xff,c_reg_a);
+                cpu_cycle-=6;
+                break;
+                //INC_ABS_X
+            case 0xFE:
+                addr = ams_abs_x(c_reg_x);
+                data = read(addr) + 1;
+                write(addr, data);
+                set_nz(data);
+                cpu_cycle-=7;
+                break;
+                //CPY_ABS
+            case 0xCC:
+                addr = ams_abs();
+                ams_cpy(read(addr));
+                cpu_cycle-=4;
+                break;
+                //ROR
+            case 0x66:
+                ams_ror(read_program(prgPc++)&0xff);
+                cpu_cycle-=5;
+                break;
+                //ROR_ABS
+            case 0x6E:
+                ams_ror(ams_abs());
+                cpu_cycle-=6;
+                break;
+                //BVS
+            case 0x70:
+                cpu_cycle-= ams_branch(read_program(prgPc++),flag_v);
+                break;
+                //ROL_ABS_X
+            case 0x3E:
+                ams_rol(ams_abs_x(c_reg_x));
+                cpu_cycle-=7;
+                break;
+                //ASL_ABS_X
+            case 0x1E:
+                ams_asl(ams_abs_x(c_reg_x));
+                cpu_cycle-=7;
+                break;
+                //EOR_ABS_X
+            case 0x5D:
+                ams_eor_a(read(ams_abs_x(c_reg_x)));
+                cpu_cycle-=4;
+                break;
+                //CPX_ABS
+            case 0xEC:
+                ams_cpx(read(ams_abs()));
+                cpu_cycle-=4;
+                break;
+                //ROR_ZERO_X
+            case 0x76:
+                ams_ror(ams_zero(read_program(prgPc++),c_reg_x));
+                cpu_cycle-=6;
+                break;
+                //LSR_ZERO_X
+            case 0x56:
+                ams_lsr(ams_zero(read_program(prgPc++),c_reg_x));
+                cpu_cycle-=6;
+                break;
+                //ROL_ZERO_X
+            case 0x36:
+                ams_rol(ams_zero(read_program(prgPc++),c_reg_x));
+                cpu_cycle-=6;
+                break;
+                //LDX_ZERO_Y
+            case 0xB6:
+                c_reg_x = read(ams_zero(read_program(prgPc++),c_reg_y));
+                set_nz(c_reg_x);
+                cpu_cycle-=4;
+                break;
+                //EOR_INDIRECT_Y
+            case 0x51:
+                ams_eor_a(indirect_y());
+                cpu_cycle-=5;
+                break;
+                //STX_ZERO_Y
+            case 0x96:
+                st_x(ams_zero(read_program(prgPc++),c_reg_y),c_reg_x);
+                cpu_cycle-=4;
+                break;
+                //CLI
+            case 0x58:
+                flag_i = 0;
+                cpu_cycle-=2;
+                break;
+                //LSR_ABS_X
+            case 0x5E:
+                ams_lsr(ams_abs_x(c_reg_x));
+                cpu_cycle-=7;
                 break;
             default:
                 cpu_cycle-=0;

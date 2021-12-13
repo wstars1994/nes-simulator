@@ -626,10 +626,6 @@ public class Cpu6502{
             case 0xB6:
 				cpuCycle-= cpuRegister.LDX_ZERO_Y(iterator.next());
                 break;
-            //LDX_ZERO_Y
-            case 0x9C:
-				cpuCycle-= cpuRegister.LDX_ZERO_Y(iterator.next());
-                break;
             //EOR_INDIRECT_Y
             case 0x51:
 				cpuCycle-= cpuRegister.EOR_INDIRECT_Y(iterator.next());

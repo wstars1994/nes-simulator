@@ -60,6 +60,13 @@ public class CpuRegister {
         return REG_A;
     }
     /**
+     * 将X索引寄存器的数据存入栈指针SP寄存器
+     */
+    public int TXS() {
+        REG_SP = REG_X;
+        return 2;
+    }
+    /**
      * data->REG_X
      * @param data
      */
@@ -67,13 +74,6 @@ public class CpuRegister {
         REG_X = (byte) (data&0xFF);
         setN(data);
         setZ(data);
-        return 2;
-    }
-    /**
-     * 将X索引寄存器的数据存入栈指针SP寄存器
-     */
-    public int TXS() {
-        REG_SP = REG_X;
         return 2;
     }
 
@@ -162,12 +162,12 @@ public class CpuRegister {
     }
 
     byte indirectY(byte data){
-        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1) )+ (REG_Y & 0xFF);
+        int addr = MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((data&0xFF)+1) ) + (REG_Y & 0xFF);
         return cpuMemory.read(addr);
     }
-    int indirectX(byte data){
-        byte addr = (byte) ((data & 0xFF) + (REG_X & 0xFF));
-        return MemUtil.concatByte(cpuMemory.read(data&0xFF), cpuMemory.read((addr & 0xFF) + 1));
+    byte indirectX(byte data){
+        byte addr = (byte) ((data&0xff + REG_X&0xFF) & 0xff);
+        return cpuMemory.read(MemUtil.concatByte(cpuMemory.read(addr), cpuMemory.read(addr + 1)));
     }
 
     private byte branch(byte data,boolean flag) {
@@ -326,8 +326,7 @@ public class CpuRegister {
     }
 
     public int CPY(byte data) {
-        byte regY = REG_Y;
-        short cmpData = (short) ((regY&0xFF) - (data&0xFF));
+        short cmpData = (short) ((REG_Y&0xFF) - (data&0xFF));
         setN1((byte) ((cmpData >> 7) & 1));
         setZ1((byte) ((cmpData & 0xff) == 0 ? 1 : 0));
         setC1((byte) ((cmpData & 0xff00) == 0 ? 1 : 0));
@@ -1029,8 +1028,7 @@ public class CpuRegister {
     }
 
     public int EOR_ZERO_X(byte addr) {
-        int data = zero(addr,REG_X);
-        EOR_A(cpuMemory.read(data));
+        EOR_A(cpuMemory.read(zero(addr,REG_X)));
         return 4;
     }
 
@@ -1161,14 +1159,12 @@ public class CpuRegister {
     }
 
     public int LDA_INDIRECT_X(byte data) {
-        int addr = indirectX(data);
-        LDA(cpuMemory.read(addr));
+        LDA(indirectX(data));
         return 6;
     }
 
     public int STA_INDIRECT_X(byte data) {
-        int addr = indirectX(data);
-        STA(cpuMemory.read(addr));
+        STA(indirectX(data));
         return 6;
     }
 
