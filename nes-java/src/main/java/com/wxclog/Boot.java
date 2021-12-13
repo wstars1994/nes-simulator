@@ -12,7 +12,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.Pane;
 import javafx.scene.web.WebEngine;
@@ -35,8 +34,6 @@ public class Boot extends Application {
     private Pane multiPanel;
     @FXML
     private Canvas renderCanvas;
-    @FXML
-    private Label connectionLabel;
     @FXML
     private ListView roomList;
     @FXML
@@ -69,8 +66,7 @@ public class Boot extends Application {
         modelSelectPanel.setVisible(false);
         WebEngine webEngine = webView.getEngine();
         if(!webViewIsLoad){
-            webEngine.load("http://127.0.0.1:8848/wstars-web-html/nes.html");
-
+            webEngine.load(getClass().getResource("/")+"html/nes.html");
             webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newState) -> {
                 if (newState == Worker.State.SUCCEEDED) {
                     JSObject window = (JSObject) webEngine.executeScript("window");
@@ -80,27 +76,8 @@ public class Boot extends Application {
                             JSONObject nesData = JSONObject.parseObject(data);
                             switch (type){
                                 case -1:
-                                    Platform.runLater(() -> webEngine.executeScript("connected()"));
-                                    break;
-                                case 0:
-                                    JSONArray rooms = nesData.getJSONArray("roomList");
-                                    Platform.runLater(() -> webEngine.executeScript("roomList('"+rooms.toJSONString()+"')"));
-                                    break;
-                                case 1:
-                                    Platform.runLater(() -> webEngine.executeScript("joinRoomSuccess('"+nesData.getString("roomId")+"')"));
-                                    NesNetMain.send(0,null);
-                                    break;
-                                case 2:
-                                    Boolean dataBoolean = nesData.getBoolean("status");
-                                    if(dataBoolean){
-                                        String roomId = nesData.getString("roomId");
-                                    }
-                                    break;
-                                case 3:
-                                    Boolean quitFlag = nesData.getBoolean("status");
-                                    if(quitFlag){
-                                        NesNetMain.send(0,null);
-                                    }
+                                    String channelId = nesData.getString("channelId");
+                                    Platform.runLater(() -> webEngine.executeScript("connected('"+channelId+"')"));
                                     break;
                             }
                         });

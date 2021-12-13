@@ -44,8 +44,6 @@ public class NesNetMain {
                 if (future.isSuccess()) {
                     System.out.println("连接服务器成功");
                     channel = future.channel();
-                    serverEventListener.event(-1,"{\"type\":-1}");
-                    channel.writeAndFlush("{\"type\":0}");
                 }else{
                     System.out.println("连接服务器失败");
                     future.cause().printStackTrace();

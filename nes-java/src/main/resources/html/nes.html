@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		<div id="app" style="display: none;">
+			<div class="tip" v-if="serverStatus==0">
+				正在连接服务器
+			</div>
+			<div class="header" v-if="serverStatus>0">
+				<div class="btn-container">
+					<button @click="onBackClick">返回上级</button>
+					<button @click="onAddRoomClick" v-if="serverStatus==1">创建房间</button>
+					<button @click="onRefreshRoomClick" v-if="serverStatus==1">刷新列表</button>
+				</div>
+				<el-button size="mini" type="primary" icon="el-icon-plus" circle></el-button>
+			</div>
+			{{roomList}}
+			<div class="room-container" v-if="serverStatus==1">
+				<div class="room-list" v-for="r in roomList" :style="{backgroundColor:r.roomStatus==1?'#5bdea3':'#ce4f39'}" @click="onRoomClick(r)">
+					{{r.roomId}}
+				</div>
+			</div>
+			<div class="room-inner" v-if="serverStatus==2">
+				<p>选择游戏：</p>
+			</div>
+		</div>
+	</body>
+	<!-- 引入vue组件库 -->
+	<script src="vue.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="axios.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="request.js" type="text/javascript" charset="utf-8"></script>
+	<script>
+		let vue = new Vue({
+			el: '#app',
+			data: function() {
+				return {
+					serverStatus: 0,
+					roomList: [],
+					channelId: null,
+					currentRoomId: null
+				}
+			},
+			methods: {
+				onBackClick(){
+					if(this.serverStatus == 1){
+						window.app.back();
+					}else if(this.serverStatus == 2){
+						this.serverStatus--;
+					}
+				},
+				onAddRoomClick(){
+					request.get("/room/create/"+this.channelId).then(res => {
+						this.currentRoomId = res;
+						if(this.currentRoomId){
+							this.serverStatus++;
+						}
+					});
+				},
+				onRoomClick(room){
+					window.app.joinRoom(room.roomId);
+				},
+				onRefreshRoomClick(){
+					request.get("/room/list").then(res => {
+						this.roomList = res;
+					});
+				}
+			},
+			mounted() {
+				document.getElementById("app").style.display="block";
+				request.get("/room/list").then(res => {
+					this.roomList = res;
+				});
+			}
+		});
+		function connected(channelId){
+			vue.serverStatus = 1;
+			vue.channelId = channelId;
+		}
+		function joinRoomSuccess(roomId){
+			vue.serverStatus = 2;
+		}
+	</script>
+	<style>
+		body{
+			padding: 0;
+			margin: 0;
+			font-size: 13px;
+		}
+		#app{
+			padding: 2px;
+		}
+		.tip{
+			font-size: 13px;
+		}
+		.header{
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		.room-container{
+			height: 205px;
+			display: flex;
+			flex-wrap: wrap;
+			overflow: auto;
+		}
+		.room-container .room-list{
+			cursor: pointer;
+			width: 50px;
+			height: 40px;
+			border: 1px solid #e3e3e3;
+			margin-bottom: 5px;
+			margin-right: 10px;
+			text-align: center;
+			color: #ffffff;
+			line-height: 40px;
+		}
+	</style>
+	
+</html>
+
