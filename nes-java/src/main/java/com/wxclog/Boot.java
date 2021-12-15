@@ -1,6 +1,5 @@
 package com.wxclog;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.wxclog.net.NesNetMain;
 import javafx.application.Application;
@@ -96,7 +95,8 @@ public class Boot extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(new URL(getClass().getResource("/")+"RootLayout.fxml"));
+        URL resource = ClassLoader.getSystemResource("RootLayout.fxml");
+        Parent root = FXMLLoader.load(resource);
         primaryStage.setTitle("My Application");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();

@@ -67,6 +67,7 @@ public class NesMobo {
             byte[][] frameSpriteData = new byte[240][2];
             long begin = System.currentTimeMillis();
             for (int i = 0; i < 240; i++) {
+                System.out.println(i);
                 if(DataBus.showBg() || DataBus.showSpr()){
                     DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & 0xfbe0) | (DataBus.p_vram_temp_addr & 0x041f));
                 }

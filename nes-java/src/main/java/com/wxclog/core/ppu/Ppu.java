@@ -3,6 +3,8 @@ package com.wxclog.core.ppu;
 import com.wxclog.core.DataBus;
 import com.wxclog.util.MemUtil;
 
+import java.util.HashMap;
+
 /**
  * 图形处理单元
  * 16KB space
@@ -72,12 +74,13 @@ public class Ppu {
 
     public void renderNameTable(short scanData[][],short[][] render) {
         byte bgColorIndex = ppuMemory.read(0x3F00);
+        HashMap<String,Integer> cache = new HashMap<>();
         for (int line=0;line<240;line++){
             byte fine_x = (byte) scanData[line][1];
             byte fine_y = (byte) ((scanData[line][0] >> 12) & 7);
             short nameTableAddress  = (short) (0x2000 | (scanData[line][0] & 0xFFF));
             short patternStartAddr = scanData[line][2];
-//            System.out.println("line:"+line+",fine_x:"+fine_x+",fine_y:"+fine_y+",nameTable:"+nameTableAddress+",patternStartAddr:"+patternStartAddr);
+
             for (int i=0;i<32;i++) {
                 //指示哪个tile
                 byte coarse_x = (byte) (nameTableAddress&0x1F);
@@ -90,6 +93,14 @@ public class Ppu {
                 byte patternData = ppuMemory.read(patternAddress);
                 //图案表颜色数据
                 byte colorData = ppuMemory.read(patternAddress + 8);
+
+                if(patternData == 0 && colorData==0){
+//                    for (int j=0; j<8; j++) {
+//                        render[index] = ppuMemory.palettes[bgColorIndex&0xff];
+//                    }
+                }
+
+                System.out.println("line:"+line+",nameTableData:"+nameTableData+",patternData:"+patternData+",colorData:"+colorData);
                 //取颜色低两位
                 byte[] patternColorLowData = getPatternColorLowData(patternData,colorData);
                 //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节

@@ -21,6 +21,11 @@
         </dependency>
     </dependencies>
 
+    <properties>
+        <!--项目编码改为UTF-8 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <resources>
             <resource>
