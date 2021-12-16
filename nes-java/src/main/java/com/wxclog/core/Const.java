@@ -29,16 +29,16 @@ public class Const {
 
     public static IMapper mapper;
 
-    public static HashMap<String,Integer> gamepadMapping = new HashMap<>();
+    public static HashMap<Integer,Integer> gamepadMapping = new HashMap<>();
     static {
-        gamepadMapping.put("w",4);
-        gamepadMapping.put("s",5);
-        gamepadMapping.put("a",6);
-        gamepadMapping.put("d",7);
-        gamepadMapping.put("1",2);
-        gamepadMapping.put("2",3);
-        gamepadMapping.put("j",0);
-        gamepadMapping.put("k",1);
+        gamepadMapping.put(87,4);
+        gamepadMapping.put(83,5);
+        gamepadMapping.put(65,6);
+        gamepadMapping.put(68,7);
+        gamepadMapping.put(49,2);
+        gamepadMapping.put(50,3);
+        gamepadMapping.put(74,0);
+        gamepadMapping.put(75,1);
     }
 
 }

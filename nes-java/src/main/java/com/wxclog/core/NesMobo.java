@@ -40,12 +40,13 @@ public class NesMobo {
         }
     }
 
-    public void beginVBlank(){
+    public void beginVBlank() {
         //设置vblank true
         DataBus.p_2002[7] = 1;
         //Sprite 0 Hit false
         DataBus.p_2002[6] = 0;
     }
+
     public void endVBlank(){
         //设置vblank false
         DataBus.p_2002[7] = 0;
@@ -59,15 +60,18 @@ public class NesMobo {
      * 主板通电
      */
     public void powerUp(){
-        byte perFrameMillis = 1000 / 80;
-
+        byte perFrameMillis = 1000 / 1000;
+        int[] renderBuff = new int[(256+16)*240];
+        short[][] frameData = new short[240][3];
+        byte[][] frameSpriteData = new byte[240][2];
+        long s = System.currentTimeMillis();
+        int frame = 0;
         while (true)  {
-            short[][] renderBuff = new short[(256+16)*240][3];
-            short[][] frameData = new short[240][3];
-            byte[][] frameSpriteData = new byte[240][2];
+//            NesWatch watch = new NesWatch();
+//            watch.start();
             long begin = System.currentTimeMillis();
             for (int i = 0; i < 240; i++) {
-                System.out.println(i);
+//                System.out.println(i);
                 if(DataBus.showBg() || DataBus.showSpr()){
                     DataBus.p_vram_addr = (short) ((DataBus.p_vram_addr & 0xfbe0) | (DataBus.p_vram_temp_addr & 0x041f));
                 }
@@ -78,10 +82,8 @@ public class NesMobo {
             if(DataBus.showBg() || DataBus.showSpr()) {
                 ppu.renderNameTable(frameData,renderBuff);
                 ppu.renderSprite(renderBuff,frameSpriteData);
-                //渲染图像
                 nesRender.render(renderBuff);
             }
-
             this.beginVBlank();
             this.cpu6502.go();
             //nmi
@@ -89,12 +91,22 @@ public class NesMobo {
                 cpu6502.getCpuRegister().NMI();
             }
             //242-260
-            for (int i = 242; i < 262; i++) {
+            for (int i = 242; i < 252; i++) {
                 this.cpu6502.go();
             }
             this.endVBlank();
+//            watch.stop();
 
-            this.delay(begin,perFrameMillis);
+            if(System.currentTimeMillis()-s>=1000){
+                System.out.println(frame);
+                s = System.currentTimeMillis();
+                frame=0;
+            }else{
+                frame++;
+            }
+
+//            System.out.println(watch.getMs());
+//            this.delay(begin,perFrameMillis);
         }
     }
 

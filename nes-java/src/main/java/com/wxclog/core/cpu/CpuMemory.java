@@ -125,7 +125,6 @@ public class CpuMemory {
                     //第二次写将写入低8位
                     DataBus.p_vram_temp_addr |= data&0xFF;
                     DataBus.p_vram_addr = DataBus.p_vram_temp_addr;
-                    System.out.println("p_vram_addr:"+DataBus.p_vram_addr);
                 }
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;

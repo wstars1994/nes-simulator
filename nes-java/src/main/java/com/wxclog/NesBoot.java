@@ -11,18 +11,14 @@ import com.wxclog.rom.NESRomData;
 import com.wxclog.ui.NesKeyAdapter;
 import com.wxclog.ui.NesPpuRender;
 import com.wxclog.util.RomReaderUtil;
-import javafx.scene.canvas.Canvas;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 
 public class NesBoot {
 
-    public static void start(Canvas renderCanvas){
-        renderCanvas.setVisible(true);
-        renderCanvas.requestFocus();
-        renderCanvas.setOnKeyPressed(new NesKeyAdapter.KeyPress());
-        renderCanvas.setOnKeyReleased(new NesKeyAdapter.KeyReleased());
+    public static void start(Frame frame){
         //调试模式 打印运行日志
 //        Const.debug = false;
         new Thread(() -> {
@@ -51,7 +47,7 @@ public class NesBoot {
             NesMobo nesMobo = new NesMobo();
             nesMobo.setPpu(ppu);
             nesMobo.setCpu6502(cpu6502);
-            nesMobo.setNesRender(new NesPpuRender(renderCanvas));
+            nesMobo.setNesRender(new NesPpuRender(frame));
             nesMobo.reset();
             //启动
             nesMobo.powerUp();
