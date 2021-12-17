@@ -23,7 +23,7 @@ public class NesBoot {
 //        Const.debug = false;
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = loadData("../超级玛丽.nes");
+            NESRomData romData = loadData("../松鼠2.nes");
             HeaderData headerData = romData.getHeaderData();
             byte romPRGSize = headerData.getRomPRGSize();
             byte romCHRSize = headerData.getRomCHRSize();
@@ -32,8 +32,8 @@ public class NesBoot {
             System.out.println("Game Four-Screen Mirroring: "+ (fourScreen==0?"F":"T"));
             byte mirrorType = headerData.getControlData1().getMirrorType();
             System.out.println("Game Mirroring: "+ (mirrorType==0?"H":"V"));
-            System.out.println("PRG ROM Size: "+romPRGSize);
-            System.out.println("CHR ROM Size: "+romCHRSize);
+            System.out.println("16K PRG ROM Size: "+romPRGSize);
+            System.out.println("8K CHR ROM Size: "+romCHRSize);
             //创建CPU
             Cpu6502 cpu6502 = new Cpu6502(romData.getRomPRG());
             //创建PPU

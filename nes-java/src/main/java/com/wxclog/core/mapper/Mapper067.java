@@ -25,8 +25,9 @@ public class Mapper067 implements IMapper {
 
     @Override
     public void write(int addr, byte data) {
-
-
+        if((addr&0x8800) == 0x8000){
+            System.out.println("0x8800");
+        }
         //MASK: $F800
         switch (addr&0xF800){
             //CHR bank 0…3 ($8800..$BFFF)
@@ -53,7 +54,7 @@ public class Mapper067 implements IMapper {
                 if(romPRGSize>2){
                     switchPrgBank = (byte) (data & 0xf);
                 }
-                break;
+                return;
         }
         DataBus.cpuMemory.writeMem(addr,data);
     }

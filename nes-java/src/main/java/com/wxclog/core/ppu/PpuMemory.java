@@ -37,8 +37,8 @@ public class PpuMemory{
     private byte mirroringType;
 
     public PpuMemory(byte[] patternData,byte mirroringType){
-        if(patternData.length>8*1024){
-            System.arraycopy(patternData,0,ppuData,0,8*1024);
+        if(patternData.length>0x2000){
+            System.arraycopy(patternData,0,ppuData,0,0x2000);
         }else{
             System.arraycopy(patternData,0,ppuData,0,patternData.length);
         }

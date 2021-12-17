@@ -77,7 +77,6 @@ public class CpuMemory {
     private byte write_count_4016 = 0,read_count_4016 = 0,write_count_4017 = 0,read_count_4017 = 0;
     public void write(int addr,byte data) {
         LogUtil.logf(" | WR:[ADDR:%d INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
-
         switch (addr) {
             case 0x2000:
                 DataBus.p_2000 = MemUtil.toBits(data);

@@ -91,7 +91,7 @@ public class NesMobo {
                 cpu6502.getCpuRegister().NMI();
             }
             //242-260
-            for (int i = 242; i < 252; i++) {
+            for (int i = 242; i < 262; i++) {
                 this.cpu6502.go();
             }
             this.endVBlank();
