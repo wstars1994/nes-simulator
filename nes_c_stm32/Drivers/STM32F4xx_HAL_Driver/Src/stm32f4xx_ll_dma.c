@@ -310,7 +310,7 @@ uint32_t LL_DMA_Init(DMA_TypeDef *DMAx, uint32_t Stream, LL_DMA_InitTypeDef *DMA
   /*---------------------------- DMAx SxCR Configuration ------------------------
    * Configure DMAx_Streamy: data transfer direction, data transfer mode,
    *                          peripheral and memory increment mode,
-   *                          data render_size alignment and  priority level with parameters :
+   *                          data size alignment and  priority level with parameters :
    * - Direction:      DMA_SxCR_DIR[1:0] bits
    * - Mode:           DMA_SxCR_CIRC bit
    * - PeriphOrM2MSrcIncMode:  DMA_SxCR_PINC bit

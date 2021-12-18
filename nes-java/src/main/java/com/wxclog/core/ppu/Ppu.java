@@ -100,6 +100,10 @@ public class Ppu {
                 for (int j=0; j<8; j++) {
                     byte pclb = patternColorLowData[7 - j];
                     int index = line * 256 + i * 8 + j - fine_x;
+                    if(fine_x>0){
+                        System.out.println(index);
+                    }
+
                     if(index<0){
                         index = 0;
                     }

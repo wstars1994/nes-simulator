@@ -65,7 +65,7 @@ extern "C" {
 #define UID_BASE_ADDRESS              UID_BASE
 
 /**
- * @brief Flash render_size data register base address
+ * @brief Flash size data register base address
  */
 #define FLASHSIZE_BASE_ADDRESS        FLASHSIZE_BASE
 
@@ -214,10 +214,10 @@ __STATIC_INLINE uint32_t LL_GetUID_Word2(void)
 }
 
 /**
-  * @brief  Get Flash memory render_size
-  * @note   This bitfield indicates the render_size of the device Flash memory expressed in
+  * @brief  Get Flash memory size
+  * @note   This bitfield indicates the size of the device Flash memory expressed in
   *         Kbytes. As an example, 0x040 corresponds to 64 Kbytes.
-  * @retval FLASH_SIZE[15:0]: Flash memory render_size
+  * @retval FLASH_SIZE[15:0]: Flash memory size
   */
 __STATIC_INLINE uint32_t LL_GetFlashSize(void)
 {

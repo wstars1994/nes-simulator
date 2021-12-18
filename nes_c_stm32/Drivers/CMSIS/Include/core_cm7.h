@@ -2459,14 +2459,14 @@ __STATIC_INLINE void SCB_CleanInvalidateDCache (void)
   \brief   D-Cache Invalidate by address
   \details Invalidates D-Cache for the given address
   \param[in]   addr    address (aligned to 32-byte boundary)
-  \param[in]   dsize   render_size of memory block (in number of bytes)
+  \param[in]   dsize   size of memory block (in number of bytes)
 */
 __STATIC_INLINE void SCB_InvalidateDCache_by_Addr (uint32_t *addr, int32_t dsize)
 {
   #if defined (__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
      int32_t op_size = dsize;
     uint32_t op_addr = (uint32_t)addr;
-     int32_t linesize = 32;                /* in Cortex-M7 render_size of cache line is fixed to 8 words (32 bytes) */
+     int32_t linesize = 32;                /* in Cortex-M7 size of cache line is fixed to 8 words (32 bytes) */
 
     __DSB();
 
@@ -2486,14 +2486,14 @@ __STATIC_INLINE void SCB_InvalidateDCache_by_Addr (uint32_t *addr, int32_t dsize
   \brief   D-Cache Clean by address
   \details Cleans D-Cache for the given address
   \param[in]   addr    address (aligned to 32-byte boundary)
-  \param[in]   dsize   render_size of memory block (in number of bytes)
+  \param[in]   dsize   size of memory block (in number of bytes)
 */
 __STATIC_INLINE void SCB_CleanDCache_by_Addr (uint32_t *addr, int32_t dsize)
 {
   #if defined (__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
      int32_t op_size = dsize;
     uint32_t op_addr = (uint32_t) addr;
-     int32_t linesize = 32;                /* in Cortex-M7 render_size of cache line is fixed to 8 words (32 bytes) */
+     int32_t linesize = 32;                /* in Cortex-M7 size of cache line is fixed to 8 words (32 bytes) */
 
     __DSB();
 
@@ -2513,14 +2513,14 @@ __STATIC_INLINE void SCB_CleanDCache_by_Addr (uint32_t *addr, int32_t dsize)
   \brief   D-Cache Clean and Invalidate by address
   \details Cleans and invalidates D_Cache for the given address
   \param[in]   addr    address (aligned to 32-byte boundary)
-  \param[in]   dsize   render_size of memory block (in number of bytes)
+  \param[in]   dsize   size of memory block (in number of bytes)
 */
 __STATIC_INLINE void SCB_CleanInvalidateDCache_by_Addr (uint32_t *addr, int32_t dsize)
 {
   #if defined (__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
      int32_t op_size = dsize;
     uint32_t op_addr = (uint32_t) addr;
-     int32_t linesize = 32;                /* in Cortex-M7 render_size of cache line is fixed to 8 words (32 bytes) */
+     int32_t linesize = 32;                /* in Cortex-M7 size of cache line is fixed to 8 words (32 bytes) */
 
     __DSB();
 

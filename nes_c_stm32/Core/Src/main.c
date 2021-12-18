@@ -51,6 +51,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART6_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -95,6 +96,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_SPI1_Init();
+  MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
     ILI9341_Init();
     NES_Start();
@@ -107,12 +109,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-
-
-
-//      LL_mDelay(1);
-//      LL_GPIO_TogglePin(GPIOC,LL_GPIO_PIN_13);
       //刷屏测试
       //深黄
       LCD_WR_CLEAR(0X5CBF);
@@ -122,7 +118,6 @@ int main(void)
       LCD_WR_CLEAR(0X3A39);
       //橙色
       LCD_WR_CLEAR(0XFBE4);
-
   }
   /* USER CODE END 3 */
 }
@@ -207,7 +202,7 @@ static void MX_SPI1_Init(void)
 
   LL_DMA_SetDataTransferDirection(DMA2, LL_DMA_STREAM_2, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
 
-  LL_DMA_SetStreamPriorityLevel(DMA2, LL_DMA_STREAM_2, LL_DMA_PRIORITY_HIGH);
+  LL_DMA_SetStreamPriorityLevel(DMA2, LL_DMA_STREAM_2, LL_DMA_PRIORITY_LOW);
 
   LL_DMA_SetMode(DMA2, LL_DMA_STREAM_2, LL_DMA_MODE_NORMAL);
 
@@ -217,11 +212,12 @@ static void MX_SPI1_Init(void)
 
   LL_DMA_SetPeriphSize(DMA2, LL_DMA_STREAM_2, LL_DMA_PDATAALIGN_HALFWORD);
 
-  LL_DMA_SetMemorySize(DMA2, LL_DMA_STREAM_2, LL_DMA_MDATAALIGN_BYTE);
+  LL_DMA_SetMemorySize(DMA2, LL_DMA_STREAM_2, LL_DMA_MDATAALIGN_HALFWORD);
 
   LL_DMA_DisableFifoMode(DMA2, LL_DMA_STREAM_2);
 
   /* USER CODE BEGIN SPI1_Init 1 */
+    LL_DMA_SetPeriphSize(DMA2, LL_DMA_STREAM_2, LL_DMA_PDATAALIGN_HALFWORD);
     LL_DMA_EnableIT_TC(DMA2, LL_DMA_STREAM_2);
 
   /* USER CODE END SPI1_Init 1 */
@@ -242,6 +238,57 @@ static void MX_SPI1_Init(void)
   LL_SPI_EnableDMAReq_TX(SPI1);
   LL_SPI_Enable(SPI1);
   /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief USART6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART6_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART6_Init 0 */
+
+  /* USER CODE END USART6_Init 0 */
+
+  LL_USART_InitTypeDef USART_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART6);
+
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
+  /**USART6 GPIO Configuration
+  PA11   ------> USART6_TX
+  PA12   ------> USART6_RX
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_11|LL_GPIO_PIN_12;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_8;
+  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN USART6_Init 1 */
+
+  /* USER CODE END USART6_Init 1 */
+  USART_InitStruct.BaudRate = 115200;
+  USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
+  USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
+  USART_InitStruct.Parity = LL_USART_PARITY_NONE;
+  USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
+  USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
+  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
+  LL_USART_Init(USART6, &USART_InitStruct);
+  LL_USART_ConfigAsyncMode(USART6);
+  LL_USART_Enable(USART6);
+  /* USER CODE BEGIN USART6_Init 2 */
+
+  /* USER CODE END USART6_Init 2 */
 
 }
 
@@ -297,7 +344,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_13);
 
 }
 
@@ -318,12 +364,6 @@ void Error_Handler(void)
   {
   }
   /* USER CODE END Error_Handler_Debug */
-}
-
-
-void DMA2_TransmitComplete_Callback(void)
-{
-    LCD_CS_SET;
 }
 
 #ifdef  USE_FULL_ASSERT

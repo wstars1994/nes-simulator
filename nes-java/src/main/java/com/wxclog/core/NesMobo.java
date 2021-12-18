@@ -62,7 +62,7 @@ public class NesMobo {
         byte perFrameMillis = 1000 / 80;
 
         while (true)  {
-            short[][] renderBuff = new short[(256+16)*240][3];
+            short[][] renderBuff = new short[256*240][3];
             short[][] frameData = new short[240][3];
             byte[][] frameSpriteData = new byte[240][2];
             long begin = System.currentTimeMillis();
