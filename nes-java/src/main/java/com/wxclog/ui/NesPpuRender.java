@@ -1,9 +1,9 @@
 package com.wxclog.ui;
 
 import com.wxclog.core.Const;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.WritableImage;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 /**
  * 渲染
@@ -12,23 +12,25 @@ import javafx.scene.image.WritableImage;
  */
 public class NesPpuRender {
 
-    private Canvas renderCanvas;
+    private Frame frame;
+    private BufferedImage image;
 
-    public NesPpuRender(Canvas renderCanvas) {
-        this.renderCanvas = renderCanvas;
+    public NesPpuRender(Frame frame) {
+        this.frame = frame;
+        image = new BufferedImage((256) * Const.videoScale, 240 * Const.videoScale, BufferedImage.TYPE_INT_ARGB);
     }
 
-    public void render(short[][] pixelColorBuff){
-        WritableImage writableImage = new WritableImage(256,240);
-        for(int h = 0; h<240* Const.videoScale; h++) {
-            for(int w = 0; w<(256)* Const.videoScale; w++) {
-                short[] pixels = pixelColorBuff[(w / Const.videoScale) + ((h / Const.videoScale) * 256)];
-                int rgb = ((pixels[0] << 24) |(pixels[0] << 16) | ((pixels[1] << 8) | pixels[2]));
-                int a = rgb == 0?0x00:0xFF;
-                writableImage.getPixelWriter().setArgb(w, h,(a<<24) | rgb);
+    public void render(int[] pixelColorBuff){
+        for(int h=0; h<240*Const.videoScale; h++) {
+            for(int w=0;w<(256)*Const.videoScale; w++) {
+                int pixels = pixelColorBuff[(w / Const.videoScale) + ((h / Const.videoScale) * 256)];
+                int rgb1 = image.getRGB(w, h);
+                if(pixels!=rgb1){
+                    image.setRGB(w, h, pixels);
+                }
             }
         }
-        GraphicsContext context2D = renderCanvas.getGraphicsContext2D();
-        context2D.drawImage(writableImage,0, 0);
+        frame.getGraphics().drawImage(image, 2, 20, frame);
+//        System.out.println("渲染："+nesWatch.getMs());
     }
 }

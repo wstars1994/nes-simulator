@@ -13,14 +13,17 @@ public class Mapper001 implements IMapper {
     private byte switchBank = 0;
     private byte romPRGSize;
 
-    public Mapper001(byte romPRGSize) {
+    public Mapper001(byte romPRGSize, byte romChrSize, byte[] romCHR) {
         this.romPRGSize = romPRGSize;
     }
 
     @Override
     public void write(int addr, byte data) {
         if(addr>=0x8000 & addr<=0xFFFF){
-            switchBank = (byte) (data&0x7);
+
+            System.out.println(data);
+
+//            switchBank = (byte) (data&0x7);
             return;
         }
         DataBus.cpuMemory.writeMem(addr,data);

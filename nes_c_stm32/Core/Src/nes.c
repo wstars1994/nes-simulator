@@ -8,17 +8,7 @@
 #include "ILI9341.h"
 //#include "sdcard.h"
 //RGB32位颜色
-short palettes[65][3] = {
-         { 0x75, 0x75, 0x75 },{ 0x27, 0x1B, 0x8F },{ 0x00, 0x00, 0xAB },{ 0x47, 0x00, 0x9F },{ 0x8F, 0x00, 0x77 },{ 0xAB, 0x00, 0x13 },{ 0xA7, 0x00, 0x00 },{ 0x7F, 0x0B, 0x00 },
-         { 0x43, 0x2F, 0x00 },{ 0x00, 0x47, 0x00 },{ 0x00, 0x51, 0x00 },{ 0x00, 0x3F, 0x17 },{ 0x1B, 0x3F, 0x5F },{ 0x00, 0x00, 0x00 },{ 0x05, 0x05, 0x05 },{ 0x05, 0x05, 0x05 },
-         { 0xBC, 0xBC, 0xBC },{ 0x00, 0x73, 0xEF },{ 0x23, 0x3B, 0xEF },{ 0x83, 0x00, 0xF3 },{ 0xBF, 0x00, 0xBF },{ 0xE7, 0x00, 0x5B },{ 0xDB, 0x2B, 0x00 },{ 0xCB, 0x4F, 0x0F },
-         { 0x8B, 0x73, 0x00 },{ 0x00, 0x97, 0x00 },{ 0x00, 0xAB, 0x00 },{ 0x00, 0x93, 0x3B },{ 0x00, 0x83, 0x8B },{ 0x11, 0x11, 0x11 },{ 0x09, 0x09, 0x09 },{ 0x09, 0x09, 0x09 },
-         { 0xFF, 0xFF, 0xFF },{ 0x3F, 0xBF, 0xFF },{ 0x5F, 0x97, 0xFF },{ 0xA7, 0x8B, 0xFD },{ 0xF7, 0x7B, 0xFF },{ 0xFF, 0x77, 0xB7 },{ 0xFF, 0x77, 0x63 },{ 0xFF, 0x9B, 0x3B },
-         { 0xF3, 0xBF, 0x3F },{ 0x83, 0xD3, 0x13 },{ 0x4F, 0xDF, 0x4B },{ 0x58, 0xF8, 0x98 },{ 0x00, 0xEB, 0xDB },{ 0x66, 0x66, 0x66 },{ 0x0D, 0x0D, 0x0D },{ 0x0D, 0x0D, 0x0D },
-         { 0xFF, 0xFF, 0xFF },{ 0xAB, 0xE7, 0xFF },{ 0xC7, 0xD7, 0xFF },{ 0xD7, 0xCB, 0xFF },{ 0xFF, 0xC7, 0xFF },{ 0xFF, 0xC7, 0xDB },{ 0xFF, 0xBF, 0xB3 },{ 0xFF, 0xDB, 0xAB },
-         { 0xFF, 0xE7, 0xA3 },{ 0xE3, 0xFF, 0xA3 },{ 0xAB, 0xF3, 0xBF },{ 0xB3, 0xFF, 0xCF },{ 0x9F, 0xFF, 0xF3 },{ 0xDD, 0xDD, 0xDD },{ 0x11, 0x11, 0x11 },{ 0x11, 0x11, 0x11 }
-        ,{ 0x00, 0x00, 0x00 }
-};
+short palettes[65] = {29614,8401,21,16403,-30706,-22526,-24576,30784,16736,544,640,482,6635,0,32,32,-16905,925,8669,-32738,-18409,-8181,-9920,-13727,-29824,1184,1344,1159,1041,4226,2113,2113,-1,15871,23743,-23457,-3105,-1098,-1108,-825,-2585,-31102,20201,24531,1883,25388,2145,2145,-1,-20673,-14657,-10657,-449,-453,-522,-299,-204,-6156,-20585,-18439,-24578,-8453,4226,4226,0,};
 
 int _write(int file, char* ptr, int len)
 {
@@ -411,14 +401,12 @@ void interrupt_nmi() {
 }
 
 //ppu操作
-
-
 void render_sprite(int sl,int lineStartIndex) {
     byte spriteHeight = frameSpriteData[sl][0];
     short spritePatternStartAddr = frameSpriteData[sl][1] ? 0x1000:0;
     if(spriteHeight != 0){
         byte bgColorIndex = p_read(0x3F00);
-        short *palette = palettes[bgColorIndex & 0xff];
+        short palette = palettes[bgColorIndex & 0xff];
         //获取内存中的精灵数据
         for (int i = 0; i < 256; i += 4) {
             short y = (p_spr_ram[i]&0xff)+1;
@@ -457,14 +445,12 @@ void render_sprite(int sl,int lineStartIndex) {
                 for (;x!=x2; x+=x3) {
                     int colorLow = ((spritePatternData & 0x80)>>7) | (((colorData & 0x80)>>7) << 1);
                     uint16_t bg = render[index + x];
-                    uint16_t sprg = ((palette[0] & 0xf8)<<8)|((palette[1] & 0xfc)<<3)|(palette[2]>>3);
+                    uint16_t sprg = palette;
                     if(colorLow && (backgroundPriority == 0||sprg==bg)){
 //                            //获取4位颜色
                         uint16_t colorAddr = 0x3f10 | colorHigh | colorLow;
                         if(colorAddr != 0x3f10){
-                            short *sprite = palettes[p_read(colorAddr)];
-                            uint16_t sprg_color = ((sprite[0] & 0xf8)<<8)|((sprite[1] & 0xfc)<<3)|(sprite[2]>>3);
-                            render[index + x] = sprg_color;
+                            render[index + x] = palettes[p_read(colorAddr)];
                         }
                     }
                     spritePatternData<<=1;
@@ -473,26 +459,6 @@ void render_sprite(int sl,int lineStartIndex) {
             }
         }
     }
-}
-
-void u32tostr(unsigned long dat,char *str)
-{
-    char temp[20];
-    unsigned char i=0,j=0;
-    i=0;
-    while(dat)
-    {
-        temp[i]=dat%10+0x30;
-        i++;
-        dat/=10;
-    }
-    j=i;
-    for(i=0;i<j;i++)
-    {
-        str[i]=temp[j-i-1];
-    }
-    if(!i) {str[i++]='0';}
-    str[i]=0;
 }
 
 void render_name_table(int lineStartIndex){
@@ -510,26 +476,28 @@ void render_name_table(int lineStartIndex){
             byte nameTableData = p_read(nameTableAddress);
             //2 读取图案,图案表起始地址+索引+具体渲染的8字节中的第几字节
             int patternAddress = patternStartAddr + (nameTableData&0xff) * 16 + fine_y;
-
             //图案表数据
             byte patternData = p_read(patternAddress);
             //图案表颜色数据
             byte colorData = p_read(patternAddress + 8);
             if(patternData==0&&colorData==0){
                 for (int j=0; j<8; j++) {
-                    int index = line * 256 + i * 8 + j - fine_x;
-                    short *pixels = palettes[bgColorIndex&0xff];
-                    render[index-lineStartIndex*256*120] = ((pixels[0] & 0xf8)<<8)|((pixels[1] & 0xfc)<<3)|(pixels[2]>>3);
+                    int index = line * 256 + i * 8 + j;// - fine_x;
+                    render[index-lineStartIndex*256*120] = palettes[bgColorIndex&0xff];
                 }
             }else{
-                //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节
-                int attributeOffset = ((coarse_y & 2) ? 4 : 0) + ((coarse_x & 2)? 2 : 0);
-                int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00) | ((coarse_y>>2)<<3) | (coarse_x >> 2);
+                int attributeOffset = 0;
+                int attributeAddress = 0x23C0 | (nameTableAddress & 0x0C00);
+                if(coarse_x != 0 || coarse_y != 0){
+                    //取颜色高两位,属性表数据64byte,每32*32像素一个字节,每32条扫描线占用8字节
+                    attributeOffset = ((coarse_y & 2) == 0 ? 0 : 4) + ((coarse_x & 2) == 0 ? 0 : 2);
+                    attributeAddress = attributeAddress | ((coarse_y>>2)<<3) | (coarse_x >> 2);
+                }
                 byte pchb = (p_read(attributeAddress)>>attributeOffset)&3;
                 //合并 取最终4位颜色
                 for (int j=0; j<8; j++) {
                     int pclb = ((get_bit(colorData,7 - j)<<1)&3) | (get_bit(patternData,7 - j)&1);
-                    int index = line * 256 + i * 8 + j-fine_x;
+                    int index = line * 256 + i * 8 + j;//-fine_x;
                     if(index<0){
                         index = 0;
                     }
@@ -538,11 +506,9 @@ void render_name_table(int lineStartIndex){
                         int colorAddr = 0x3f00 + (pchb<<2|(pclb&0x3));
                         paletteIndex = p_read(colorAddr);
                     }
-                    short *pixels = palettes[paletteIndex];
-                    render[index-lineStartIndex*256*120] = ((pixels[0] & 0xf8)<<8)|((pixels[1] & 0xfc)<<3)|(pixels[2]>>3);
+                    render[index-lineStartIndex*256*120] = palettes[paletteIndex];
                 }
             }
-
             // if coarse X == 31 (coarseX的最大值就是31即11111B,所以到最大值了要切换到下一个nametable)
             if ((nameTableAddress & 0x1F) == 0x1F) {
                 nameTableAddress = (nameTableAddress & ~0x1f) ^ 0x400;
@@ -550,9 +516,7 @@ void render_name_table(int lineStartIndex){
                 nameTableAddress++;
             }
         }
-
         render_sprite(line,lineStartIndex);
-
     }
 }
 
@@ -1553,7 +1517,7 @@ void NES_Start() {
         //NMI中断
         interrupt_nmi();
         //242-260
-        for (int i = 242; i < 262; i++) {
+        for (int i = 242; i < 252; i++) {
             exec_instruction();
         }
         set_bit(&p_reg_2002,0,7);

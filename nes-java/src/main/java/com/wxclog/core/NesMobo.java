@@ -40,12 +40,13 @@ public class NesMobo {
         }
     }
 
-    public void beginVBlank(){
+    public void beginVBlank() {
         //设置vblank true
         DataBus.p_2002[7] = 1;
         //Sprite 0 Hit false
         DataBus.p_2002[6] = 0;
     }
+
     public void endVBlank(){
         //设置vblank false
         DataBus.p_2002[7] = 0;
@@ -59,12 +60,11 @@ public class NesMobo {
      * 主板通电
      */
     public void powerUp(){
-        byte perFrameMillis = 1000 / 80;
-
+        byte perFrameMillis = 1000 / 100;
+        int[] renderBuff = new int[(256+16)*240];
+        short[][] frameData = new short[240][3];
+        byte[][] frameSpriteData = new byte[240][2];
         while (true)  {
-            short[][] renderBuff = new short[256*240][3];
-            short[][] frameData = new short[240][3];
-            byte[][] frameSpriteData = new byte[240][2];
             long begin = System.currentTimeMillis();
             for (int i = 0; i < 240; i++) {
                 if(DataBus.showBg() || DataBus.showSpr()){
@@ -77,10 +77,8 @@ public class NesMobo {
             if(DataBus.showBg() || DataBus.showSpr()) {
                 ppu.renderNameTable(frameData,renderBuff);
                 ppu.renderSprite(renderBuff,frameSpriteData);
-                //渲染图像
                 nesRender.render(renderBuff);
             }
-
             this.beginVBlank();
             this.cpu6502.go();
             //nmi
@@ -92,7 +90,6 @@ public class NesMobo {
                 this.cpu6502.go();
             }
             this.endVBlank();
-
             this.delay(begin,perFrameMillis);
         }
     }

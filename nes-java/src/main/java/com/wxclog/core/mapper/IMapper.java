@@ -6,6 +6,8 @@ public interface IMapper {
         switch (mapperNo){
             case 0:
                 return new Mapper000();
+            case 1:
+                return new Mapper001(romPRGSize,romChrSize,romCHR);
             case 2:
                 return new Mapper002(romPRGSize);
             case 3:
