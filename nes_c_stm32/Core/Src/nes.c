@@ -410,6 +410,9 @@ void render_sprite(int sl,int lineStartIndex) {
         //获取内存中的精灵数据
         for (int i = 0; i < 256; i += 4) {
             short y = (p_spr_ram[i]&0xff)+1;
+            if(sl < y || sl >= y + spriteHeight) {
+                continue;
+            }
             short patternIndex =  p_spr_ram[i+1]&0xff;
             //子图形数据
             byte attributeData = p_spr_ram[i+2];
@@ -1517,7 +1520,7 @@ void NES_Start() {
         //NMI中断
         interrupt_nmi();
         //242-260
-        for (int i = 242; i < 252; i++) {
+        for (int i = 242; i < 262; i++) {
             exec_instruction();
         }
         set_bit(&p_reg_2002,0,7);

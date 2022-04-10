@@ -144,6 +144,9 @@ public class Ppu {
         byte[] sprRam = ppuMemory.getSprRam();
         for (int i = 0; i < sprRam.length; i += 4) {
             short y = (short) ((sprRam[i]&0xff)+1);
+            if(sl < y || sl >= y + spriteHeight) {
+                continue;
+            }
             short patternIndex = (short) (sprRam[i+1]&0xff);
             //子图形数据
             byte attributeData = sprRam[i+2];
