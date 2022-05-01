@@ -20,7 +20,16 @@ void LL_uDelay(uint32_t us)
     while (Delay --);
 }
 
-void LCD_SetRegion(uint16_t xStar, uint16_t yStar, uint16_t xEnd, uint16_t yEnd){
+void Lcd_Send_Data(uint16_t data){
+  GPIOA->ODR=data;
+    //高四位置0
+  GPIOB->ODR = (GPIOB->ODR&0x0fff) | (data&0xf000);
+}
+
+void LCD_SetRegion(uint16_t xStar, uint16_t yStar, uint16_t xLength, uint16_t yLength){
+    uint16_t xEnd = xStar+xLength-1;
+    uint16_t yEnd = yStar+yLength-1;
+
     LCD_WR_REG(0x2a);
     LCD_WR_DATA(xStar >> 8);
     LCD_WR_DATA(0x00FF & xStar);
@@ -38,13 +47,15 @@ void LCD_SetRegion(uint16_t xStar, uint16_t yStar, uint16_t xEnd, uint16_t yEnd)
 
 void ILI9341_Init(void) {
     LCD_RST_CLR;
-    LL_mDelay(100);
-    LCD_RST_SET;
+    LCD_RST_CLR;
+    LCD_RST_SET
+    LCD_RD_SET
+    LCD_CS_SET
     LL_mDelay(50);
 
     LCD_WR_REG(0xCF);   //功耗控制B
     LCD_WR_DATA(0x00);
-    LCD_WR_DATA(0xD9);
+    LCD_WR_DATA(0x81);
     LCD_WR_DATA(0X30);
     LCD_WR_REG(0xED);   //电源序列控制
     LCD_WR_DATA(0x64);
@@ -54,7 +65,7 @@ void ILI9341_Init(void) {
     LCD_WR_REG(0xE8);   //驱动时序控制A
     LCD_WR_DATA(0x85);
     LCD_WR_DATA(0x10);
-    LCD_WR_DATA(0x7A);
+    LCD_WR_DATA(0x78);
     LCD_WR_REG(0xCB);   //功耗控制A
     LCD_WR_DATA(0x39);
     LCD_WR_DATA(0x2C);
@@ -132,56 +143,46 @@ void ILI9341_Init(void) {
     LCD_WR_DATA(0x00);
     LCD_WR_DATA(0xef);
     LCD_WR_REG(0x11); //退出睡眠模式
-    LL_mDelay(100);
+    LL_mDelay(120);
     LCD_WR_REG(0x29); //开始显示
-    LL_mDelay(100);
-//
+    LL_mDelay(150);
+
     LCD_SetRegion(0,0,LCD_WIDTH,LCD_HEIGHT);
     LCD_WR_REG(0x36);
     LCD_WR_DATA(0xac);
-    //清屏白色
-    LCD_WR_CLEAR(0X0000);
+    //清屏
+    LCD_WR_CLEAR(COLOR_BLACK);
 }
 
-void LCD_WR_REG(uint8_t reg) {
-    LCD_CS_CLR;
-    LCD_DC_CLR;
-    LL_SPI_TransmitData8(SPI1,reg);
-    //这必须要加个延时
-    LL_uDelay(0);
+void LCD_WR_REG(uint16_t reg) {
+    LCD_CS_CLR
+    LCD_DC_CLR
+    Lcd_Send_Data(reg);
+    LCD_WR_CLR
+    LCD_WR_SET
     LCD_CS_SET;
 }
 
-void LCD_WR_DATA(uint8_t data) {
-    LCD_CS_CLR;
-    LCD_DC_SET;
-    LL_SPI_TransmitData8(SPI1,data);
-    //这必须要加个延时
-    LL_uDelay(0);
+void LCD_WR_DATA(uint16_t data) {
+    LCD_CS_CLR
+    LCD_DC_SET
+    Lcd_Send_Data(data);
+    LCD_WR_CLR
+    LCD_WR_SET
     LCD_CS_SET;
 }
 
 void LCD_WR_POINT(uint16_t color) {
-    LL_SPI_TransmitData8(SPI1,(color>>8)&0xff);
-    LL_uDelay(0);
-    LL_SPI_TransmitData8(SPI1,color);
-
-}
-
-void LCD_W_POINT_CONTINUE(uint16_t *render) {
-    for (int i = 0; i < 256*240; ++i) {
-        LCD_WR_POINT(render[i]);
-    }
+  Lcd_Send_Data(color);
 }
 
 void LCD_WR_CLEAR(uint16_t color) {
-    LCD_SetRegion(0,0,LCD_WIDTH,LCD_HEIGHT);
     LCD_CS_CLR;
     LCD_DC_SET;
     for (int i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
-        LL_SPI_TransmitData8(SPI1,(color>>8)&0xff);
-        LL_uDelay(0);
-        LL_SPI_TransmitData8(SPI1,color);
+        Lcd_Send_Data(color);
+        LCD_WR_CLR
+        LCD_WR_SET
     }
     LCD_CS_SET;
 }

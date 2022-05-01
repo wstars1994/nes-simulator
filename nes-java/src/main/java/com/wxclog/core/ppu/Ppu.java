@@ -171,6 +171,7 @@ public class Ppu {
                 //命中非透明背景 sprite0 hit
                 if(i==0&&spritePatternData+colorData!=0) {
                     DataBus.p_2002[6] = 1;
+                    break;
                 }
             }
         }

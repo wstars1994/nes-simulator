@@ -1,0 +1,29 @@
+//
+// Created by WStars on 2022/5/1.
+//
+
+#ifndef SPITEST_FLASH_H
+#define SPITEST_FLASH_H
+
+#endif //SPITEST_FLASH_H
+
+#include "stm32f4xx.h"
+
+#define FLASH_SECTOR_0_ADDRESS 0x08000000
+#define FLASH_SECTOR_1_ADDRESS 0x08004000
+#define FLASH_SECTOR_2_ADDRESS 0x08008000
+#define FLASH_SECTOR_3_ADDRESS 0x0800C000
+#define FLASH_SECTOR_4_ADDRESS 0x08010000
+#define FLASH_SECTOR_5_ADDRESS 0x08020000
+#define FLASH_SECTOR_6_ADDRESS 0x08040000
+#define FLASH_SECTOR_7_ADDRESS 0x08060000
+
+#define FLASH_PSIZE_BYTE           0x00000000U
+#define FLASH_PSIZE_HALF_WORD      0x00000100U
+#define FLASH_PSIZE_WORD           0x00000200U
+#define FLASH_PSIZE_DOUBLE_WORD    0x00000300U
+#define CR_PSIZE_MASK              0xFFFFFCFFU
+
+ErrorStatus LL_FLASH_Unlock();
+void LL_FLASH_Erase_Sector(uint32_t Sector);
+void LL_FLASH_Program_Byte(uint32_t Address,uint8_t Data);
