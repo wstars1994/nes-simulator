@@ -128,13 +128,11 @@ public class CpuMemory {
                 DataBus.p_write_toggle = !DataBus.p_write_toggle;
                 break;
             case 0x2007:
-                System.out.println("2007");
                 DataBus.writePpuMemory(DataBus.p_vram_addr,data);
                 DataBus.p_vram_addr += (DataBus.p_2000[2]==0?1:32);
                 break;
             //OAM DMA register (high byte)
             case 0x4014:
-                System.out.println("4014");
                 short start = (short) (data<<8);
                 for(int i=0; i < 256; i++) {
                     byte readData = read(start++);

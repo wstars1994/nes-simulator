@@ -96,6 +96,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   ILI9341_Init();
   NES_Start();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -134,7 +135,7 @@ void SystemClock_Config(void)
   {
 
   }
-  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLM_DIV_12, 96, LL_RCC_PLLP_DIV_2);
+  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLM_DIV_10, 96, LL_RCC_PLLP_DIV_2);
   LL_RCC_PLL_Enable();
 
    /* Wait till PLL is ready */

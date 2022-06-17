@@ -50,17 +50,16 @@ public class Cpu6502{
         cpuCycle = 113;
         Iterator<Byte> iterator = cpuMemory.iteratorPrgData();
         do{
-//            LogUtil.logf("\n");
+            LogUtil.logf("\n");
             int prgPc = cpuMemory.getPrgPc();
             byte insCode = iterator.next();
-//            LogUtil.logf("PC:[%06d] | CYC:[%03d] | PC:[%04X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
-//            LogUtil.logf("PC:[%d] | CYC:[%d] | PC:[%X] | OPC:[%X] | R:[A:%X X:%X Y:%X S:%X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
-//                    ++runCycleNum,
-//                    cpuCycle,
-//                    prgPc&0xFFFF,
-//                    insCode&0xFF,
-//                    cpuRegister.getReg_A()&0xFF,cpuRegister.getReg_X()&0xFF,cpuRegister.getReg_Y()&0xFF,cpuRegister.getReg_S()&0xFF,
-//                    cpuRegister.getN(),cpuRegister.getV(),cpuRegister.getB(),cpuRegister.getD(),cpuRegister.getI(),cpuRegister.getZ(),cpuRegister.getC());
+            LogUtil.logf("PC:[%d] | CYC:[%d] | PC:[%X] | OPC:[%X] | R:[A:%X X:%X Y:%X S:%X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
+                    ++runCycleNum,
+                    cpuCycle,
+                    prgPc&0xFFFF,
+                    insCode&0xFF,
+                    cpuRegister.getReg_A()&0xFF,cpuRegister.getReg_X()&0xFF,cpuRegister.getReg_Y()&0xFF,cpuRegister.getReg_S()&0xFF,
+                    cpuRegister.getN(),cpuRegister.getV(),cpuRegister.getB(),cpuRegister.getD(),cpuRegister.getI(),cpuRegister.getZ(),cpuRegister.getC());
             this.execInstrcution(insCode,iterator);
         }while (cpuCycle > 0);
     }

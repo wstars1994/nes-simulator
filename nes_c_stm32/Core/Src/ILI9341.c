@@ -10,25 +10,24 @@
 //FLASH中存储字符的起始地址
 #define FONT_START_ADDR 0x08010000
 
-void LL_uDelay(uint32_t us)
-{
+void LL_uDelay(uint32_t us) {
     __IO uint32_t Delay = us * 100 / 8;
-    do
-    {
+    do {
         __NOP();
-    }
-    while (Delay --);
+    } while (Delay--);
 }
 
-void Lcd_Send_Data(uint16_t data){
-  GPIOA->ODR=data;
+void Lcd_Send_Data(uint16_t data) {
+    GPIOA->ODR = data;
     //高四位置0
-  GPIOB->ODR = (GPIOB->ODR&0x0fff) | (data&0xf000);
+    GPIOB->ODR = (GPIOB->ODR & 0x0fff) | (data & 0xf000);
+    LCD_WR_CLR
+    LCD_WR_SET
 }
 
-void LCD_SetRegion(uint16_t xStar, uint16_t yStar, uint16_t xLength, uint16_t yLength){
-    uint16_t xEnd = xStar+xLength-1;
-    uint16_t yEnd = yStar+yLength-1;
+void LCD_SetRegion(uint16_t xStar, uint16_t yStar, uint16_t xLength, uint16_t yLength) {
+    uint16_t xEnd = xStar + xLength - 1;
+    uint16_t yEnd = yStar + yLength - 1;
 
     LCD_WR_REG(0x2a);
     LCD_WR_DATA(xStar >> 8);
@@ -147,19 +146,20 @@ void ILI9341_Init(void) {
     LCD_WR_REG(0x29); //开始显示
     LL_mDelay(150);
 
-    LCD_SetRegion(0,0,LCD_WIDTH,LCD_HEIGHT);
+
     LCD_WR_REG(0x36);
     LCD_WR_DATA(0xac);
+    LCD_SetRegion(0, 0, LCD_WIDTH, LCD_HEIGHT);
     //清屏
     LCD_WR_CLEAR(COLOR_BLACK);
+    LL_uDelay(1000);
+
 }
 
 void LCD_WR_REG(uint16_t reg) {
     LCD_CS_CLR
     LCD_DC_CLR
     Lcd_Send_Data(reg);
-    LCD_WR_CLR
-    LCD_WR_SET
     LCD_CS_SET;
 }
 
@@ -167,22 +167,18 @@ void LCD_WR_DATA(uint16_t data) {
     LCD_CS_CLR
     LCD_DC_SET
     Lcd_Send_Data(data);
-    LCD_WR_CLR
-    LCD_WR_SET
     LCD_CS_SET;
 }
 
 void LCD_WR_POINT(uint16_t color) {
-  Lcd_Send_Data(color);
+    Lcd_Send_Data(color);
 }
 
 void LCD_WR_CLEAR(uint16_t color) {
     LCD_CS_CLR;
     LCD_DC_SET;
-    for (int i = 0; i < LCD_WIDTH*LCD_HEIGHT; i++) {
+    for (int i = 0; i < LCD_WIDTH * LCD_HEIGHT; i++) {
         Lcd_Send_Data(color);
-        LCD_WR_CLR
-        LCD_WR_SET
     }
     LCD_CS_SET;
 }

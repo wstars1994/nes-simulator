@@ -14,7 +14,7 @@ set(SIZE arm-none-eabi-render_size)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # project settings
-project(SPITEST C CXX ASM)
+project(nes_c_stm32 C CXX ASM)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 

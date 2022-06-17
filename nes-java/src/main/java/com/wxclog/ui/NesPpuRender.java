@@ -31,6 +31,5 @@ public class NesPpuRender {
             }
         }
         frame.getGraphics().drawImage(image, 2, 20, frame);
-//        System.out.println("渲染："+nesWatch.getMs());
     }
 }
