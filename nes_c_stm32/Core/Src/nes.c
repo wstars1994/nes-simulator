@@ -46,7 +46,7 @@ byte c_reg_a, c_reg_x, c_reg_y, c_reg_s = 0xFF;
 //CPU内存
 byte c_mem[0x800];
 //PPU寄存器
-byte p_reg_2000, p_reg_2001, p_reg_2002, p_reg_2003, p_reg_2007, p_write_toggle = 0, p_reg_2007, p_scroll_x;
+byte p_reg_2000, p_reg_2001, p_reg_2002, p_reg_2003, p_reg_2007, p_write_toggle = 0, p_scroll_x;
 //PPU内存
 byte p_mem[0x2000];
 //精灵数据
@@ -1249,13 +1249,8 @@ void exec_instruction() {
                 break;
                 //EOR_ABS
             case 0x4D:
-                abs_data = ams_abs();
-                data = read(abs_data);
-                flag_c = (data >> 7) & 1;
-                data2 = data << 1;
-                set_nz(data2);
-                write(addr, data2);
-                cpu_cycle -= 5;
+                ams_eor_a(read(ams_abs()));
+                cpu_cycle -= 4;
                 break;
                 //TSX
             case 0xBA:

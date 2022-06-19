@@ -31,7 +31,7 @@ public class Boot {
         });
         frame.addKeyListener(new NesKeyAdapter());
         //调试模式 打印运行日志
-        Const.debug = false;
+        Const.debug = true;
         NesBoot.start(frame);
     }
 
