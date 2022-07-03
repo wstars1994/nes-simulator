@@ -5,6 +5,7 @@
 
 #include "include/mem.h"
 #include "include/ppu.h"
+
 //程序数据
 char *prg_data;
 //图案数据
@@ -18,6 +19,8 @@ int render[(256+16)*240];
 char p_mem[0x2000];
 //CPU内存
 char c_mem[0x800];
+
+FILE *out;
 
 char read_program(int addr) {
     if (addr < 0x8000) {
@@ -43,14 +46,16 @@ void p_write_spr(char addr, char data) {
     p_spr_ram[addr & 0xFF] = data;
 }
 
-char p_read(short addr) {
+char p_read(int addr) {
+//    fprintf(out," | PRD:[addr:%02X]",addr&0xFFFF);
     if (addr < 0x2000) {
-        return prg_data[addr];
+        return chr_data[addr];
     }
     return p_mem[addr - 0x2000];
 }
 
 void p_write(short addr, char data) {
+    fprintf(out," | PWR:[addr:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
     //写入 $3F00-3FFF 的 D7-D6 字节被忽略.
     if (addr >= 0x3F00 && addr <= 0x3FFF) {
         data = data & 0x3f;
@@ -60,14 +65,15 @@ void p_write(short addr, char data) {
             p_mem[0x3F00 - 0x2000] = data;
         }
     }
-    //printf(" | PWR:[addr:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
     p_mem[addr - 0x2000] = data;
 }
 
 
 //内存操作----------------------------------
 char read(int addr) {
-    printf(" | RD:[addr:%02X INDEX:%d]",addr,addr);
+    if(addr<0x8000){
+        fprintf(out," | RD:[addr:%02X]",addr);
+    }
     char ret_p_reg_2002;
     int temp_p_reg_2006;
     switch (addr) {
@@ -93,7 +99,7 @@ char read(int addr) {
 }
 
 void write(int addr, char data) {
-    printf(" | WR:[ADDR:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
+    fprintf(out," | WR:[ADDR:%02X DATA:%d]",addr&0xFFFF,data);
     short start;
     switch (addr) {
         case 0x2000:

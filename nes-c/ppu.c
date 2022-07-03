@@ -102,7 +102,7 @@ void render_sprite(short line){
             char colorData = p_read(spritePatternAddr + 8);
             //命中非透明背景 sprite#0 hit
             if(i==0&&(spritePatternData&colorData)!=0) {
-                set_bit(&ppu.reg_2002,6,1);
+                set_bit(&ppu.reg_2002,1,6);
             }
             char colorHigh = (char) ((attributeData & 0x03)<<2);
             //水平翻转 01234567 -> 76543210

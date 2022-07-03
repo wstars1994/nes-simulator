@@ -9,7 +9,10 @@
 struct Cpu cpu;
 int prgPc = 0x8000;
 
+extern FILE *out;
+
 void cpu_init() {
+    out = fopen( "../output.txt", "w" );
     cpu.reg.s = 0xff;
     cpu.flag.b = 1;
     cpu.flag.i = 1;
@@ -87,10 +90,10 @@ int ams_abs() {
     return concat16(low, high);
 }
 
-int ams_branch(char data, int branch) {
+int ams_branch(char data, char branch) {
     char cpu_cycle = 2;
     if (branch) {
-        cpu_cycle += ((prgPc & 0xff00) == ((prgPc + data) & 0xff00) ? 1 : 2);
+        cpu_cycle += (prgPc & 0xff00) == ((prgPc + data) & 0xff00) ? 1 : 2;
         prgPc += data;
     }
     return cpu_cycle;
@@ -212,10 +215,12 @@ void ams_rol(int addr) {
 //中断
 void interrupt_nmi(char reg_2000) {
     if (get_bit(reg_2000, 7)) {
+        fprintf(out,"NMI");
         push16_stack(prgPc);
         push_stack(flag_merge());
         set_i(1);
         prgPc = (read(0xFFFA) & 0xff) | ((read(0xFFFB) & 0xff) << 8);
+        fprintf(out,"\n");
     }
 }
 long count = 0;
@@ -223,10 +228,10 @@ void cpu_go() {
     cpu.cycle = 113;
     int abs_data;
     int data,data2,data3;
-    while (cpu.cycle >= 0) {
+    while (cpu.cycle > 0) {
         char opc = read_program(prgPc++);
 
-        printf("PC:[%06d] | CYC:[%03d] | PC:[%X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
+        fprintf(out,"PC:[%06d] | CYC:[%03d] | PC:[%X] | OPC:[%02X] | R:[A:%02X X:%02X Y:%02X S:%02X] | F:[N:%d V:%d B:%d D:%d I:%d Z:%d C:%d]",
                 ++count,
                cpu.cycle,
                 (prgPc-1)&0xFFFF,
@@ -509,6 +514,7 @@ void cpu_go() {
                 //CLC
             case 0x18:
                 cpu.flag.c = 0;
+                cpu.cycle -= 2;
                 break;
                 //ROR_ABS_X
             case 0x7E:
@@ -552,7 +558,8 @@ void cpu_go() {
                 //JMP_INDIRECT
             case 0x6C:
                 abs_data = ams_abs();
-                prgPc = concat16(read(abs_data), read(abs_data + 1));
+                data = read(abs_data);
+                prgPc = concat16(data, read(abs_data + 1));
                 cpu.cycle -= 5;
                 break;
                 //LDA_ABS_Y
@@ -574,7 +581,7 @@ void cpu_go() {
                 //STY_ABS
             case 0x8C:
                 write(ams_abs(), cpu.reg.y);
-                cpu.cycle -= 3;
+                cpu.cycle -= 4;
                 break;
                 //LDA_ZERO
             case 0xA5:
@@ -733,7 +740,7 @@ void cpu_go() {
             case 0x0D:
                 cpu.reg.a |= read(ams_abs());
                 set_nz(cpu.reg.a);
-                cpu.cycle -= 2;
+                cpu.cycle -= 4;
                 break;
                 //NOP
             case 0xEA:
@@ -794,12 +801,12 @@ void cpu_go() {
                 //CMP_ABS_X
             case 0xDD:
                 ams_cmp(read(ams_abs_x(cpu.reg.x)));
-                cpu.cycle -= 2;
+                cpu.cycle -= 4;
                 break;
                 //ADC_ZERO_X
             case 0x75:
                 ams_adc(read(ams_zero(read_program(prgPc++), cpu.reg.x)));
-                cpu.cycle -= 2;
+                cpu.cycle -= 4;
                 break;
                 //PHP
             case 0x08:
@@ -1034,11 +1041,9 @@ void cpu_go() {
                 break;
             default:
                 cpu.cycle -= 0;
-                //printf("unknown ins %X\n", opc & 0xFF);
+                //fprintf(out,"unknown ins %X\n", opc & 0xFF);
                 break;
         }
-
-        printf("\n");
-
+        fprintf(out,"\n");
     }
 }

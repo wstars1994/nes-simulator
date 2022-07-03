@@ -15,7 +15,9 @@ struct Ppu {
     char scroll_x;
     short vram_addr;
     short vram_temp_addr;
-}static ppu;
+};
+
+extern struct Ppu ppu;
 
 #endif //NES_C_PPU_H
 
@@ -23,5 +25,3 @@ void render_nametable(short scanLineIndex);
 
 void render_sprite(short scanLineIndex);
 
-char p_read(short addr);
-char p_read(short addr);

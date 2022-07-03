@@ -14,7 +14,7 @@
 extern char *prg_data;
 //图案数据
 extern char *chr_data;
-
+struct Ppu ppu;
 
 struct Card{
     char magic[3];
@@ -104,7 +104,7 @@ void nes_start(){
     cpu_init();
 
     while (1) {
-        for (int l = 0; l < 240; l++) {
+        for (short l = 0; l < 240; l++) {
             if (showBg() || showSpr()) {
                 ppu.vram_addr = (ppu.vram_addr & 0xfbe0) | (ppu.vram_temp_addr & 0x041f);
             }
@@ -122,7 +122,7 @@ void nes_start(){
         //NMI中断
         interrupt_nmi(ppu.reg_2000);
         //242-260
-        for (int i = 242; i < 262; i++) {
+        for (short i = 242; i < 262; i++) {
             cpu_go();
         }
         set_bit(&ppu.reg_2002, 0, 7);

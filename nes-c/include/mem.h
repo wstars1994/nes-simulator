@@ -7,6 +7,8 @@
 
 #endif //NES_C_MEM_H
 
+#include <stdio.h>
+
 /**
  * 读取程序执行数据
  * @param addr 读取地址
@@ -20,3 +22,5 @@ void set_bit(char *data, char set_data, char index);
 void write(int addr, char data);
 
 char read(int addr);
+
+char p_read(int addr);
