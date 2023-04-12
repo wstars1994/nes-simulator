@@ -1,23 +1,17 @@
 #include "include/nes.h"
 #include "include/GL/glut.h"
 #include <pthread.h>
+#include <render.h>
 pthread_t pthread;
-
-void display(void) {
-    if(pthread == NULL){
-        pthread_create(&pthread,NULL,(void*)nes_start,NULL);
-    }
-}
 
 int main(int argc, char *argv[]) {
     glutInit(&argc, argv);
-//    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_STENCIL);
+    glutInitDisplayMode(GLUT_RGBA|GLUT_STENCIL);
     glutInitWindowSize(256, 240);
-    glutInitWindowPosition(200, 100);
+    glutInitWindowPosition(1200, 300);
     glutCreateWindow("OpenGL Demo");
-
-    glutDisplayFunc(display);
-
+    glutDisplayFunc(&render_windows);
+    pthread_create(&pthread,NULL,(void*)nes_start,NULL);
     glutMainLoop();
     return 0;
 }

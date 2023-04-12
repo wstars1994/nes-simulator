@@ -4,6 +4,7 @@ import com.wxclog.core.cpu.Cpu6502;
 import com.wxclog.core.cpu.CpuMemory;
 import com.wxclog.core.ppu.Ppu;
 import com.wxclog.ui.NesPpuRender;
+import com.wxclog.util.LogUtil;
 import com.wxclog.util.MemUtil;
 
 /**
@@ -79,7 +80,9 @@ public class NesMobo {
             this.cpu6502.go();
             //nmi
             if(DataBus.p_2000[7] == 1){
+                LogUtil.logf("NMI");
                 cpu6502.getCpuRegister().NMI();
+                LogUtil.logf("\n");
             }
             //242-260
             for (int i = 242; i < 262; i++) {

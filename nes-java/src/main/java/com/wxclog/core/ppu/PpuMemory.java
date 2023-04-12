@@ -98,7 +98,7 @@ public class PpuMemory{
             0};
 
     public void write(int addr, byte data) {
-        LogUtil.logf(" | PWR:[addr:%d INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
+        LogUtil.logf(" | PWR:[addr:%02X INDEX:%d DATA:%d]",addr&0xFFFF,addr&0xFFFF,data);
         //写入 $3F00-3FFF 的 D7-D6 字节被忽略.
         if(addr >= 0x3F00 && addr <= 0x3FFF) {
             data = (byte) (data & 0x3f);
@@ -147,6 +147,7 @@ public class PpuMemory{
     }
 
     public byte readMem(int addr) {
+//        LogUtil.logf(" | PRD:[addr:%02X]",addr&0xFFFF);
         return this.ppuData[addr];
     }
 }
