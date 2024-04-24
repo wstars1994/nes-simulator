@@ -2,7 +2,6 @@ package com.wxclog.ui;
 
 import com.wxclog.core.Const;
 import com.wxclog.core.DataBus;
-import com.wxclog.net.NesNetMain;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -24,9 +23,6 @@ public class NesKeyAdapter extends KeyAdapter {
             }else{
                 DataBus.c_4016_datas[keyIndex] = 1;
             }
-            if(NesNetMain.channel!=null){
-                NesNetMain.channel.writeAndFlush(keyIndex);
-            }
         }
     }
     @Override
@@ -38,9 +34,6 @@ public class NesKeyAdapter extends KeyAdapter {
                 DataBus.c_4017_datas[keyIndex] = 0;
             }else{
                 DataBus.c_4016_datas[keyIndex] = 0;
-            }
-            if(NesNetMain.channel != null){
-                NesNetMain.channel.writeAndFlush(keyIndex*10);
             }
         }
     }

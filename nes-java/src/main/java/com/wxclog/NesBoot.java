@@ -23,7 +23,7 @@ public class NesBoot {
 //        Const.debug = false;
         new Thread(() -> {
             //读取.nes文件数据
-            NESRomData romData = loadData("../超级玛丽.nes");
+            NESRomData romData = loadData("../俄罗斯方块.nes");
             HeaderData headerData = romData.getHeaderData();
             byte romPRGSize = headerData.getRomPRGSize();
             byte romCHRSize = headerData.getRomCHRSize();
